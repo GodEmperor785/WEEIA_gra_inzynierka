@@ -10,7 +10,8 @@ instrukcje dodawania do repo:
 
 pamietaj o git remote update i git pull origin master (zawsze zanim zaczniesz coś robić - dla bezpieczeństwa)
 
-jesli git rzuca błąd w stylu przy git push origin master: 
+jesli git rzuca błąd w stylu przy git push origin master:
+
   ! [rejected]        master -> master (fetch first)
   error: failed to push some refs to 'https://github.com/GodEmperor785/WEEIA_gra_inzynierka.git'
   hint: Updates were rejected because the remote contains work that you do
@@ -18,5 +19,6 @@ jesli git rzuca błąd w stylu przy git push origin master:
   hint: to the same ref. You may want to first integrate the remote changes
   hint: (e.g., 'git pull ...') before pushing again.
   hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+ 
  to zrób mu: git pull origin master
  i potem sprobuj znowu: git push origin master
