@@ -1,0 +1,6 @@
+C:\Users\user\source\repos\GodEmperor785\weeia_gra_inzynierka\GAME_connection\GAME_connection\bin\Debug\GAME_connection.dll
+C:\Users\user\source\repos\GodEmperor785\weeia_gra_inzynierka\GAME_connection\GAME_connection\bin\Debug\GAME_connection.pdb
+C:\Users\user\source\repos\GodEmperor785\weeia_gra_inzynierka\GAME_connection\GAME_connection\obj\Debug\GAME_connection.csprojAssemblyReference.cache
+C:\Users\user\source\repos\GodEmperor785\weeia_gra_inzynierka\GAME_connection\GAME_connection\obj\Debug\GAME_connection.csproj.CoreCompileInputs.cache
+C:\Users\user\source\repos\GodEmperor785\weeia_gra_inzynierka\GAME_connection\GAME_connection\obj\Debug\GAME_connection.dll
+C:\Users\user\source\repos\GodEmperor785\weeia_gra_inzynierka\GAME_connection\GAME_connection\obj\Debug\GAME_connection.pdb
