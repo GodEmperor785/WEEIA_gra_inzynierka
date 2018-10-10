@@ -35,11 +35,31 @@ namespace GAME_connection {
 		}
 
 		/// <summary>
+		/// Used to send GamePacket to client specified in constructor (TcpClient), with timeout
+		/// </summary>
+		/// <param name="packet">instance of GamePacket object to send</param>
+		/// <param name="timeout">timeout for send operation</param>
+		public void SendWithTimeout(GamePacket packet, long timeout) {
+			Console.WriteLine("Send z timeoutem");
+			Send(packet);
+		}
+
+		/// <summary>
 		/// Used to receive incoming GamePacket
 		/// </summary>
 		/// <returns>received (deserialized) GamePacket</returns>
 		public GamePacket Receive() {
 			return (GamePacket)serializer.Deserialize(netStream);
+		}
+
+		/// <summary>
+		/// Used to receive incoming GamePacket, with timeout
+		/// </summary>
+		/// <param name="timeout">timeout for receive operation</param>
+		/// <returns>received (deserialized) GamePacke</returns>
+		public GamePacket ReceiveWithTimeout(long timeout) {
+			Console.WriteLine("Receive z timeoutem");
+			return Receive();
 		}
 
 		public TcpClient TcpClient { get => tcpClient; set => tcpClient = value; }
