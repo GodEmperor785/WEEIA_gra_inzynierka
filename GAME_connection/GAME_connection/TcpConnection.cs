@@ -11,19 +11,23 @@ using System.Threading;
 
 namespace GAME_connection {
 	/// <summary>
-	/// class used to send and receive GamePackets between server and client
+	/// Class used to send and receive GamePackets between server and client.
+	/// <para>Should be used instead of TcpClient and its NetworkStream, if you need to have same connection in multiple places PASS instance of this object, DON'T create new object.</para>
+	/// <para>All send and receive operations are synchronized separately (one lock for send and one for receive)</para>
 	/// </summary>
 	public class TcpConnection {
 		private TcpClient tcpClient;
 		private NetworkStream netStream;
 		private IPEndPoint ipData;
 		private readonly IFormatter serializer;
+		private readonly object sendLock = new object();
+		private readonly object receiveLock = new object();
 
 		public TcpConnection(TcpClient client) {
 			this.TcpClient = client;
 			this.NetStream = client.GetStream();
-			IpData = client.Client.RemoteEndPoint as IPEndPoint;    //property Address i Port
-			serializer = new BinaryFormatter();
+			this.IpData = client.Client.RemoteEndPoint as IPEndPoint;    //property Address and Port
+			this.serializer = new BinaryFormatter();
 		}
 
 		/// <summary>
@@ -31,7 +35,9 @@ namespace GAME_connection {
 		/// </summary>
 		/// <param name="packet">instance of GamePacket object to send</param>
 		public void Send(GamePacket packet) {
-			serializer.Serialize(netStream, packet);
+			lock (sendLock) {
+				serializer.Serialize(netStream, packet);
+			}
 		}
 
 		/// <summary>
@@ -40,8 +46,10 @@ namespace GAME_connection {
 		/// <param name="packet">instance of GamePacket object to send</param>
 		/// <param name="timeout">timeout for send operation</param>
 		public void SendWithTimeout(GamePacket packet, long timeout) {
-			Console.WriteLine("Send z timeoutem");
-			Send(packet);
+			lock (sendLock) {
+				Console.WriteLine("Send z timeoutem");
+				Send(packet);
+			}
 		}
 
 		/// <summary>
@@ -49,7 +57,9 @@ namespace GAME_connection {
 		/// </summary>
 		/// <returns>received (deserialized) GamePacket</returns>
 		public GamePacket Receive() {
-			return (GamePacket)serializer.Deserialize(netStream);
+			lock (receiveLock) {
+				return (GamePacket)serializer.Deserialize(netStream);
+			}
 		}
 
 		/// <summary>
@@ -58,8 +68,10 @@ namespace GAME_connection {
 		/// <param name="timeout">timeout for receive operation</param>
 		/// <returns>received (deserialized) GamePacke</returns>
 		public GamePacket ReceiveWithTimeout(long timeout) {
-			Console.WriteLine("Receive z timeoutem");
-			return Receive();
+			lock (receiveLock) {
+				Console.WriteLine("Receive z timeoutem");
+				return Receive();
+			}
 		}
 
 		public TcpClient TcpClient { get => tcpClient; set => tcpClient = value; }
