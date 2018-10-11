@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Net.Mime;
+using Client_PC.Scenes;
+using Client_PC.UI;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,9 +12,14 @@ namespace Client_PC
     /// </summary>
     public class Game1 : Game
     {
+        enum State
+        {
+            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu
+        }
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-
+        GraphicsDevice gd;
+        private MainMenu mainMenu;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -27,7 +35,10 @@ namespace Client_PC
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            IsMouseVisible = true;
+            gd = GraphicsDevice;
+            mainMenu = new MainMenu(graphics,spriteBatch, GraphicsDevice);
+            mainMenu.Initialize(Content);
             base.Initialize();
         }
 
@@ -39,7 +50,6 @@ namespace Client_PC
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
             // TODO: use this.Content to load your game content here
         }
 
@@ -61,8 +71,8 @@ namespace Client_PC
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            mainMenu.UpdateP(gameTime);
 
-            // TODO: Add your update logic here
 
             base.Update(gameTime);
         }
@@ -73,11 +83,14 @@ namespace Client_PC
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            mainMenu.DrawP(gameTime);
+            if (false)
+            {
+                GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
-
-            base.Draw(gameTime);
+                // TODO: Add your drawing code here
+                
+            }
         }
     }
 }
