@@ -11,35 +11,28 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
 {
-    class MainMenu : Game
+    class MainMenu
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        private GraphicsDevice graphicsDevice;
         private GUI Gui;
         private Grid grid;
         private List<IClickable> Clickable;
-        public MainMenu(GraphicsDeviceManager gr, SpriteBatch sp, GraphicsDevice g)
+        public MainMenu()
         {
-            graphics = gr;
-            IsMouseVisible = true;
-            spriteBatch = new SpriteBatch(g);
-            graphicsDevice = g;
             Clickable = new List<IClickable>();
         }
 
         public void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            Button z = new Button(new Point(100, 200), 200, 100, graphicsDevice, Gui)
+            Button z = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui)
             {
                 Text = "z1 button"
             };
-            Button z2 = new Button(new Point(100, 200), 200, 100, graphicsDevice, Gui)
+            Button z2 = new Button(new Point(100, 200), 70, 125, Game1.self.GraphicsDevice, Gui)
             {
                 Text = "z2 button"
             };
-            Button z3 = new Button(new Point(100, 200), 200, 200, graphicsDevice, Gui)
+            Button z3 = new Button(new Point(100, 200), 200, 100, Game1.self.GraphicsDevice, Gui)
             {
                 Text = "z3 button"
             };
@@ -51,18 +44,13 @@ namespace Client_PC.Scenes
             grid.AddChild(z2, 1, 0);
             grid.AddChild(z3,2,0);
             z3.clickEvent += ExitClick;
-            grid.Origin = new Point((int)(graphics.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(graphics.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
+            grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
         }
 
-        protected override void LoadContent()
+        public void ExitClick()
         {
-
-        }
-
-        private void ExitClick()
-        {
-            Exit();
+            Game1.self.Exit();
         }
         public void UpdateP(GameTime gameTime)
         {
@@ -73,20 +61,22 @@ namespace Client_PC.Scenes
                 int x = mouseState.X;
                 int y = mouseState.Y;
                 Point xy = new Point(x,y);
-                Clickable.Single(p=> p.GetBoundary().Contains(xy)).OnClick();
+                IClickable button = Clickable.SingleOrDefault(p=> p.GetBoundary().Contains(xy));
+                if(button != null)
+                    button.OnClick();
             }
         }
-
+        
         public void DrawP(GameTime gameTime)
         {
             Draw(gameTime);
         }
-        protected override void Draw(GameTime gameTime)
+        public void Draw(GameTime gameTime)
         {
-            graphicsDevice.Clear(Color.AntiqueWhite);
-            spriteBatch.Begin();
-            grid.Draw(spriteBatch);
-            spriteBatch.End();
+            Game1.self.GraphicsDevice.Clear(Color.AntiqueWhite);
+            Game1.self.spriteBatch.Begin();
+            grid.Draw(Game1.self.spriteBatch);
+            Game1.self.spriteBatch.End();
         }
     }
 }

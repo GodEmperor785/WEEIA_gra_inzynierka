@@ -52,7 +52,8 @@ namespace Client_PC.UI
 
         public void OnClick()
         {
-            clickEvent();
+            if(clickEvent != null)
+                clickEvent();
         }
 
         public Rectangle GetBoundary()

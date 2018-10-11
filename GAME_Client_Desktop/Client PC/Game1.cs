@@ -16,14 +16,19 @@ namespace Client_PC
         {
             LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu
         }
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        public static Game1 self;
+        public GraphicsDeviceManager graphics;
+        public SpriteBatch spriteBatch;
         GraphicsDevice gd;
         private MainMenu mainMenu;
+        internal object graphicsDevice;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+            
         }
 
         /// <summary>
@@ -35,9 +40,9 @@ namespace Client_PC
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            IsMouseVisible = true;
-            gd = GraphicsDevice;
-            mainMenu = new MainMenu(graphics,spriteBatch, GraphicsDevice);
+            self = this;
+            //  gd = GraphicsDevice;
+            mainMenu = new MainMenu();
             mainMenu.Initialize(Content);
             base.Initialize();
         }
@@ -69,11 +74,10 @@ namespace Client_PC
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+                
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             mainMenu.UpdateP(gameTime);
-
-
             base.Update(gameTime);
         }
 
@@ -91,6 +95,7 @@ namespace Client_PC
                 // TODO: Add your drawing code here
                 
             }
+            base.Draw(gameTime);
         }
     }
 }
