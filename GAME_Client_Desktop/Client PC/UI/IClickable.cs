@@ -11,5 +11,6 @@ namespace Client_PC.UI
     {
         void OnClick();
         Rectangle GetBoundary();
+        int Id { get; set; }
     }
 }

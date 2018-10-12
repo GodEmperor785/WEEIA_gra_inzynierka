@@ -12,15 +12,17 @@ namespace Client_PC
     /// </summary>
     public class Game1 : Game
     {
-        enum State
+        public enum State
         {
             LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu
         }
         public static Game1 self;
+        public State state = State.MainMenu;
         public GraphicsDeviceManager graphics;
         public SpriteBatch spriteBatch;
         GraphicsDevice gd;
         private MainMenu mainMenu;
+        private SettingsMenu settingsMenu;
         internal object graphicsDevice;
 
         public Game1()
@@ -43,6 +45,8 @@ namespace Client_PC
             self = this;
             //  gd = GraphicsDevice;
             mainMenu = new MainMenu();
+            settingsMenu = new SettingsMenu();
+            settingsMenu.Initialize(Content);
             mainMenu.Initialize(Content);
             base.Initialize();
         }
@@ -77,7 +81,15 @@ namespace Client_PC
                 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            mainMenu.UpdateP(gameTime);
+            switch (state)
+            {
+                case State.MainMenu:
+                    mainMenu.Update(gameTime);
+                    break;
+                case State.OptionsMenu:
+                    settingsMenu.Update(gameTime);
+                    break;
+            }
             base.Update(gameTime);
         }
 
@@ -87,13 +99,14 @@ namespace Client_PC
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            mainMenu.DrawP(gameTime);
-            if (false)
+            switch (state)
             {
-                GraphicsDevice.Clear(Color.CornflowerBlue);
-
-                // TODO: Add your drawing code here
-                
+                case State.MainMenu:
+                    mainMenu.Draw(gameTime);
+                    break;
+                case State.OptionsMenu:
+                    settingsMenu.Draw(gameTime);
+                    break;
             }
             base.Draw(gameTime);
         }

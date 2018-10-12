@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Client_PC.Scenes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -14,8 +15,10 @@ namespace Client_PC.UI
         private class Child
         {
             public GuiElement element;
+            public int id;
             public int column;
             public int row;
+            public string name;
         }
         public Rectangle Boundary { get; set; }
 
@@ -45,12 +48,28 @@ namespace Client_PC.UI
 
         public int Rows
         {
-            get { return Children.Max(p => p.row) + 1; }
+            get
+            {
+                if(Children.Count > 0)
+                    return Children.Max(p => p.row) + 1;
+                else
+                {
+                    return 0;
+                }
+            }
         }
 
         public int Columns
         {
-            get { return Children.Max(p => p.column) + 1; }
+            get
+            {
+                if (Children.Count > 0)
+                    return Children.Max(p => p.column) + 1;
+                else
+                {
+                    return 0;
+                }
+            }
         }
 
         public int columnOffset = 5;
@@ -98,11 +117,26 @@ namespace Client_PC.UI
                 column = column,
                 row = row
             };
+            ch.id = Children.Count;
             Children.Add(ch);
             Update();
             UpdateChildren();
         }
 
+        public void AddChild(GuiElement element, string name)
+        {
+            Child ch = new Child()
+            {
+                element = element,
+                name = name,
+                column =  0
+            };
+            ch.id = Children.Count;
+            ch.row = Rows;
+            Children.Add(ch);
+            Update();
+            UpdateChildren();
+        }
         public void UpdateP()
         {
             Update();
@@ -163,10 +197,22 @@ namespace Client_PC.UI
         {
             return Children.Single(p => p.column == column && p.row == row).element;
         }
+        public GuiElement GetChild(string name)
+        {
+            return Children.SingleOrDefault(p => p.name.Equals(name)).element;
+        }
+        public GuiElement GetChild(int id)
+        {
+            return Children.SingleOrDefault(p => p.id == id).element;
+        }
         public void Draw(SpriteBatch spriteBatch)
         {
             foreach (var child in Children)
             {
+                if (child.element is Dropdown)
+                {
+                    int z = 0;
+                }
                 child.element.Draw(spriteBatch);
             }
         }

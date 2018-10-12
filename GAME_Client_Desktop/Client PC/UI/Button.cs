@@ -4,15 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Client_PC.Scenes;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Client_PC.UI
 {
-    class Button : GuiElement, IClickable
-    {
-        private GraphicsDevice Device { get; set; }
-        private GUI Gui { get; set; }
-        private Vector2 TextPosition;
+    class Button : GuiElement, IClickable, IHasText
+    { 
+        public Vector2 TextPosition
+        {
+            get;
+            set;
+        }
+
         public string text;
         public string Text
         {
@@ -26,20 +30,21 @@ namespace Client_PC.UI
                 
             }
         }
-        public delegate void ElementClicked();
 
+        public int Id { get; set; }
+
+        public delegate void ElementClicked();
+        public delegate void ElementClickedInt(int n);
         public event ElementClicked clickEvent;
-        public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui)
+        public SpriteFont Font { get; set; }
+        public event ElementClickedInt clickEventInt;
+        public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font) : base(origin,width,height,device,gui)
         {
-            Origin = origin;
-            Width = width;
-            Height = height;
-            Device = device;
-            Gui = gui;
+            Font = font;
         }
         public override void Update()
         {
-            Vector2 z = Gui.bigFont.MeasureString(text);
+            Vector2 z = Font.MeasureString(text);
             TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
         }
 
@@ -47,13 +52,15 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
-            spriteBatch.DrawString(Gui.bigFont, Text, TextPosition, Color.Black);
+            spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
         }
 
         public void OnClick()
         {
             if(clickEvent != null)
                 clickEvent();
+            else if (clickEventInt != null)
+                clickEventInt(Id);
         }
 
         public Rectangle GetBoundary()
