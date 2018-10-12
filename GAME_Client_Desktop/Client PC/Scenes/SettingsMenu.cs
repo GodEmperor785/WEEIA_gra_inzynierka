@@ -49,7 +49,7 @@ namespace Client_PC.Scenes
             grid.AddChild(label1,0,0);
             grid.AddChild(drop, 1, 0);
             grid.AddChild(button,2,0);
-
+            int z = 243123;
         }
 
         public void OnExit()
