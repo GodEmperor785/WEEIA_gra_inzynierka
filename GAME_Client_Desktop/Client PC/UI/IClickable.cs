@@ -12,5 +12,9 @@ namespace Client_PC.UI
         void OnClick();
         Rectangle GetBoundary();
         int Id { get; set; }
+        bool Active { get; set; }
+        bool ActiveChangeable { get; set; }
+        Object Parent { get; set; }
+
     }
 }

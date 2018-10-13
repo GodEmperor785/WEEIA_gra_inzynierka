@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace Client_PC.Scenes
         private List<IClickable> Clickable;
         private Grid grid;
         private GUI Gui;
+        private int i = 0;
         public SettingsMenu()
         {
             Clickable = new List<IClickable>();
@@ -37,18 +39,23 @@ namespace Client_PC.Scenes
             {
                 Text = "1920 x 1080"
             };
-            drop.Add(dropElement1,"fullHd");
+            drop.Add(dropElement1,"fullHd", drop);
             Button dropElement2 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont)
             {
                 Text = "1280 x 720"
             };
-            drop.Add(dropElement2, "Hd");
+            drop.Add(dropElement2, "Hd", drop);
             button.clickEvent += OnExit;
             Clickable.Add(drop);
             Clickable.Add(button);
+            Clickable.Add(dropElement1);
+            Clickable.Add(dropElement2);
+            button.Active = true;
             grid.AddChild(label1,0,0);
             grid.AddChild(drop, 1, 0);
             grid.AddChild(button,2,0);
+            grid.Active = true;
+            grid.UpdateActive(true);
             int z = 243123;
         }
 
@@ -63,14 +70,29 @@ namespace Client_PC.Scenes
             {
                 int x = mouseState.X;
                 int y = mouseState.Y;
+                i++;
                 bool dropClicked = false;
                 Point xy = new Point(x, y);
-                IClickable button = Clickable.SingleOrDefault(p => p.GetBoundary().Contains(xy));
+                IClickable button = Clickable.Where(p=> p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
                 if (button != null)
                     if (button is Dropdown)
                     {
                         Dropdown d = (Dropdown) button;
-                        d.ShowChildren = true;
+                        Debug.WriteLine(d.Active + "|"+d.ActiveChangeable +"\t"+  d.ShowChildren + "\t" + i);
+                        if (d.ShowChildren)
+                        {
+                            button.OnClick();
+                        }
+                        else
+                        {
+                            d.ShowChildren = true;
+                            d.Update();
+                            dropClicked = true;
+                            button.Active = false;
+                        }
+                    }
+                    else if (button.Parent is Dropdown)
+                    {
                         dropClicked = true;
                     }
                     else
@@ -82,8 +104,11 @@ namespace Client_PC.Scenes
                 {
                     Dropdown drop = (Dropdown)Clickable.SingleOrDefault(p => p is Dropdown);
                     drop.ShowChildren = false;
+                    drop.Update();
+                    drop.Active = true;
                 }
             }
+            grid.UpdateP();
         }
         public void Draw(GameTime gameTime)
         {

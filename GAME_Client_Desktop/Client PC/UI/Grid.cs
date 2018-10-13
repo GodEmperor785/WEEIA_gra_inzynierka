@@ -12,6 +12,7 @@ namespace Client_PC.UI
 {
     class Grid
     {
+        public bool Active { get; set; }
         private class Child
         {
             public GuiElement element;
@@ -141,6 +142,7 @@ namespace Client_PC.UI
         {
             Update();
             UpdateChildren();
+            UpdateActive(Active);
         }
         private void Update()
         {
@@ -173,6 +175,22 @@ namespace Client_PC.UI
             ColumnsSize = ColumnsSiz.ToList();
         }
 
+        public void UpdateActive(bool isActive)
+        {
+
+            foreach (var child in Children)
+            {
+                if (child.element is IClickable)
+                {
+                    IClickable click = (IClickable) child.element;
+                    if(click.ActiveChangeable)
+                        click.Active = isActive;
+                }
+
+                
+            }
+
+        }
         private void UpdateChildren()
         {
             foreach (var child in Children)

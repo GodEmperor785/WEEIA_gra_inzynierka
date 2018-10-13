@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,10 +38,15 @@ namespace Client_PC.UI
         public delegate void ElementClickedInt(int n);
         public event ElementClicked clickEvent;
         public SpriteFont Font { get; set; }
+        public bool Active { get; set; }
+        public object Parent { get; set; }
+        public bool ActiveChangeable { get; set; }
+
         public event ElementClickedInt clickEventInt;
         public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font) : base(origin,width,height,device,gui)
         {
             Font = font;
+            ActiveChangeable = true;
         }
         public override void Update()
         {
@@ -57,10 +63,12 @@ namespace Client_PC.UI
 
         public void OnClick()
         {
-            if(clickEvent != null)
+            if (clickEvent != null)
                 clickEvent();
             else if (clickEventInt != null)
                 clickEventInt(Id);
+
+            
         }
 
         public Rectangle GetBoundary()
