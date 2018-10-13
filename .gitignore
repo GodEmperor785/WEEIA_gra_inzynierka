@@ -8,6 +8,8 @@
 *.ide
 *.lock
 *.vs
+bin/
+obj/
 
 # User-specific files
 *.rsuser
