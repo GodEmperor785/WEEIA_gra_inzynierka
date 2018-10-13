@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
+using System.IO;
 
 namespace GAME_connection {
 	/// <summary>
@@ -15,9 +16,10 @@ namespace GAME_connection {
 	/// <para>Should be used instead of TcpClient and its NetworkStream, if you need to have same connection in multiple places PASS instance of this object, DON'T create new object.</para>
 	/// <para>All send and receive operations are synchronized separately (one lock for send and one for receive)</para>
 	/// <para>Receive operations are preformed on separate thread to allow constant connection testing</para>
+	/// <para>To disconnect from remote use <see cref="SendDisconnect"/>. To process remote disconnect use <see cref="Disconnect"/></para>
 	/// </summary>
 	public class TcpConnection : IDisposable {
-		public static readonly int DEFAULT_PORT = 100001;
+		public static readonly int DEFAULT_PORT = 10001;
 
 		private static readonly int pollingIntervalMilis = 100;
 		private static readonly int connectionTestIntervalMilis = 2000;
@@ -36,10 +38,19 @@ namespace GAME_connection {
 
 		private Queue<GamePacket> receivedPackets = new Queue<GamePacket>();
 		private Thread receiver;
-		private Thread connectionTester;	//thread to periodically test connection - should be used on client
+		private Thread connectionTester = null;	//thread to periodically test connection - will be used on client - true in constructor
 		private bool keepReceiving;
 		private bool keepTestingConnection;
 
+		private bool remotePlannedDisconnect;
+		private bool connectionEnded;
+
+		#region Constructor
+		/// <summary>
+		/// Creates all necessary variables and threads for game connection, requires connected <see cref="System.Net.Sockets.TcpClient"/>.
+		/// </summary>
+		/// <param name="client">connected <see cref="System.Net.Sockets.TcpClient"/></param>
+		/// <param name="isClient">true if used on the client side - clients send  <see cref="OperationType.CONNECTION_TEST"/> packets to server</param>
 		public TcpConnection(TcpClient client, bool isClient) {
 			this.TcpClient = client;
 			this.NetStream = client.GetStream();
@@ -50,6 +61,7 @@ namespace GAME_connection {
 			this.serializer = new BinaryFormatter();
 
 			keepReceiving = true;
+			RemotePlannedDisconnect = false;
 			receiver = new Thread(new ThreadStart(DoReceiving));
 			receiver.Start();
 
@@ -59,6 +71,7 @@ namespace GAME_connection {
 				connectionTester.Start();
 			}
 		}
+		#endregion
 
 		#region Send/Write
 		/// <summary>
@@ -66,20 +79,19 @@ namespace GAME_connection {
 		/// </summary>
 		/// <param name="packet">instance of <see cref="GamePacket"/> object to send</param>
 		public void Send(GamePacket packet) {
-			lock (sendLock) {
-				serializer.Serialize(netStream, packet);
-			}
-		}
-
-		/// <summary>
-		/// Used to send <see cref="GamePacket"/> to client specified in constructor (TcpClient), with timeout in miliseconds
-		/// </summary>
-		/// <param name="packet">instance of <see cref="GamePacket"/> object to send</param>
-		/// <param name="timeout">timeout in miliseconds for send operation</param>
-		public void SendWithTimeout(GamePacket packet, long timeout) {
-			lock (sendLock) {
-				Console.WriteLine("Send z timeoutem");
-				Send(packet);
+			if (connectionEnded) throw new ConnectionEndedException("Trying to send when connection is closed", "send");
+			try {
+				lock (sendLock) {
+					serializer.Serialize(netStream, packet);
+				}
+			} catch (IOException ex) {
+				Console.WriteLine("Connection ended");
+				//Console.WriteLine(ex.StackTrace);
+				connectionEnded = true;
+			} catch (SerializationException ex2) {
+				Console.WriteLine("Connection ended");
+				//Console.WriteLine(ex2.StackTrace);
+				connectionEnded = true;
 			}
 		}
 		#endregion
@@ -90,8 +102,15 @@ namespace GAME_connection {
 		/// </summary>
 		/// <returns></returns>
 		public GamePacket GetReceivedPacket() {
-			while(true) {
-				if (QueueCount > 0) return receivedPackets.Dequeue();
+			int queueCount;
+			while (true) {
+				queueCount = QueueCount;
+				if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
+				if (queueCount > 0) {
+					lock (queueLock) {
+						return receivedPackets.Dequeue();
+					}
+				}
 				Thread.Sleep(pollingIntervalMilis);
 			}
 		}
@@ -101,14 +120,21 @@ namespace GAME_connection {
 		/// </summary>
 		/// <param name="timeoutMilis">timeout in miliseconds for receive operation</param>
 		/// <returns></returns>
-		public GamePacket GetReceivedPacket(int timeoutMilis) {
+		public GamePacket GetReceivedPacket(int timeoutMilis, int playerNumber) {
 			int elapsedTime = 0;
-			while(elapsedTime < timeoutMilis) {
-				if (QueueCount > 0) return receivedPackets.Dequeue();
+			int queueCount;
+			while (elapsedTime < timeoutMilis) {
+				queueCount = QueueCount;
+				if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive with timeout");
+				if (queueCount > 0) {
+					lock (queueLock) {
+						return receivedPackets.Dequeue();
+					}
+				}
 				Thread.Sleep(pollingIntervalMilis);
 				elapsedTime += pollingIntervalMilis;
 			}
-			throw new Exception("Timeout of " + timeoutMilis + " ms happened while receiving");
+			throw new ReceiveTimeoutException(playerNumber);
 		}
 
 		private int QueueCount {
@@ -128,12 +154,24 @@ namespace GAME_connection {
 		/// </summary>
 		private void DoReceiving() {
 			while(KeepReceiving) {
-				GamePacket receivedPacket = Receive();
-				if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) Console.WriteLine("CONNECTION_TEST received");
-				else {
-					lock(queueLock) {
-						receivedPackets.Enqueue(receivedPacket);
+				try {
+					GamePacket receivedPacket = Receive();
+					if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) Console.WriteLine("CONNECTION_TEST received");
+					else {
+						lock (queueLock) {
+							receivedPackets.Enqueue(receivedPacket);
+						}
 					}
+				} catch(IOException ex) {
+					Console.WriteLine("Connection ended");
+					//Console.WriteLine(ex.StackTrace);
+					connectionEnded = true;
+					break;
+				} catch (SerializationException ex2) {
+					Console.WriteLine("Connection ended");
+					//Console.WriteLine(ex2.StackTrace);
+					connectionEnded = true;
+					break;
 				}
 				//than block on another read operation
 			}
@@ -144,6 +182,7 @@ namespace GAME_connection {
 		/// </summary>
 		/// <returns>received (deserialized) GamePacket</returns>
 		private GamePacket Receive() {
+			if (connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
 			lock (receiveLock) {
 				return (GamePacket)serializer.Deserialize(netStream);
 			}
@@ -171,8 +210,20 @@ namespace GAME_connection {
 		/// </summary>
 		private void DoTestConnection() {
 			while(KeepTestingConnection) {
-				Send(GamePacket.CreateConnectionTestPacket());
-				Thread.Sleep(connectionTestIntervalMilis);
+				try {
+					if(!connectionEnded) Send(GamePacket.CreateConnectionTestPacket());
+					Thread.Sleep(connectionTestIntervalMilis);
+				} catch (IOException ex) {
+					Console.WriteLine("Connection ended");
+					//Console.WriteLine(ex.StackTrace);
+					connectionEnded = true;
+					break;
+				} catch (SerializationException ex2) {
+					Console.WriteLine("Connection ended");
+					//Console.WriteLine(ex2.StackTrace);
+					connectionEnded = true;
+					break;
+				}
 			}
 		}
 
@@ -196,16 +247,37 @@ namespace GAME_connection {
 		public NetworkStream NetStream { get => netStream; set => netStream = value; }
 		public string RemoteIpAddress { get => remoteIpAddress; set => remoteIpAddress = value; }
 		public int RemotePortNumber { get => remotePortNumber; set => remotePortNumber = value; }
+		public bool RemotePlannedDisconnect { get => remotePlannedDisconnect; set => remotePlannedDisconnect = value; }
 
-		#region IDisposable
+		#region IDisposable and Disconnect
+		/// <summary>
+		/// Use this method to send proper disconnect to remote. DO NOT send packet <see cref="OperationType.CONNECTION_TEST"/> manually and call Dispose or Disconnect!
+		/// </summary>
+		public void SendDisconnect() {
+			Send(new GamePacket(OperationType.DISCONNECT, null));
+			RemotePlannedDisconnect = true;
+			Thread.Sleep(100);
+			this.Dispose();
+		}
+
+		/// <summary>
+		/// Use this method when you receive <see cref="OperationType.CONNECTION_TEST"/> packet from remote. DO NOT use it when you want to SEND <see cref="OperationType.CONNECTION_TEST"/>
+		/// </summary>
+		public void Disconnect() {
+			RemotePlannedDisconnect = true;
+			this.Dispose();
+		}
+
+		/// <summary>
+		/// called internally by proper <see cref="Disconnect"/> and <see cref="SendDisconnect"/>. SHOULDN'T be used manually!
+		/// </summary>
 		public void Dispose() {
 			KeepTestingConnection = false;
-			connectionTester.Join();
-
 			KeepReceiving = false;
-			receiver.Join();
-
 			TcpClient.Dispose();
+
+			if(connectionTester != null) connectionTester.Join();
+			receiver.Join();
 		}
 		#endregion
 
