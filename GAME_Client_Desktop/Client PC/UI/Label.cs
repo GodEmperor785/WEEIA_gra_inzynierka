@@ -39,14 +39,19 @@ namespace Client_PC.UI
         }
         public override void Update()
         {
-            Vector2 z = Font.MeasureString(text);
-            TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
+            if (text != null)
+            {
+                Vector2 z = Font.MeasureString(text);
+                TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
+
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
-            spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
+            if(text != null)
+                spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
         }
     }
 }

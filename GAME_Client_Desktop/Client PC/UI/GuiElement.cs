@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ namespace Client_PC.UI
         public Point Origin { get; set; }
         protected GUI Gui { get; set; }
         protected GraphicsDevice Device { get; set; }
-        
+        public Texture2D Texture { get; set; }
+        public int Id { get; set; }
         public virtual void Update() { }
         public virtual void Draw(SpriteBatch sp) { }
         public GuiElement(Point origin, int width, int height, GraphicsDevice device, GUI gui)
@@ -26,6 +28,10 @@ namespace Client_PC.UI
             Height = height;
             Device = device;
             Gui = gui;
+            using (FileStream st = new FileStream("Content/Graphics/Button/ButtonTexture.png", FileMode.Open))
+            {
+                Texture = Texture2D.FromStream(Game1.self.GraphicsDevice, st);
+            }
         }
     }
 }

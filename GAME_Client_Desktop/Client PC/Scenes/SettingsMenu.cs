@@ -16,7 +16,10 @@ namespace Client_PC.Scenes
         private List<IClickable> Clickable;
         private Grid grid;
         private GUI Gui;
+        private bool AbleToClick = false;
         private int i = 0;
+        private float OldTime;
+        private float DeltaSeconds;
         public SettingsMenu()
         {
             Clickable = new List<IClickable>();
@@ -33,16 +36,18 @@ namespace Client_PC.Scenes
             Dropdown drop = new Dropdown(new Point(0,0),100,30,Game1.self.GraphicsDevice, Gui);
             Button button = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
             {
-                Text = "Back"
+                Text = "Back",Id = 0
             };
             Button dropElement1 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont)
             {
-                Text = "1920 x 1080"
+                Text = "1920 x 1080",
+                Id = 1
             };
             drop.Add(dropElement1,"fullHd", drop);
             Button dropElement2 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont)
             {
-                Text = "1280 x 720"
+                Text = "1280 x 720",
+                Id = 2
             };
             drop.Add(dropElement2, "Hd", drop);
             button.clickEvent += OnExit;
@@ -65,9 +70,18 @@ namespace Client_PC.Scenes
         }
         public void Update(GameTime gameTime)
         {
+            if (OldTime == 0)
+                OldTime = gameTime.TotalGameTime.Milliseconds;
+            DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
             var mouseState = Mouse.GetState();
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (DeltaSeconds > 150)
             {
+                AbleToClick = true;
+            }
+            if (mouseState.LeftButton == ButtonState.Pressed && AbleToClick)
+            {
+                DeltaSeconds = 0;
+                AbleToClick = false;
                 int x = mouseState.X;
                 int y = mouseState.Y;
                 i++;
@@ -78,7 +92,6 @@ namespace Client_PC.Scenes
                     if (button is Dropdown)
                     {
                         Dropdown d = (Dropdown) button;
-                        Debug.WriteLine(d.Active + "|"+d.ActiveChangeable +"\t"+  d.ShowChildren + "\t" + i);
                         if (d.ShowChildren)
                         {
                             button.OnClick();
@@ -94,6 +107,9 @@ namespace Client_PC.Scenes
                     else if (button.Parent is Dropdown)
                     {
                         dropClicked = true;
+                        Dropdown d = (Dropdown) button.Parent;
+                        d.Active = true;
+                        button.OnClick();
                     }
                     else
                     {

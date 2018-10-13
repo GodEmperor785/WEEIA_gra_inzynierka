@@ -41,6 +41,9 @@ namespace Client_PC.UI
             OriginalHeight = height;
             Active = true;
             ActiveChangeable = false;
+            IdSelected = -1;
+            Label lb = new Label(new Point(0,0),width,height,device,gui,gui.smallFont );
+            //grid.AddChild(lb,"new");
         }
         public override void Update()
         {
@@ -78,6 +81,7 @@ namespace Client_PC.UI
         {
             IdSelected = n;
             Debug.WriteLine("BUtton id:\t"+ n);
+            ShowChildren = false;
         }
 
 
@@ -98,6 +102,7 @@ namespace Client_PC.UI
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
+
             if (ShowChildren)
             {
                 grid.Draw(spriteBatch);
@@ -106,6 +111,19 @@ namespace Client_PC.UI
             {
                 spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary,
                     Color.White);
+                if (IdSelected != -1)
+                {
+                    GuiElement el = grid.GetChild(IdSelected);
+                    if (el is Button)
+                    {
+                        Button b = (Button) el;
+                        Vector2 z = b.Font.MeasureString(b.Text);
+                        Vector2 TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f,
+                            (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
+                        spriteBatch.DrawString(b.Font, b.Text, TextPosition, Color.Black);
+                    }
+                    
+                }
             }
         }
 

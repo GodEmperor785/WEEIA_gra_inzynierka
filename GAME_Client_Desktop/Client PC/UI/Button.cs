@@ -32,7 +32,7 @@ namespace Client_PC.UI
             }
         }
 
-        public int Id { get; set; }
+        
 
         public delegate void ElementClicked();
         public delegate void ElementClickedInt(int n);
@@ -57,6 +57,7 @@ namespace Client_PC.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+
             spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
             spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
         }

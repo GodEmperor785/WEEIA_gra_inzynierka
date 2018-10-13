@@ -221,16 +221,12 @@ namespace Client_PC.UI
         }
         public GuiElement GetChild(int id)
         {
-            return Children.SingleOrDefault(p => p.id == id).element;
+            return Children.SingleOrDefault(p => p.element.Id == id).element;
         }
         public void Draw(SpriteBatch spriteBatch)
         {
             foreach (var child in Children)
             {
-                if (child.element is Dropdown)
-                {
-                    int z = 0;
-                }
                 child.element.Draw(spriteBatch);
             }
         }
