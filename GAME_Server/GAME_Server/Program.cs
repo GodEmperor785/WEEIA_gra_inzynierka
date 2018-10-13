@@ -54,6 +54,10 @@ namespace GAME_Server {
 				} catch (ReceiveTimeoutException e) {
 					Console.WriteLine("Failed to receive with timeout. Disconnected player number: " + e.PlayerNumber);
 				}*/
+				Console.WriteLine("Trying to receive complex packet...");
+				packet = client.GetReceivedPacket();
+				Fleet fleet = (Fleet)packet.Packet;
+				Console.WriteLine("there are " + fleet.Ships.Count + " ships in the received fleet");
 
 				Console.WriteLine("Waiting for client to send DISCONNECT...");
 				packet = client.GetReceivedPacket();
