@@ -49,18 +49,31 @@ namespace Client_PC.Scenes
                 Text = "1280 x 720",
                 Id = 2
             };
+            Button buttonSave = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
+            {
+                Text = "Save",
+                Id = 4
+            };
+            Grid grid2 = new Grid();
+            grid2.AddChild(button,0,1);
+            grid2.AddChild(buttonSave, 0, 0);
             drop.Add(dropElement2, "Hd", drop);
             button.clickEvent += OnExit;
             Clickable.Add(drop);
             Clickable.Add(button);
+            Clickable.Add(buttonSave);
             Clickable.Add(dropElement1);
             Clickable.Add(dropElement2);
             button.Active = true;
+            grid2.Active = true;
+            grid2.UpdateActive(true);
             grid.AddChild(label1,0,0);
             grid.AddChild(drop, 1, 0);
-            grid.AddChild(button,2,0);
+            grid.AddChild(grid2,2,0, "gridW");
             grid.Active = true;
             grid.UpdateActive(true);
+            grid.ResizeChildren();
+            drop.ResizeChildren();
             int z = 243123;
         }
 

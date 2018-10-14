@@ -12,8 +12,8 @@ namespace Client_PC.UI
     class GuiElement
     {
         public Rectangle Boundary => new Rectangle(Origin.X, Origin.Y, Width, Height);
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public virtual int Width { get; set; }
+        public virtual int Height { get; set; }
         public Point Origin { get; set; }
         protected GUI Gui { get; set; }
         protected GraphicsDevice Device { get; set; }
@@ -21,6 +21,11 @@ namespace Client_PC.UI
         public int Id { get; set; }
         public virtual void Update() { }
         public virtual void Draw(SpriteBatch sp) { }
+
+        public GuiElement()
+        {
+        }
+
         public GuiElement(Point origin, int width, int height, GraphicsDevice device, GUI gui)
         {
             Origin = origin;

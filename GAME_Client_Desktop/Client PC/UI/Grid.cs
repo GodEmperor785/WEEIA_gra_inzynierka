@@ -4,13 +4,14 @@ using System.Linq;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Client_PC.Scenes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Client_PC.UI
 {
-    class Grid
+    class Grid : GuiElement
     {
         public bool Active { get; set; }
         private class Child
@@ -23,7 +24,7 @@ namespace Client_PC.UI
         }
         public Rectangle Boundary { get; set; }
 
-        public int Width
+        public override int  Width
         {
             get
             {
@@ -34,7 +35,7 @@ namespace Client_PC.UI
             }
         }
 
-        public int Height
+        public override int Height
         {
             get
             {
@@ -44,9 +45,7 @@ namespace Client_PC.UI
                 return sum;
             }
         }
-
-        public Point Origin { get; set; }
-
+        
         public int Rows
         {
             get
@@ -124,6 +123,20 @@ namespace Client_PC.UI
             UpdateChildren();
         }
 
+        public void AddChild(GuiElement element, int row, int column, string name)
+        {
+            Child ch = new Child
+            {
+                element = element,
+                column = column,
+                row = row
+            };
+            ch.name = name;
+            ch.id = Children.Count;
+            Children.Add(ch);
+            Update();
+            UpdateChildren();
+        }
         public void AddChild(GuiElement element, string name)
         {
             Child ch = new Child()
@@ -197,18 +210,31 @@ namespace Client_PC.UI
             {
                 child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),this.Origin.Y + (int)RowOffset(child.row));
                 child.element.Update();
+                if (child.element is Grid)
+                {
+                    Grid g = (Grid) child.element;
+                    g.UpdateP();
+                }
             }
         }
-        private void ResizeChildren()
+        public void ResizeChildren()
         {
-            List<GuiElement> elements = new List<GuiElement>();
-            Children.ForEach(p => elements.Add(p.element));
-            int maxHeight = elements.Max(p => p.Height);
-            int maxWidth = elements.Max(p => p.Width);
+            for (int i = 0; i< Rows;i++)
+            {
+                var elements = Children.Where(p => p.row == i).ToList();
+                foreach (var element in elements)
+                {
+                    element.element.Width = (int)ColumnsSize[element.column];
+                    element.element.Height = (int) RowsSize[element.row];
+                }
+            }
+        }
+        public void ResizeChildren(int width,int height)
+        {
             foreach (var child in Children)
             {
-                child.element.Width = maxWidth;
-                child.element.Height = maxHeight;
+                child.element.Width = width;
+                child.element.Height = height;
             }
         }
         public GuiElement GetChild(int row, int column)
@@ -223,10 +249,14 @@ namespace Client_PC.UI
         {
             return Children.SingleOrDefault(p => p.element.Id == id).element;
         }
-        public void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch)
         {
             foreach (var child in Children)
             {
+                if (child.name != null && child.name.Equals("gridW"))
+                {
+                    int z = 0;
+                }
                 child.element.Draw(spriteBatch);
             }
         }

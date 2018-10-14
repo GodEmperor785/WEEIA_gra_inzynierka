@@ -61,6 +61,10 @@ namespace Client_PC.UI
             }
         }
 
+        public void ResizeChildren()
+        {
+            grid.ResizeChildren(Width,Height);
+        }
         public void Add(GuiElement element, string name, Object parent)
         {
             if (element is Button)
