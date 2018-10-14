@@ -7,14 +7,18 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	[Serializable]
 	public class Fleet {
+		private int id;
+		private string name;
 		private Player owner;
 		private List<Ship> ships;
 
 		public Fleet() {}
 
-		public Fleet(Player owner, List<Ship> ships) {
+		public Fleet(int id, string name, Player owner, List<Ship> ships) {
 			this.Owner = owner;
 			this.Ships = ships;
+			this.Name = name;
+			this.Id = id;
 		}
 
 		public int GetFleetPointsSum() {
@@ -32,6 +36,8 @@ namespace GAME_connection {
 
 		public Player Owner { get => owner; set => owner = value; }
 		public List<Ship> Ships { get => ships; set => ships = value; }
+		public string Name { get => name; set => name = value; }
+		public int Id { get => id; set => id = value; }
 	}
 
 }

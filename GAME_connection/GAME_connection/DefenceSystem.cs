@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	[Serializable]
 	public class DefenceSystem {
+		private int id;
 		private string name;
 		private Faction faction;
 		private double defenceValue;    //how much damage can be blocked (base value modified by modifers)
@@ -15,7 +16,8 @@ namespace GAME_connection {
 
 		public DefenceSystem() { }
 
-		public DefenceSystem(string name, Faction faction, double defenceValue, DefenceSystemType systemType, double kineticDefMult, double laserDefMult, double missileDefMult) {
+		public DefenceSystem(int id, string name, Faction faction, double defenceValue, DefenceSystemType systemType, double kineticDefMult, double laserDefMult, double missileDefMult) {
+			this.Id = id;
 			this.Name = name;
 			this.Faction = faction;
 			this.DefenceValue = defenceValue;
@@ -32,5 +34,6 @@ namespace GAME_connection {
 		public double DefenceValue { get => defenceValue; set => defenceValue = value; }
 		public DefenceSystemType SystemType { get => systemType; set => systemType = value; }
 		public Dictionary<WeaponType, double> DefMultAgainstWepTypeMap { get => defMultAgainstWepTypeMap; set => defMultAgainstWepTypeMap = value; }
+		public int Id { get => id; set => id = value; }
 	}
 }

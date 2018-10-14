@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	[Serializable]
 	public class Weapon {
+		private int id;
 		private string name;
 		private Faction faction;
 		private double damage;	//of one projectile
@@ -18,7 +19,8 @@ namespace GAME_connection {
 
 		public Weapon() { }
 
-		public Weapon(string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double apEffectivity, double rangeMultiplier, double chanceToHit) {
+		public Weapon(int id, string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double apEffectivity, double rangeMultiplier, double chanceToHit) {
+			this.Id = id;
 			this.Name = name;
 			this.Faction = faction;
 			this.Damage = damage;
@@ -37,5 +39,6 @@ namespace GAME_connection {
 		public double RangeMultiplier { get => rangeMultiplier; set => rangeMultiplier = value; }
 		public double ChanceToHit { get => chanceToHit; set => chanceToHit = value; }
 		public double ApEffectivity { get => apEffectivity; set => apEffectivity = value; }
+		public int Id { get => id; set => id = value; }
 	}
 }

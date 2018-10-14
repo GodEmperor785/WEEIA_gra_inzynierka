@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	[Serializable]
 	public class Ship {
+		private int id;
 		private string name;
 		private Faction faction;
 		private int cost;
@@ -19,7 +20,8 @@ namespace GAME_connection {
 
 		public Ship() { }
 
-		public Ship(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences) {
+		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences) {
+			this.id = id;
 			this.name = name;
 			this.faction = faction;
 			this.cost = cost;
@@ -40,5 +42,6 @@ namespace GAME_connection {
 		public List<DefenceSystem> Defences { get => defences; set => defences = value; }
 		public double Size { get => size; set => size = value; }
 		public double Armor { get => armor; set => armor = value; }
+		public int Id { get => id; set => id = value; }
 	}
 }

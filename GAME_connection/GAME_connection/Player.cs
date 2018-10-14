@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	[Serializable]
 	public class Player {
+		private int id;
 		private string username;
 		private string password;
 		private int experience;
@@ -19,7 +20,8 @@ namespace GAME_connection {
 			this.Password = password;
 		}
 
-		public Player(string username, string password, int experience, int maxFleetPoints) {
+		public Player(int id, string username, string password, int experience, int maxFleetPoints) {
+			this.Id = id;
 			this.Username = username;
 			this.Password = password;
 			this.Experience = experience;
@@ -30,5 +32,6 @@ namespace GAME_connection {
 		public string Password { get => password; set => password = value; }
 		public int Experience { get => experience; set => experience = value; }
 		public int MaxFleetPoints { get => maxFleetPoints; set => maxFleetPoints = value; }
+		public int Id { get => id; set => id = value; }
 	}
 }
