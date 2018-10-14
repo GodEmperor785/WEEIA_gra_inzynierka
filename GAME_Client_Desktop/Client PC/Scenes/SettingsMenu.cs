@@ -18,8 +18,7 @@ namespace Client_PC.Scenes
         private GUI Gui;
         private bool AbleToClick = false;
         private int i = 0;
-        private float OldTime;
-        private float DeltaSeconds;
+        private Dropdown drop;
         public SettingsMenu()
         {
             Clickable = new List<IClickable>();
@@ -33,7 +32,7 @@ namespace Client_PC.Scenes
             {
                 Text = "Resolution"
             };
-            Dropdown drop = new Dropdown(new Point(0,0),100,30,Game1.self.GraphicsDevice, Gui);
+             drop = new Dropdown(new Point(0,0),100,30,Game1.self.GraphicsDevice, Gui);
             Button button = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
             {
                 Text = "Back",Id = 0
@@ -54,6 +53,7 @@ namespace Client_PC.Scenes
                 Text = "Save",
                 Id = 4
             };
+            buttonSave.clickEvent += onSave;
             Grid grid2 = new Grid();
             grid2.AddChild(button,0,1);
             grid2.AddChild(buttonSave, 0, 0);
@@ -77,24 +77,47 @@ namespace Client_PC.Scenes
             int z = 243123;
         }
 
+        public void onSave()
+        {
+            var element = drop.GetSelected();
+            int width = 800;
+            int height = 600;
+            if (element is Button)
+            {
+                Button button = (Button) element;
+                if (button.text.Equals("1280 x 720"))
+                {
+                    width = 1280;
+                    height = 720;
+                }
+                else if (button.text.Equals("1920 x 1080"))
+                {
+                    width = 1920;
+                    height = 1080;
+                }
+            }
+            Game1.self.graphics.PreferredBackBufferHeight = height;
+            Game1.self.graphics.PreferredBackBufferWidth = width;
+            Game1.self.graphics.ApplyChanges();
+        }
         public void OnExit()
         {
             Game1.self.state = Game1.State.MainMenu;
         }
         public void Update(GameTime gameTime)
         {
-            if (OldTime == 0)
-                OldTime = gameTime.TotalGameTime.Milliseconds;
-            DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
+            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
             var mouseState = Mouse.GetState();
-            if (DeltaSeconds > 150)
+            if (Game1.self.DeltaSeconds > 250)
             {
-                AbleToClick = true;
+                Game1.self.AbleToClick = true;
             }
-            if (mouseState.LeftButton == ButtonState.Pressed && AbleToClick)
+            grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
+            grid.UpdateP();
+            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
             {
-                DeltaSeconds = 0;
-                AbleToClick = false;
+                Game1.self.DeltaSeconds = 0;
+                Game1.self.AbleToClick = false;
                 int x = mouseState.X;
                 int y = mouseState.Y;
                 i++;

@@ -228,6 +228,8 @@ namespace Client_PC.UI
                     element.element.Height = (int) RowsSize[element.row];
                 }
             }
+
+            UpdateChildren();
         }
         public void ResizeChildren(int width,int height)
         {
@@ -236,6 +238,8 @@ namespace Client_PC.UI
                 child.element.Width = width;
                 child.element.Height = height;
             }
+
+            UpdateChildren();
         }
         public GuiElement GetChild(int row, int column)
         {

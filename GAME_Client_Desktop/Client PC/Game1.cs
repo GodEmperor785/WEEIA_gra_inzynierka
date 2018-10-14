@@ -23,6 +23,8 @@ namespace Client_PC
         GraphicsDevice gd;
         private MainMenu mainMenu;
         private SettingsMenu settingsMenu;
+        public float DeltaSeconds;
+        public bool AbleToClick;
         internal object graphicsDevice;
 
         public Game1()

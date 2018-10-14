@@ -16,6 +16,7 @@ namespace Client_PC.Scenes
         private GUI Gui;
         private Grid grid;
         private List<IClickable> Clickable;
+        private bool AbleToClick;
         public MainMenu()
         {
             Clickable = new List<IClickable>();
@@ -47,6 +48,7 @@ namespace Client_PC.Scenes
             z2.clickEvent += GoToSettings;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
+            grid.ResizeChildren();
         }
 
         public void ExitClick()
@@ -60,9 +62,16 @@ namespace Client_PC.Scenes
         }
         public void Update(GameTime gameTime)
         {
-            var mouseState = Mouse.GetState();
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
+            if (Game1.self.DeltaSeconds > 250)
             {
+                Game1.self.AbleToClick = true;
+            }
+            var mouseState = Mouse.GetState();
+            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
+            {
+                Game1.self.DeltaSeconds = 0;
+                Game1.self.AbleToClick = false;
                 int x = mouseState.X;
                 int y = mouseState.Y;
                 Point xy = new Point(x,y);
@@ -70,6 +79,8 @@ namespace Client_PC.Scenes
                 if(button != null)
                     button.OnClick();
             }
+            grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
+            grid.UpdateP();
         }
         public void Draw(GameTime gameTime)
         {
