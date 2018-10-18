@@ -32,9 +32,11 @@ namespace Client_PC.Utilities
                             {
                                 if (UsableKeys.Contains(key))
                                 {
-                                    inputBox.Text += key.ToString();
+                                    if (keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift))
+                                        inputBox.Text += ((char)key).ToString().ToUpper();
+                                    else
+                                        inputBox.Text += ((char)key).ToString().ToLower();
                                 }
-
                                 if (key == Keys.Space)
                                 {
                                     inputBox.Text += " ";

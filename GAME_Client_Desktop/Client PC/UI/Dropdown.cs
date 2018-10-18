@@ -113,6 +113,7 @@ namespace Client_PC.UI
             }
             else
             {
+                spriteBatch.Begin();
                 spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary,
                     Color.White);
                 if (IdSelected != -1)
@@ -128,6 +129,7 @@ namespace Client_PC.UI
                     }
                     
                 }
+                spriteBatch.End();
             }
         }
 

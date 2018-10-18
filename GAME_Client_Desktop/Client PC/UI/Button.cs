@@ -59,9 +59,10 @@ namespace Client_PC.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-
+            spriteBatch.Begin();
             spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
             spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
+            spriteBatch.End();
         }
 
         public void OnClick()
