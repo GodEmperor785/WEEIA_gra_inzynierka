@@ -17,12 +17,13 @@ namespace Client_PC
             LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu
         }
         public static Game1 self;
-        public State state = State.MainMenu;
+        public State state = State.LoginMenu;
         public GraphicsDeviceManager graphics;
         public SpriteBatch spriteBatch;
         GraphicsDevice gd;
         private MainMenu mainMenu;
         private SettingsMenu settingsMenu;
+        private LoginScene loginScene;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal object graphicsDevice;
@@ -51,6 +52,8 @@ namespace Client_PC
             settingsMenu = new SettingsMenu();
             settingsMenu.Initialize(Content);
             mainMenu.Initialize(Content);
+            loginScene = new LoginScene();
+            loginScene.Initialize(Content);
             base.Initialize();
         }
 
@@ -92,6 +95,9 @@ namespace Client_PC
                 case State.OptionsMenu:
                     settingsMenu.Update(gameTime);
                     break;
+                case State.LoginMenu:
+                    loginScene.Update(gameTime);
+                    break;
             }
             base.Update(gameTime);
         }
@@ -109,6 +115,9 @@ namespace Client_PC
                     break;
                 case State.OptionsMenu:
                     settingsMenu.Draw(gameTime);
+                    break;
+                case State.LoginMenu:
+                    loginScene.Draw(gameTime);
                     break;
             }
             base.Draw(gameTime);

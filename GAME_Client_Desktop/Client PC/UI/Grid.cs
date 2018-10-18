@@ -21,6 +21,7 @@ namespace Client_PC.UI
             public int column;
             public int row;
             public string name;
+            public int columnWidth = 1;
         }
         public Rectangle Boundary { get; set; }
 
@@ -123,6 +124,20 @@ namespace Client_PC.UI
             UpdateChildren();
         }
 
+        public void AddChild(GuiElement element, int row, int column, int columnWidth)
+        {
+            Child ch = new Child
+            {
+                element = element,
+                column = column,
+                row = row,
+                columnWidth = columnWidth
+            };
+            ch.id = Children.Count;
+            Children.Add(ch);
+            Update();
+            UpdateChildren();
+        }
         public void AddChild(GuiElement element, int row, int column, string name)
         {
             Child ch = new Child
@@ -161,6 +176,8 @@ namespace Client_PC.UI
         {
             float[] ColumnsSiz = new float[Columns];
             float[] RowsSiz = new float[Rows];
+            float[] columnMaxWidth = new float[Columns];
+            List<Child> multiElements = new List<Child>();
             for(int i = 0; i < Rows; i++)
             {
                 List<GuiElement> elements = new List<GuiElement>();
@@ -174,16 +191,28 @@ namespace Client_PC.UI
             }
             for (int i = 0; i < Columns; i++)
             {
-                List<GuiElement> elements = new List<GuiElement>();
-                Children.Where(p => p.column == i).ToList().ForEach(p => elements.Add(p.element));
-                int maxWidth = 0;
+
+                var elements = Children.Where(p => p.column == i).ToList();
                 if (elements.Count > 0)
                 {
-                    maxWidth = elements.Max(p => p.Width);
+                    foreach (var element in elements)
+                    {
+                        if(element.element.Width > columnMaxWidth[i])
+                        {
+                            if (element.columnWidth > 1)
+                            {
+                                multiElements.Add(element);
+                            }
+                            else
+                            {
+                                columnMaxWidth[i] = element.element.Width;
+                            }
+                        }
+                    }
                 }
-                ColumnsSiz[i] = (maxWidth);
             }
 
+            ColumnsSiz = columnMaxWidth;
             RowsSize = RowsSiz.ToList();
             ColumnsSize = ColumnsSiz.ToList();
         }
@@ -233,7 +262,19 @@ namespace Client_PC.UI
                 var elements = Children.Where(p => p.row == i).ToList();
                 foreach (var element in elements)
                 {
-                    element.element.Width = (int)ColumnsSize[element.column];
+                    for (int j = 1; j <= element.columnWidth; j++)
+                    {
+                        if(j == 1)
+                            element.element.Width = (int)ColumnsSize[element.column];
+
+                        else if (Columns >=  (element.column + j))
+                        {
+                            element.element.Width += (int) ColumnsSize[element.column + j - 1];
+                            element.element.Width += columnOffset;
+                        }
+                            
+                    }
+                    //element.element.Width = (int)ColumnsSize[element.column];
                     element.element.Height = (int) RowsSize[element.row];
                 }
             }
