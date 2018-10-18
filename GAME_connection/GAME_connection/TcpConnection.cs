@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 
 namespace GAME_connection {
 	/// <summary>
@@ -41,6 +42,7 @@ namespace GAME_connection {
 		private Thread connectionTester = null;	//thread to periodically test connection - will be used on client - true in constructor
 		private bool keepReceiving;
 		private bool keepTestingConnection;
+		private AutoResetEvent messageReceivedEvent;
 
 		private bool remotePlannedDisconnect;
 		private bool connectionEnded;
@@ -59,6 +61,7 @@ namespace GAME_connection {
 			this.RemoteIpAddress = ipData.Address.ToString();
 			this.RemotePortNumber = ipData.Port;
 			this.serializer = new BinaryFormatter();
+			this.messageReceivedEvent = new AutoResetEvent(false);
 
 			keepReceiving = true;
 			RemotePlannedDisconnect = false;
@@ -103,15 +106,11 @@ namespace GAME_connection {
 		/// <returns></returns>
 		public GamePacket GetReceivedPacket() {
 			int queueCount;
-			while (true) {
-				queueCount = QueueCount;
-				if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
-				if (queueCount > 0) {
-					lock (queueLock) {
-						return receivedPackets.Dequeue();
-					}
-				}
-				Thread.Sleep(pollingIntervalMilis);
+			messageReceivedEvent.WaitOne();     //wait until there is a message
+			queueCount = QueueCount;
+			if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
+			lock (queueLock) {
+				return receivedPackets.Dequeue();
 			}
 		}
 
@@ -121,20 +120,16 @@ namespace GAME_connection {
 		/// <param name="timeoutMilis">timeout in miliseconds for receive operation</param>
 		/// <returns></returns>
 		public GamePacket GetReceivedPacket(int timeoutMilis, int playerNumber) {
-			int elapsedTime = 0;
 			int queueCount;
-			while (elapsedTime < timeoutMilis) {
-				queueCount = QueueCount;
-				if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive with timeout");
-				if (queueCount > 0) {
-					lock (queueLock) {
-						return receivedPackets.Dequeue();
-					}
+			messageReceivedEvent.WaitOne(timeoutMilis);     //wait until there is a message with timeout
+			queueCount = QueueCount;
+			if (queueCount > 0) {
+				lock (queueLock) {
+					return receivedPackets.Dequeue();
 				}
-				Thread.Sleep(pollingIntervalMilis);
-				elapsedTime += pollingIntervalMilis;
 			}
-			throw new ReceiveTimeoutException(playerNumber);
+			else if (queueCount == 0 && connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive with timeout");
+			else throw new ReceiveTimeoutException(playerNumber);
 		}
 
 		private int QueueCount {
@@ -160,6 +155,7 @@ namespace GAME_connection {
 					else {
 						lock (queueLock) {
 							receivedPackets.Enqueue(receivedPacket);
+							messageReceivedEvent.Set();
 						}
 					}
 				} catch(IOException ex) {
@@ -175,6 +171,7 @@ namespace GAME_connection {
 				}
 				//than block on another read operation
 			}
+			this.Disconnect();
 		}
 
 		/// <summary>
@@ -256,6 +253,7 @@ namespace GAME_connection {
 		public void SendDisconnect() {
 			Send(new GamePacket(OperationType.DISCONNECT, null));
 			RemotePlannedDisconnect = true;
+			messageReceivedEvent.Set();
 			Thread.Sleep(100);
 			this.Dispose();
 		}
@@ -265,6 +263,7 @@ namespace GAME_connection {
 		/// </summary>
 		public void Disconnect() {
 			RemotePlannedDisconnect = true;
+			messageReceivedEvent.Set();
 			this.Dispose();
 		}
 
@@ -276,8 +275,11 @@ namespace GAME_connection {
 			KeepReceiving = false;
 			TcpClient.Dispose();
 
-			if(connectionTester != null) connectionTester.Join();
-			receiver.Join();
+			Console.WriteLine("0");
+			if (connectionTester != null) connectionTester.Join();
+			Console.WriteLine("1");
+			if (receiver.ManagedThreadId != Thread.CurrentThread.ManagedThreadId) receiver.Join();
+			Console.WriteLine("2");
 		}
 		#endregion
 

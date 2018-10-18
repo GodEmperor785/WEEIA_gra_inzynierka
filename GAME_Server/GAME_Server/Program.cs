@@ -48,12 +48,13 @@ namespace GAME_Server {
 				string msg = "server test msg";
 				client.Send(new GamePacket(OperationType.LOGIN, msg));
 
-				/*Console.WriteLine("Trying to receive with timeout...");
+				Console.WriteLine("Trying to receive with timeout...");
 				try {
 					client.GetReceivedPacket(2000, 1);
 				} catch (ReceiveTimeoutException e) {
 					Console.WriteLine("Failed to receive with timeout. Disconnected player number: " + e.PlayerNumber);
-				}*/
+				}
+
 				Console.WriteLine("Trying to receive complex packet...");
 				packet = client.GetReceivedPacket();
 				Fleet fleet = (Fleet)packet.Packet;
@@ -71,7 +72,7 @@ namespace GAME_Server {
 				//Thread.Sleep(1000);
 				//client.Dispose();
 			} catch(ConnectionEndedException ex) {
-				Console.WriteLine("Exception: " + ex.Message);
+				Console.WriteLine("Exception: " + ex.Message + "Exception type: " + ex.ToString());
 			}
 			Console.WriteLine("Test end");
 		}
