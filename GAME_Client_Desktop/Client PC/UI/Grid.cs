@@ -209,11 +209,20 @@ namespace Client_PC.UI
             foreach (var child in Children)
             {
                 child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),this.Origin.Y + (int)RowOffset(child.row));
-                child.element.Update();
+                
                 if (child.element is Grid)
                 {
                     Grid g = (Grid) child.element;
                     g.UpdateP();
+                }
+                else
+                {
+                    if (child.element is IHasText)
+                    {
+                        IHasText element = (IHasText) child.element;
+                        element.Update();
+                    }
+                    child.element.Update();
                 }
             }
         }

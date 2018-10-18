@@ -11,11 +11,12 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Client_PC.UI
 {
     class Button : GuiElement, IClickable, IHasText
-    { 
+    {
+        private Vector2 textPosition;
         public Vector2 TextPosition
         {
-            get;
-            set;
+            get { return textPosition; }
+            set { textPosition = value; }
         }
 
         public string text;
@@ -52,8 +53,7 @@ namespace Client_PC.UI
         }
         public override void Update()
         {
-            Vector2 z = Font.MeasureString(text);
-            TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
+            Update(text, ref textPosition, Font);
         }
 
 
@@ -61,7 +61,8 @@ namespace Client_PC.UI
         {
             spriteBatch.Begin();
             spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
-            spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
+            if (!String.IsNullOrEmpty(text))
+                spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
             spriteBatch.End();
         }
 

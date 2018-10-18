@@ -42,8 +42,6 @@ namespace Client_PC.UI
             Active = true;
             ActiveChangeable = false;
             IdSelected = -1;
-            Label lb = new Label(new Point(0,0),width,height,device,gui,gui.smallFont );
-            //grid.AddChild(lb,"new");
         }
         public override void Update()
         {

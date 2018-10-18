@@ -28,9 +28,9 @@ namespace Client_PC.Scenes
         {
             Gui = new GUI(Content);
             grid = new Grid();
-            Label label1 = new Label(new Point(0, 0), 100, 25, Game1.self.GraphicsDevice, Gui, Gui.mediumFont)
+            Label label1 = new Label(new Point(0, 0), 100, 55, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
-                Text = "Resolution"
+                Text = "Resolution w cholere dlugi az prawie ze lorem ipsum ale kogo by to obchodzilo wazne ze wrapuje text chyba co nie?"
             };
              drop = new Dropdown(new Point(0,0),100,30,Game1.self.GraphicsDevice, Gui);
             Button button = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)

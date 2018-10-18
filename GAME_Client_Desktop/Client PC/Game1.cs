@@ -27,6 +27,7 @@ namespace Client_PC
         public bool AbleToClick;
         internal object graphicsDevice;
         internal IClickable FocusedElement;
+        public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
