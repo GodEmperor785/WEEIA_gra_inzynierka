@@ -33,22 +33,22 @@ namespace Client_PC.Scenes
                 Text = "Resolution"
             };
              drop = new Dropdown(new Point(0,0),100,30,Game1.self.GraphicsDevice, Gui);
-            Button button = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
+            Button button = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
                 Text = "Back",Id = 0
             };
-            Button dropElement1 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont)
+            Button dropElement1 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont,true)
             {
                 Text = "1920 x 1080",
                 Id = 1
             };
             drop.Add(dropElement1,"fullHd", drop);
-            Button dropElement2 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont)
+            Button dropElement2 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont,true)
             {
                 Text = "1280 x 720",
                 Id = 2
             };
-            Button buttonSave = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
+            Button buttonSave = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
                 Text = "Save",
                 Id = 4
@@ -125,6 +125,8 @@ namespace Client_PC.Scenes
                 Point xy = new Point(x, y);
                 IClickable button = Clickable.Where(p=> p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
                 if (button != null)
+                {
+                    Game1.self.FocusedElement = button;
                     if (button is Dropdown)
                     {
                         Dropdown d = (Dropdown) button;
@@ -151,6 +153,11 @@ namespace Client_PC.Scenes
                     {
                         button.OnClick();
                     }
+                }
+                else
+                {
+                    Game1.self.FocusedElement = null;
+                }
 
                 if (!dropClicked)
                 {

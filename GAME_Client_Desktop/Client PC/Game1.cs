@@ -26,7 +26,7 @@ namespace Client_PC
         public float DeltaSeconds;
         public bool AbleToClick;
         internal object graphicsDevice;
-
+        internal IClickable FocusedElement;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
+using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,6 +18,7 @@ namespace Client_PC.Scenes
         private Grid grid;
         private List<IClickable> Clickable;
         private bool AbleToClick;
+        private Keys[] LastPressedKeys;
         public MainMenu()
         {
             Clickable = new List<IClickable>();
@@ -25,18 +27,21 @@ namespace Client_PC.Scenes
         public void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            Button z = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
+            Button z = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
                 Text = "z1 button"
             };
-            Button z2 = new Button(new Point(100, 200), 70, 125, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
+            Button z2 = new Button(new Point(100, 200), 70, 125, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
                 Text = "Settings"
             };
-            Button z3 = new Button(new Point(100, 200), 200, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont)
+            Button z3 = new Button(new Point(100, 200), 200, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
                 Text = "Exit"
             };
+            InputBox inputBox = new InputBox(new Point(0,0),100,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
+            inputBox.TextLimit = 30;
+            Clickable.Add(inputBox);
             Clickable.Add(z);
             Clickable.Add(z2);
             Clickable.Add(z3);
@@ -44,6 +49,7 @@ namespace Client_PC.Scenes
             grid.AddChild(z, 0, 0);
             grid.AddChild(z2, 1, 0);
             grid.AddChild(z3,2,0);
+            grid.AddChild(inputBox,4,0);
             z3.clickEvent += ExitClick;
             z2.clickEvent += GoToSettings;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
@@ -68,6 +74,8 @@ namespace Client_PC.Scenes
                 Game1.self.AbleToClick = true;
             }
             var mouseState = Mouse.GetState();
+            var keyboardState = Keyboard.GetState();
+            Utils.UpdateKeyboard(keyboardState,ref LastPressedKeys);
             if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
             {
                 Game1.self.DeltaSeconds = 0;
@@ -76,8 +84,15 @@ namespace Client_PC.Scenes
                 int y = mouseState.Y;
                 Point xy = new Point(x,y);
                 IClickable button = Clickable.SingleOrDefault(p=> p.GetBoundary().Contains(xy));
-                if(button != null)
+                if (button != null)
+                {
+                    Game1.self.FocusedElement = button;
                     button.OnClick();
+                }
+                else
+                {
+                    Game1.self.FocusedElement = null;
+                }
             }
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();

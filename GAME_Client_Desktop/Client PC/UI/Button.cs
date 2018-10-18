@@ -41,12 +41,14 @@ namespace Client_PC.UI
         public bool Active { get; set; }
         public object Parent { get; set; }
         public bool ActiveChangeable { get; set; }
+        public bool TextWrappable { get; set; }
 
         public event ElementClickedInt clickEventInt;
-        public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font) : base(origin,width,height,device,gui)
+        public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin,width,height,device,gui)
         {
             Font = font;
             ActiveChangeable = true;
+            TextWrappable = wrapable;
         }
         public override void Update()
         {

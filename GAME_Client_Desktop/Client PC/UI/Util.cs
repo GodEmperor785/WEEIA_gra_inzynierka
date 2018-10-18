@@ -20,7 +20,25 @@ namespace Client_PC.UI
             for (int pixel = 0; pixel < data.Count(); pixel++)
             {
                 //the function applies the color according to the specified pixel
-                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height);
+                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height, false);
+                // data[pixel] = paint(pixel);
+            }
+
+            //set the color
+            texture.SetData(data);
+            return texture;
+        }
+        public static Texture2D CreateTextureHollow(GraphicsDevice device, int width, int height, Func<int, Color> paint)
+        {
+            //initialize a texture
+            Texture2D texture = new Texture2D(device, width, height);
+
+            //the array holds the color for each pixel in the texture
+            Color[] data = new Color[width * height];
+            for (int pixel = 0; pixel < data.Count(); pixel++)
+            {
+                //the function applies the color according to the specified pixel
+                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height, true);
                 // data[pixel] = paint(pixel);
             }
 
@@ -29,7 +47,7 @@ namespace Client_PC.UI
             return texture;
         }
 
-        private static Color SetColor(Point position, int width, int height)
+        private static Color SetColor(Point position, int width, int height, bool hollow)
         {
             
             if (position.X < 10)
@@ -80,7 +98,15 @@ namespace Client_PC.UI
             }
             else
             {
-                return new Color(100,100,100,255);
+                if (hollow)
+                {
+                    return new Color(240, 240, 240, 255);
+                }
+                else
+                {
+                    return new Color(100,100,100,255);
+                    
+                }
             }
 
 

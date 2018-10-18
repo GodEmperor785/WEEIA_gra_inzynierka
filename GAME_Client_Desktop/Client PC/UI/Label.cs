@@ -32,6 +32,7 @@ namespace Client_PC.UI
         }
 
         public SpriteFont Font { get ; set ; }
+        public bool TextWrappable { get; set; }
 
         public Label(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font) : base(origin, width, height, device, gui)
         {
