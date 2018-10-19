@@ -6,15 +6,31 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 using GAME_connection;
 
 namespace GAME_Server {
-	class Program {
+	internal class Program {
 		private static int port = TcpConnection.DEFAULT_PORT;
 		private static string ip = "127.0.0.1";
 
+		//database specific fields and properties
+		private static IGameDataBase gameDataBase;
+		private static List<Ship> allShips;
+		private static List<Faction> allFactions;
+		private static BaseModifiers baseModifiers;
+
+		internal static IGameDataBase GameDataBase { get => gameDataBase; }
+		public static List<Ship> AllShips { get => allShips; }
+		public static List<Faction> AllFactions { get => allFactions; }
+		public static BaseModifiers BaseModifiers { get => baseModifiers; }
+
+		//thread management specific fields and properties
+		private static List<Thread> userThreads = new List<Thread>();
+
 		static void Main(string[] args) {
-			List<Thread> threads = new List<Thread>();
+			InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
 			TcpListener listener = new TcpListener(ipAddress, port);
@@ -28,8 +44,37 @@ namespace GAME_Server {
 				Console.WriteLine("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
 				Thread t = new Thread(new ParameterizedThreadStart(Test));
-				threads.Add(t);
+				//UserThread userThread = new UserThread(gameClient);
+				//Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
+				userThreads.Add(t);
 				t.Start(gameClient);
+			}
+		}
+
+		/// <summary>
+		/// Reads basic game data from DB into memory. Does not read player and fleet data, these should be read by user threads
+		/// </summary>
+		private static void InitilizeGameDataFromDB() {
+			gameDataBase = new InMemoryGameDataBase();
+			baseModifiers = GameDataBase.GetBaseModifiers();
+			allFactions = GameDataBase.GetAllFactions();
+			allShips = GameDataBase.GetAllShips();
+		}
+
+		/// <summary>
+		/// performs deep cloning of serializable object. If object is not serializable throws <see cref="ArgumentException"/>
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="objectToClone"></param>
+		/// <returns></returns>
+		internal static T CloneObject<T>(T objectToClone) {
+			if (!typeof(T).IsSerializable) throw new ArgumentException("Type of object must be serializable");
+			else if (objectToClone == null) return default(T);
+			using (var tempStream = new MemoryStream()) {
+				var serializer = new BinaryFormatter();
+				serializer.Serialize(tempStream, objectToClone);
+				tempStream.Position = 0;
+				return (T)serializer.Deserialize(tempStream);
 			}
 		}
 
@@ -60,6 +105,9 @@ namespace GAME_Server {
 				Fleet fleet = (Fleet)packet.Packet;
 				Console.WriteLine("there are " + fleet.Ships.Count + " ships in the received fleet");
 
+				Fleet clonedFleet = CloneObject(fleet);
+				Console.WriteLine("there are " + fleet.Ships.Count + " ships in the CLONED fleet");
+
 				Console.WriteLine("Waiting for client to send DISCONNECT...");
 				packet = client.GetReceivedPacket();
 				if (packet.OperationType == OperationType.DISCONNECT) {
@@ -78,5 +126,48 @@ namespace GAME_Server {
 		}
 
 	}
+
+	#region User Thread
+	//-------------------------------------------
+	//---------USER THREAD-----------------------
+	//-------------------------------------------
+	internal class UserThread {
+		private TcpConnection client;
+		private Player user;
+
+		internal UserThread(TcpConnection client) {
+			this.client = client;
+		}
+
+
+		internal void RunUserThread() {
+
+		}
+
+	}
+	#endregion
+
+	#region Game Room Thread
+	//-------------------------------------------
+	//---------GAME ROOM THREAD------------------
+	//-------------------------------------------
+	internal class GameRoomThread {
+		private Player player1;     //host
+		private Player player2;
+
+		private TcpConnection player1Conn;	//host
+		private TcpConnection player2Conn;
+
+		internal GameRoomThread(TcpConnection hostConnection, Player host) {
+			player1Conn = hostConnection;
+			player1 = host;
+		}
+
+		internal void RunGameThread() {
+
+		}
+
+	}
+	#endregion
 
 }
