@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
 {
-    class LoginScene
+    class LoginMenu
     {
         private GUI Gui;
         private Grid grid;
@@ -19,7 +19,7 @@ namespace Client_PC.Scenes
         private bool AbleToClick;
         private Keys[] LastPressedKeys;
 
-        public LoginScene()
+        public LoginMenu()
         {
             Clickable = new List<IClickable>();
         }
@@ -117,7 +117,7 @@ namespace Client_PC.Scenes
 
         public void RegisterClick()
         {
-
+            Game1.self.state = Game1.State.RegisterMenu;
         }
 
         

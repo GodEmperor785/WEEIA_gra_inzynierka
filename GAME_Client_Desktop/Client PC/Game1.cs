@@ -14,7 +14,7 @@ namespace Client_PC
     {
         public enum State
         {
-            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu
+            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu
         }
         public static Game1 self;
         public State state = State.LoginMenu;
@@ -23,7 +23,8 @@ namespace Client_PC
         GraphicsDevice gd;
         private MainMenu mainMenu;
         private SettingsMenu settingsMenu;
-        private LoginScene loginScene;
+        private LoginMenu loginMenu;
+        private RegisterMenu registerMenu;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal object graphicsDevice;
@@ -52,8 +53,10 @@ namespace Client_PC
             settingsMenu = new SettingsMenu();
             settingsMenu.Initialize(Content);
             mainMenu.Initialize(Content);
-            loginScene = new LoginScene();
-            loginScene.Initialize(Content);
+            loginMenu = new LoginMenu();
+            loginMenu.Initialize(Content);
+            registerMenu = new RegisterMenu();
+            registerMenu.Initialize(Content);
             base.Initialize();
         }
 
@@ -96,7 +99,10 @@ namespace Client_PC
                     settingsMenu.Update(gameTime);
                     break;
                 case State.LoginMenu:
-                    loginScene.Update(gameTime);
+                    loginMenu.Update(gameTime);
+                    break;
+                case State.RegisterMenu:
+                    registerMenu.Update(gameTime);
                     break;
             }
             base.Update(gameTime);
@@ -117,7 +123,10 @@ namespace Client_PC
                     settingsMenu.Draw(gameTime);
                     break;
                 case State.LoginMenu:
-                    loginScene.Draw(gameTime);
+                    loginMenu.Draw(gameTime);
+                    break;
+                case State.RegisterMenu:
+                    registerMenu.Draw(gameTime);
                     break;
             }
             base.Draw(gameTime);
