@@ -21,6 +21,12 @@ namespace GAME_Server {
 		private static List<Faction> allFactions;
 		private static BaseModifiers baseModifiers;
 
+		//http://www.entityframeworktutorial.net/code-first/database-initialization-strategy-in-code-first.aspx
+		//https://dev.mysql.com/doc/connector-net/en/connector-net-entityframework60.html
+		//https://stackoverflow.com/questions/50631210/mysql-with-entity-framework-6
+		//sciagnij mysql connector i zainstaluj, potem dodaj referencje
+		//nuget package manager -> browse -> MySQL i dodaj MySQL.Data.Entity (zwykly MySQL.Data powinien byc dodany wczesniej przy instalacji connectora i dodaniu referencji)
+
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
 		public static List<Ship> AllShips { get => allShips; }
 		public static List<Faction> AllFactions { get => allFactions; }
