@@ -14,8 +14,15 @@ namespace Client_PC.UI
         public string Text
         {
             get { return text;}
-            set { text = value; }
+            set
+            {
+                text = value;
+                if (Font.MeasureString(text).X < TextBox.Width)
+                    textToShow = text;
+            }
         }
+
+        private string textToShow;
         public Vector2 TextPosition { get; set; }
         public SpriteFont Font { get; set; }
         public bool Active { get; set; }
@@ -36,11 +43,12 @@ namespace Client_PC.UI
             Font = font;
             ActiveChangeable = true;
             text = "";
+            textToShow = "";
             TextWrappable = wrapable;
         }
         public override void Update()
         {
-            Vector2 z = Font.MeasureString(text);
+            Vector2 z = Font.MeasureString(textToShow);
             TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
         }
         public void OnClick()
@@ -52,7 +60,7 @@ namespace Client_PC.UI
             spriteBatch.Begin();
             spriteBatch.Draw(Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
             if(!String.IsNullOrEmpty(text))
-                spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
+                spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
             spriteBatch.End();
         }
     }

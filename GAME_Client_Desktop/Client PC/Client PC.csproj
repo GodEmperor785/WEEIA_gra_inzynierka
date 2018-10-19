@@ -48,7 +48,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenes\DeckMenu.cs" />
+    <Compile Include="Scenes\LoginMenu.cs" />
     <Compile Include="Scenes\MainMenu.cs" />
+    <Compile Include="Scenes\RegisterMenu.cs" />
     <Compile Include="Scenes\SettingsMenu.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="UI\Dropdown.cs" />
