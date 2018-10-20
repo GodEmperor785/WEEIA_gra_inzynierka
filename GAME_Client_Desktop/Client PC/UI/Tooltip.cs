@@ -26,7 +26,6 @@ namespace Client_PC.UI
         public SpriteFont Font { get; set; }
         public bool TextWrappable { get; set; }
         public bool ActiveChangeable { get; set; }
-        public bool ToDraw;
         public Tooltip( int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
         {
             Font = font;
@@ -34,7 +33,6 @@ namespace Client_PC.UI
             text = "";
             textToShow = "";
             TextWrappable = wrapable;
-            ToDraw = false;
         }
         public override void Update()
         {
@@ -45,6 +43,22 @@ namespace Client_PC.UI
         {
             Origin = origin;
             Update(text, ref textPosition, Font);
+        }
+        protected override void Update(string text, ref Vector2 TextPosition, SpriteFont Font)
+        {
+            if (text != null)
+            {
+                Vector2 z = Font.MeasureString(text);
+                if (z.X < Width)
+                {
+                    TextPosition = new Vector2(((TextBox.X + Width / 2.0f)) - z.X / 2.0f,
+                        (TextBox.Y) + Font.MeasureString("z").Y / 2.0f);
+                }
+                else
+                {
+                    TextPosition = new Vector2(((TextBox.X+ 3)), (TextBox.Y + Font.MeasureString("z").Y / 2.0f));
+                }
+            }
         }
         public override void Draw(SpriteBatch spriteBatch)
         {

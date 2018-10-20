@@ -27,6 +27,8 @@ namespace Client_PC
         private RegisterMenu registerMenu;
         public float DeltaSeconds;
         public bool AbleToClick;
+        internal Tooltip tooltipToDraw;
+        
         internal object graphicsDevice;
         internal IClickable FocusedElement;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
@@ -128,6 +130,11 @@ namespace Client_PC
                 case State.RegisterMenu:
                     registerMenu.Draw(gameTime);
                     break;
+            }
+
+            if (tooltipToDraw != null)
+            {
+                tooltipToDraw.Draw(spriteBatch);
             }
             base.Draw(gameTime);
         }

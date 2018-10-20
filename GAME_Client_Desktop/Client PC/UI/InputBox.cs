@@ -62,8 +62,6 @@ namespace Client_PC.UI
             if(!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
             spriteBatch.End();
-            if (Tooltip != null && Tooltip.ToDraw)
-                Tooltip.Draw(spriteBatch);
         }
     }
 }

@@ -128,8 +128,6 @@ namespace Client_PC.UI
                     
                 }
                 spriteBatch.End();
-                if (Tooltip != null && Tooltip.ToDraw)
-                    Tooltip.Draw(spriteBatch);
             }
         }
 

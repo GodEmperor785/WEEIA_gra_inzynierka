@@ -81,7 +81,7 @@ namespace Client_PC.UI
         {
 
         }
-        protected void Update(string text, ref Vector2 TextPosition, SpriteFont Font)
+        protected virtual void Update(string text, ref Vector2 TextPosition, SpriteFont Font)
         {
             if (text != null)
             {

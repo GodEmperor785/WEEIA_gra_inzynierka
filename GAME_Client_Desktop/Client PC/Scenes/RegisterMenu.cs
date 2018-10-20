@@ -120,7 +120,7 @@ namespace Client_PC.Scenes
             Point xy = new Point(x, y);
             foreach (var clickable in Clickable.Where(p => p.Tooltip != null).ToList())
             {
-                clickable.Tooltip.ToDraw = false;
+                Game1.self.tooltipToDraw = null;
             }
             
             IClickable button = Clickable.SingleOrDefault(p => p.GetBoundary().Contains(xy));
@@ -128,7 +128,7 @@ namespace Client_PC.Scenes
             {
                 if (button.Tooltip != null)
                 {
-                    button.Tooltip.ToDraw = true;
+                    Game1.self.tooltipToDraw = button.Tooltip;
                     button.Tooltip.Update(xy);
                 }
             }
