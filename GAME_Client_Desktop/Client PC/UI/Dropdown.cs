@@ -32,7 +32,7 @@ namespace Client_PC.UI
         public bool Active { get; set; }
         public object Parent { get; set; }
         public bool ActiveChangeable { get; set; }
-
+        public Tooltip Tooltip { get; set; }
         public Dropdown(Point origin, int width, int height, GraphicsDevice device, GUI gui) : base(origin,width,height,device,gui)
         {
             Children = new List<Child>();
@@ -128,6 +128,8 @@ namespace Client_PC.UI
                     
                 }
                 spriteBatch.End();
+                if (Tooltip != null && Tooltip.ToDraw)
+                    Tooltip.Draw(spriteBatch);
             }
         }
 

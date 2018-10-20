@@ -61,6 +61,7 @@
     <Compile Include="UI\IHasText.cs" />
     <Compile Include="UI\InputBox.cs" />
     <Compile Include="UI\Label.cs" />
+    <Compile Include="UI\Tooltip.cs" />
     <Compile Include="UI\Util.cs" />
     <Compile Include="Utilities\Utils.cs" />
   </ItemGroup>

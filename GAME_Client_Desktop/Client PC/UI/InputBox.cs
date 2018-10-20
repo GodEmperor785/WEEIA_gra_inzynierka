@@ -30,7 +30,7 @@ namespace Client_PC.UI
         public object Parent { get; set; }
         public int TextLimit { get; set; }
         public bool TextWrappable { get; set; }
-
+        public Tooltip Tooltip { get; set; }
         public Rectangle GetBoundary()
         {
             return Boundary;
@@ -62,6 +62,8 @@ namespace Client_PC.UI
             if(!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
             spriteBatch.End();
+            if (Tooltip != null && Tooltip.ToDraw)
+                Tooltip.Draw(spriteBatch);
         }
     }
 }

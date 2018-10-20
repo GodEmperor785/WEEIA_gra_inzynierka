@@ -43,7 +43,7 @@ namespace Client_PC.UI
         public object Parent { get; set; }
         public bool ActiveChangeable { get; set; }
         public bool TextWrappable { get; set; }
-
+        public Tooltip Tooltip { get; set; }
         public event ElementClickedInt clickEventInt;
         public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin,width,height,device,gui)
         {
@@ -64,6 +64,8 @@ namespace Client_PC.UI
             if (!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
             spriteBatch.End();
+            if(Tooltip!=null && Tooltip.ToDraw)
+                Tooltip.Draw(spriteBatch);
         }
 
         public void OnClick()

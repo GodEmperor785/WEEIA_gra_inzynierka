@@ -59,6 +59,22 @@ namespace Client_PC.Scenes
             {
                 TextLimit = 30
             };
+            Tooltip tooltipLogin = new Tooltip(200, 150, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Maximum 30 characters"
+            };
+
+            Tooltip tooltipPassword1 = new Tooltip(200, 150, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Maximum 30 characters"
+            };
+            Tooltip tooltipPassword2 = new Tooltip(200, 150, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Write your password once again."
+            };
+            loginInputBox.Tooltip = tooltipLogin;
+            passwordInputBox.Tooltip = tooltipPassword1;
+            passwordInputBox2.Tooltip = tooltipPassword2;
             Clickable.Add(registerButton);
             Clickable.Add(backButton);
             Clickable.Add(loginInputBox);
@@ -99,14 +115,27 @@ namespace Client_PC.Scenes
             var mouseState = Mouse.GetState();
             var keyboardState = Keyboard.GetState();
             Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
+            int x = mouseState.X;
+            int y = mouseState.Y;
+            Point xy = new Point(x, y);
+            foreach (var clickable in Clickable.Where(p => p.Tooltip != null).ToList())
+            {
+                clickable.Tooltip.ToDraw = false;
+            }
+            
+            IClickable button = Clickable.SingleOrDefault(p => p.GetBoundary().Contains(xy));
+            if (button != null)
+            {
+                if (button.Tooltip != null)
+                {
+                    button.Tooltip.ToDraw = true;
+                    button.Tooltip.Update(xy);
+                }
+            }
             if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
             {
                 Game1.self.DeltaSeconds = 0;
                 Game1.self.AbleToClick = false;
-                int x = mouseState.X;
-                int y = mouseState.Y;
-                Point xy = new Point(x, y);
-                IClickable button = Clickable.SingleOrDefault(p => p.GetBoundary().Contains(xy));
                 if (button != null)
                 {
                     Game1.self.FocusedElement = button;

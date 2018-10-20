@@ -23,7 +23,7 @@ namespace Client_PC.UI
         public Texture2D Texture { get; set; }
         public int Id { get; set; }
         public virtual void Draw(SpriteBatch sp) { }
-
+        
         public GuiElement()
         {
         }
@@ -40,6 +40,15 @@ namespace Client_PC.UI
                 Texture = Texture2D.FromStream(Game1.self.GraphicsDevice, st);
             }
         }
+
+        public GuiElement(int width, int height, GraphicsDevice device, GUI gui)
+        {
+            Width = width;
+            Height = height;
+            Device = device;
+            Gui = gui;
+        }
+
         protected String parseText(String text, SpriteFont Font)
         {
             String line = String.Empty;

@@ -36,9 +36,9 @@ namespace Client_PC.Scenes
                 Text = "Password"
             };
             InputBox inputLogin = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
-            inputLogin.TextLimit = 24;
+            inputLogin.TextLimit = 30;
             InputBox inputPassword = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
-            inputPassword.TextLimit = 24;
+            inputPassword.TextLimit = 30;
             Button loginButton = new Button(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Log in"
@@ -57,6 +57,7 @@ namespace Client_PC.Scenes
             Clickable.Add(registerButton);
             Clickable.Add(exitButton);
             grid = new Grid();
+            
             grid.AddChild(labelLogin,0,0);
             grid.AddChild(inputLogin,0,1,2);
             grid.AddChild(labelPassword,1,0);

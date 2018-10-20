@@ -15,6 +15,6 @@ namespace Client_PC.UI
         bool Active { get; set; }
         bool ActiveChangeable { get; set; }
         Object Parent { get; set; }
-
+        Tooltip Tooltip { get; set; }
     }
 }
