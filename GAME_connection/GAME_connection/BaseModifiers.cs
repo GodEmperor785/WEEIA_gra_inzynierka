@@ -24,8 +24,11 @@ namespace GAME_connection {
 	/// </summary>
 	[Serializable]
 	public class BaseModifiers {
+		private int id;
 		private Dictionary<WeaponType, double> weaponTypeRangeMultMap;
 		private Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap;
+
+		public BaseModifiers() { }
 
 		public BaseModifiers(Dictionary<WeaponType, double> weaponTypeRangeMultMap, Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap) {
 			this.WeaponTypeRangeMultMap = weaponTypeRangeMultMap;
@@ -34,6 +37,7 @@ namespace GAME_connection {
 
 		public Dictionary<WeaponType, double> WeaponTypeRangeMultMap { get => weaponTypeRangeMultMap; set => weaponTypeRangeMultMap = value; }
 		public Dictionary<Tuple<DefenceSystemType, WeaponType>, double> DefTypeToWepTypeMap { get => defTypeToWepTypeMap; set => defTypeToWepTypeMap = value; }
+		public int Id { get => id; set => id = value; }
 	}
 
 

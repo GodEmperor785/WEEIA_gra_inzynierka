@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 using GAME_connection;
 
 namespace GAME_Server {
-	internal class InMemoryGameDataBase : IGameDataBase {
-		//all ships, fleets, weapons, defence systems, players, factions, etc. go here!
-		internal InMemoryGameDataBase() {
-			//and possibly here
-		}
+	public class MySqlDataBase : IGameDataBase {
+
+		internal MySqlDataBase() {}
 
 		public bool CheckIfFleetNameUnique(Player player, string fleetName) {
 			throw new NotImplementedException();
@@ -44,5 +42,4 @@ namespace GAME_Server {
 			throw new NotImplementedException();
 		}
 	}
-
 }

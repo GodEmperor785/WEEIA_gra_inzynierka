@@ -20,5 +20,7 @@ namespace GAME_Server {
 		List<Faction> GetAllFactions();
 
 		BaseModifiers GetBaseModifiers();
+
+		bool CheckIfFleetNameUnique(Player player, string fleetName);
 	}
 }

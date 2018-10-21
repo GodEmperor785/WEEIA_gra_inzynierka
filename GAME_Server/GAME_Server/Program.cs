@@ -8,7 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using MySql.Data.MySqlClient;
 using GAME_connection;
+using System.Globalization;
 
 namespace GAME_Server {
 	internal class Program {
@@ -24,8 +26,12 @@ namespace GAME_Server {
 		//http://www.entityframeworktutorial.net/code-first/database-initialization-strategy-in-code-first.aspx
 		//https://dev.mysql.com/doc/connector-net/en/connector-net-entityframework60.html
 		//https://stackoverflow.com/questions/50631210/mysql-with-entity-framework-6
+		//https://docs.microsoft.com/en-us/aspnet/mvc/overview/getting-started/getting-started-with-ef-using-mvc/creating-an-entity-framework-data-model-for-an-asp-net-mvc-application
+		//https://stackoverflow.com/questions/21115776/setting-maxlength-for-all-strings-in-entity-framework-code-first
+		//http://www.entityframeworktutorial.net/Querying-with-EDM.aspx
 		//sciagnij mysql connector i zainstaluj, potem dodaj referencje
 		//nuget package manager -> browse -> MySQL i dodaj MySQL.Data.Entity (zwykly MySQL.Data powinien byc dodany wczesniej przy instalacji connectora i dodaniu referencji)
+		//6.9.12 mysql dziala
 
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
 		public static List<Ship> AllShips { get => allShips; }
@@ -36,6 +42,7 @@ namespace GAME_Server {
 		private static List<Thread> userThreads = new List<Thread>();
 
 		static void Main(string[] args) {
+			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");	//to change exception language to english
 			InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
@@ -61,10 +68,40 @@ namespace GAME_Server {
 		/// Reads basic game data from DB into memory. Does not read player and fleet data, these should be read by user threads
 		/// </summary>
 		private static void InitilizeGameDataFromDB() {
-			gameDataBase = new InMemoryGameDataBase();
+			/*gameDataBase = new InMemoryGameDataBase();
 			baseModifiers = GameDataBase.GetBaseModifiers();
 			allFactions = GameDataBase.GetAllFactions();
-			allShips = GameDataBase.GetAllShips();
+			allShips = GameDataBase.GetAllShips();*/
+			using (GameDBContext dbContext = new GameDBContext()) {
+				dbContext.Database.Initialize(true);
+
+				var f1 = new Faction(1, "test");
+				DbWeapon w1 = new DbWeapon("w1", f1, 10.0, 15, WeaponType.KINETIC, 1.5, 1.4, 12.0, 1);
+				DbWeapon w2 = new DbWeapon("w2", f1, 12.0, 15, WeaponType.LASER, 2.6, 5.4, 88.0, 2);
+				DbWeapon w3 = new DbWeapon("w3", f1, 10.0, 17, WeaponType.KINETIC, 1.0, 1.4, 55.0, 3);
+				DbDefenceSystem d1 = new DbDefenceSystem("d1", f1, 5.0, DefenceSystemType.SHIELD, 2.0, 2.0, 1.3, 1);
+				DbDefenceSystem d2 = new DbDefenceSystem("s2", f1, 3.0, DefenceSystemType.INTEGRITY_FIELD, 1.2, 1.3, 1.5, 2);
+				List<DbWeapon> weapons1 = new List<DbWeapon>();
+				weapons1.Add(w1);
+				weapons1.Add(w2);
+				weapons1.Add(w3);
+				List<DbDefenceSystem> defs = new List<DbDefenceSystem>();
+				defs.Add(d1);
+				defs.Add(d2);
+				DbShip s1 = new DbShip(1, "s1", f1, 10, 10.0, 1000.0, weapons1, defs, 5.0, 54.0);
+				dbContext.Ships.Add(s1);
+				//dbContext.Factions.Add(f1);
+				dbContext.SaveChanges();
+
+				Thread.Sleep(2000);
+				var query = from ships in dbContext.Ships
+							where ships.Id == 1
+							select ships;
+				var selectedShip = query.First<DbShip>();
+				Ship properShip = selectedShip.ToShip();
+				Console.WriteLine(properShip.Name);
+				//var testShip = new DbShip(1, "test", );
+			}
 		}
 
 		/// <summary>
