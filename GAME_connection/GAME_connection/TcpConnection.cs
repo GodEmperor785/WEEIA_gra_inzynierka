@@ -22,8 +22,7 @@ namespace GAME_connection {
 	public class TcpConnection : IDisposable {
 		public static readonly int DEFAULT_PORT = 10001;
 
-		private static readonly int pollingIntervalMilis = 100;
-		private static readonly int connectionTestIntervalMilis = 2000;
+		private static readonly int connectionTestIntervalMilis = 5000;
 
 		private TcpClient tcpClient;
 		private NetworkStream netStream;

@@ -12,6 +12,8 @@ namespace GAME_connection {
 		private string password;
 		private int experience;
 		private int maxFleetPoints;
+		private int gamesPlayed;
+		private int gamesWon;
 
 		public Player() { }
 
@@ -20,12 +22,14 @@ namespace GAME_connection {
 			this.Password = password;
 		}
 
-		public Player(int id, string username, string password, int experience, int maxFleetPoints) {
+		public Player(int id, string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon) {
 			this.Id = id;
 			this.Username = username;
 			this.Password = password;
 			this.Experience = experience;
 			this.MaxFleetPoints = maxFleetPoints;
+			this.GamesPlayed = gamesPlayed;
+			this.GamesWon = gamesWon;
 		}
 
 		public string Username { get => username; set => username = value; }
@@ -33,5 +37,7 @@ namespace GAME_connection {
 		public int Experience { get => experience; set => experience = value; }
 		public int MaxFleetPoints { get => maxFleetPoints; set => maxFleetPoints = value; }
 		public int Id { get => id; set => id = value; }
+		public int GamesPlayed { get => gamesPlayed; set => gamesPlayed = value; }
+		public int GamesWon { get => gamesWon; set => gamesWon = value; }
 	}
 }
