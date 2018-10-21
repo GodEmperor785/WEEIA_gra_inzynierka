@@ -58,14 +58,92 @@ namespace Client_PC.UI
                 {
                     TextPosition = new Vector2(((TextBox.X+ 3)), (TextBox.Y + Font.MeasureString("z").Y / 2.0f));
                 }
+
+                parseText(text, Font);
+            }
+        }
+        protected override String parseText(String text, SpriteFont Font)
+        {
+            String line = String.Empty;
+            String returnString = String.Empty;
+            String[] wordArray = text.Split(' ');
+            int usedHeight = 0;
+            Height = 20;
+            foreach (String word in wordArray)
+            {
+                
+                if (Font.MeasureString(line + word).Length() > TextBox.Width - 10)
+                {
+                    returnString = returnString + line + '\n';
+                    line = String.Empty;
+                }
+                int z = 0;
+                if (line == String.Empty)
+                {
+                    z = (int)Font.MeasureString(line + word).Y;
+                }
+                
+                if (((usedHeight + z) > TextBox.Height))
+                {
+                    //
+                    this.Height += z;
+                    line = line + word + ' ';
+                    usedHeight += z;
+                }
+                else if (!((usedHeight += z) > TextBox.Height))
+                {
+                    line = line + word + ' ';
+                }
+
+                
+            }
+
+            Height += 5;
+            return returnString + line;
+        }
+
+        protected void UpdateBox()
+        {
+            String line = String.Empty;
+            String returnString = String.Empty;
+            String[] wordArray = text.Split(' ');
+            int usedHeight = 0;
+            Height = 5;
+            foreach (String word in wordArray)
+            {
+                int z = 0;
+                if (line == String.Empty)
+                {
+                    z = (int)Font.MeasureString(line + word).Y;
+                }
+                if (Font.MeasureString(line + word).Length() > TextBox.Width)
+                {
+                    returnString = returnString + line + '\n';
+                    line = String.Empty;
+                }
+
+
+                if (((usedHeight + z) > Height))
+                {
+                    //
+                   // this.Height += z;
+                    line = line + word + ' ';
+                    usedHeight += z;
+                }
+                if (!((usedHeight += z) > Height))
+                {
+                    line = line + word + ' ';
+                }
+
+
             }
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
-            spriteBatch.Draw(Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
+            spriteBatch.Draw(Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black), Boundary, Color.Beige);
             if (!String.IsNullOrEmpty(text))
-                spriteBatch.DrawString(Font, parseText(Text, Font), textPosition, Color.Black);
+                spriteBatch.DrawString(Font, parseText(text,Font), textPosition, Color.Black);
             spriteBatch.End();
         }
     }

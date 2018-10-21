@@ -14,7 +14,7 @@ namespace Client_PC.UI
     {
         public Rectangle Boundary => new Rectangle(Origin.X, Origin.Y, Width, Height);
         public Rectangle TextBox => new Rectangle(Origin.X + borderSize,Origin.Y+borderSize,Width - 2 * borderSize, Height - 2 * borderSize);
-        private int borderSize = 7;
+        protected int borderSize = 7;
         public virtual int Width { get; set; }
         public virtual int Height { get; set; }
         public Point Origin { get; set; }
@@ -49,7 +49,7 @@ namespace Client_PC.UI
             Gui = gui;
         }
 
-        protected String parseText(String text, SpriteFont Font)
+        protected virtual String parseText(String text, SpriteFont Font)
         {
             String line = String.Empty;
             String returnString = String.Empty;
