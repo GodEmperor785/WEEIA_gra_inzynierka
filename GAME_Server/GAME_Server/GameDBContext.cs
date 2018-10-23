@@ -14,13 +14,14 @@ namespace GAME_Server {
 	/// </summary>
 	[DbConfigurationType(typeof(MySqlEFConfiguration))]
 	public class GameDBContext : DbContext {
-		public DbSet<Player> Players { get; set; }
+		public DbSet<DbPlayer> Players { get; set; }
 		public DbSet<Faction> Factions { get; set; }
 		public DbSet<DbWeapon> Weapons { get; set; }
 		public DbSet<DbDefenceSystem> DefenceSystems { get; set; }
 		public DbSet<DbShip> Ships { get; set; }
 		public DbSet<DbFleet> Fleets { get; set; }
 		public DbSet<DbBaseModifiers> BaseModifiers { get; set; }
+		public DbSet<DbGameHistory> GameHistories { get; set; }
 
 		public GameDBContext() : base("GameContext") {
 			Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());
@@ -35,8 +36,42 @@ namespace GAME_Server {
 		protected override void OnModelCreating(DbModelBuilder modelBuilder) {
 			base.OnModelCreating(modelBuilder);
 			modelBuilder.Properties<string>().Configure(str => str.HasMaxLength(256));
-			modelBuilder.Entity<Player>().Property(p => p.Username).HasMaxLength(32);
-			modelBuilder.Entity<Player>().HasIndex(user => user.Username).IsUnique(true);       //make player username unique
+			modelBuilder.Entity<DbPlayer>().Property(p => p.Username).HasMaxLength(32);
+			modelBuilder.Entity<DbPlayer>().HasIndex(user => user.Username).IsUnique(true);       //make player username unique
+
+			//many-to-many join tables custom names
+			modelBuilder.Entity<DbPlayer>()
+				.HasMany(x => x.OwnedShips)
+				.WithMany(x => x.PlayersOwningShip)
+				.Map(x => {
+					x.MapLeftKey("OwningPlayerID");
+					x.MapRightKey("OwnedShipID");
+					x.ToTable("Players_Ships");
+				});
+			modelBuilder.Entity<DbShip>()
+				.HasMany(x => x.Weapons)
+				.WithMany(x => x.Ships)
+				.Map(x => {
+					x.MapLeftKey("ShipID");
+					x.MapRightKey("WeaponID");
+					x.ToTable("Ships_Weapons");
+				});
+			modelBuilder.Entity<DbShip>()
+				.HasMany(x => x.Defences)
+				.WithMany(x => x.Ships)
+				.Map(x => {
+					x.MapLeftKey("ShipID");
+					x.MapRightKey("DefenceSystemID");
+					x.ToTable("Ships_DefenceSystems");
+				});
+			modelBuilder.Entity<DbFleet>()
+				.HasMany(x => x.Ships)
+				.WithMany(x => x.Fleets)
+				.Map(x => {
+					x.MapLeftKey("FleetID");
+					x.MapRightKey("ShipID");
+					x.ToTable("Fleets_Ships");
+				});
 		}
 
 	}

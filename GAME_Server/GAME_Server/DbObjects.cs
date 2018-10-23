@@ -7,6 +7,36 @@ using System.ComponentModel.DataAnnotations.Schema;
 using GAME_connection;
 
 namespace GAME_Server {
+	[Table("players")]
+	public class DbPlayer {
+		public DbPlayer() { }
+
+		public DbPlayer(string username, string password, int experience, int maxFleetPoints, int id, int gamesPlayed, int gamesWon, List<DbShip> ownedShips) {
+			Username = username;
+			Password = password;
+			Experience = experience;
+			MaxFleetPoints = maxFleetPoints;
+			Id = id;
+			GamesPlayed = gamesPlayed;
+			GamesWon = gamesWon;
+			OwnedShips = ownedShips;
+		}
+
+		public string Username { get; set; }
+		public string Password { get; set; }
+		public int Experience { get; set; }
+		public int MaxFleetPoints { get; set; }
+		public int Id { get; set; }
+		public int GamesPlayed { get; set; }
+		public int GamesWon { get; set; }
+
+		public List<DbShip> OwnedShips { get; set; }
+
+		public Player ToPlayer() {
+			return new Player(Id, Username, Password, Experience, MaxFleetPoints, GamesPlayed, GamesWon);
+		}
+	}
+
 	[Table("weapons")]
 	public class DbWeapon {
 
@@ -80,7 +110,7 @@ namespace GAME_Server {
 
 		public DbShip() { }
 
-		public DbShip(int id, string name, Faction faction, int cost, double evasion, double hp, List<DbWeapon> weapons, List<DbDefenceSystem> defences, double size, double armor) {
+		public DbShip(int id, string name, Faction faction, int cost, double evasion, double hp, List<DbWeapon> weapons, List<DbDefenceSystem> defences, double size, double armor, int expUnlock) {
 			Id = id;
 			Name = name;
 			Faction = faction;
@@ -92,6 +122,8 @@ namespace GAME_Server {
 			Size = size;
 			Armor = armor;
 			Fleets = new List<DbFleet>();
+			PlayersOwningShip = new List<DbPlayer>();
+			ExpUnlock = expUnlock;
 		}
 
 		public int Id { get; set; }
@@ -104,8 +136,10 @@ namespace GAME_Server {
 		public List<DbDefenceSystem> Defences { get; set; }
 		public double Size { get; set; }
 		public double Armor { get; set; }
+		public int ExpUnlock { get; set; }
 
 		public List<DbFleet> Fleets { get; set; }
+		public List<DbPlayer> PlayersOwningShip { get; set; }
 
 		public Ship ToShip() {
 			List<Weapon> nonDbWeapons = new List<Weapon>();
@@ -116,7 +150,7 @@ namespace GAME_Server {
 			foreach(DbDefenceSystem defSystem in Defences) {
 				nonDbDefenceSystems.Add(defSystem.ToDefenceSystem());
 			}
-			return new Ship(Id, Name, Faction, Cost, Evasion, Hp, Size, Armor, nonDbWeapons, nonDbDefenceSystems);
+			return new Ship(Id, Name, Faction, Cost, Evasion, Hp, Size, Armor, nonDbWeapons, nonDbDefenceSystems, ExpUnlock);
 		}
 	}
 
@@ -125,14 +159,14 @@ namespace GAME_Server {
 
 		public DbFleet() { }
 
-		public DbFleet(Player owner, List<DbShip> ships, string name, int id) {
+		public DbFleet(DbPlayer owner, List<DbShip> ships, string name, int id) {
 			Owner = owner;
 			Ships = ships;
 			Name = name;
 			Id = id;
 		}
 
-		public Player Owner { get; set; }
+		public DbPlayer Owner { get; set; }
 		public List<DbShip> Ships { get; set; }
 		public string Name { get; set; }
 		public int Id { get; set; }
@@ -142,7 +176,34 @@ namespace GAME_Server {
 			foreach(DbShip ship in Ships) {
 				nonDbShips.Add(ship.ToShip());
 			}
-			return new Fleet(Id, Name, Owner, nonDbShips);
+			return new Fleet(Id, Name, Owner.ToPlayer(), nonDbShips);
+		}
+	}
+
+	[Table("Game_History")]
+	public class DbGameHistory {
+		public DbGameHistory() { }
+
+		public DbGameHistory(int id, DbPlayer winner, DbPlayer loser, DbFleet winnerFleet, DbFleet loserFleet, bool wasDraw, DateTime gameDate) {
+			Id = id;
+			Winner = winner;
+			Loser = loser;
+			WinnerFleet = winnerFleet;
+			LoserFleet = loserFleet;
+			WasDraw = wasDraw;
+			GameDate = gameDate;
+		}
+
+		public int Id { get; set; }
+		public DbPlayer Winner { get; set; }
+		public DbPlayer Loser { get; set; }
+		public DbFleet WinnerFleet { get; set; }
+		public DbFleet LoserFleet { get; set; }
+		public bool WasDraw { get; set; }
+		public DateTime GameDate { get; set; }
+
+		public GameHistory ToGameHistory() {
+			return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleet(), LoserFleet.ToFleet(), WasDraw, GameDate);
 		}
 	}
 

@@ -33,6 +33,15 @@ namespace GAME_Server {
 		//nuget package manager -> browse -> MySQL i dodaj MySQL.Data.Entity (zwykly MySQL.Data powinien byc dodany wczesniej przy instalacji connectora i dodaniu referencji)
 		//6.9.12 mysql dziala
 
+		//https://docs.microsoft.com/en-us/aspnet/web-forms/overview/getting-started/getting-started-with-aspnet-45-web-forms/checkout-and-payment-with-paypal
+		//wymagane jest ssl i/lub tls 1.2 bo inaczej paypal moze odrzucic, wymagane sa certyfikaty, informacje sa tylko o aplikacjach webowych w przegladarce, jakies dane przekazywane przez sesje - trzebaby robic to inaczej
+		//w sumie kilkaset linii kodu - w tym ponad 300 na sama klase z tutoriala (a sama klasa nie wystarczy)
+
+		// - historia rozgrywek, kto z kim i jakie floty
+		// - wirtualna waluta i kupowanie kart, przypisywanie kart do gracza, player w wersji DB, many-to-many
+		// - turnieje po okolo 8 graczy o duze nagrody
+		// - apka windows forms dla admina
+
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
 		public static List<Ship> AllShips { get => allShips; }
 		public static List<Faction> AllFactions { get => allFactions; }
@@ -88,7 +97,7 @@ namespace GAME_Server {
 				List<DbDefenceSystem> defs = new List<DbDefenceSystem>();
 				defs.Add(d1);
 				defs.Add(d2);
-				DbShip s1 = new DbShip(1, "s1", f1, 10, 10.0, 1000.0, weapons1, defs, 5.0, 54.0);
+				DbShip s1 = new DbShip(1, "s1", f1, 10, 10.0, 1000.0, weapons1, defs, 5.0, 54.0, 2000);
 				dbContext.Ships.Add(s1);
 				//dbContext.Factions.Add(f1);
 				dbContext.SaveChanges();
@@ -100,7 +109,6 @@ namespace GAME_Server {
 				var selectedShip = query.First<DbShip>();
 				Ship properShip = selectedShip.ToShip();
 				Console.WriteLine(properShip.Name);
-				//var testShip = new DbShip(1, "test", );
 			}
 		}
 

@@ -46,6 +46,7 @@
     <Compile Include="Faction.cs" />
     <Compile Include="Fleet.cs" />
     <Compile Include="GameConnectionExceptions.cs" />
+    <Compile Include="GameHistory.cs" />
     <Compile Include="Operations.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Ship.cs" />

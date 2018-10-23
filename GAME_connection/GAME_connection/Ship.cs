@@ -17,10 +17,11 @@ namespace GAME_connection {
 		private double armor;
 		private List<Weapon> weapons;
 		private List<DefenceSystem> defences;
+		private int expUnlock;		//exp necessary to unlock this ship
 
 		public Ship() { }
 
-		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences) {
+		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock) {
 			this.id = id;
 			this.name = name;
 			this.faction = faction;
@@ -31,6 +32,7 @@ namespace GAME_connection {
 			this.armor = armor;
 			this.weapons = weapons;
 			this.defences = defences;
+			this.expUnlock = expUnlock;
 		}
 
 		public string Name { get => name; set => name = value; }
@@ -43,5 +45,6 @@ namespace GAME_connection {
 		public double Size { get => size; set => size = value; }
 		public double Armor { get => armor; set => armor = value; }
 		public int Id { get => id; set => id = value; }
+		public int ExpUnlock { get => expUnlock; set => expUnlock = value; }
 	}
 }
