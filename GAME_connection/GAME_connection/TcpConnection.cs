@@ -100,7 +100,7 @@ namespace GAME_connection {
 
 		#region Receive/Read
 		/// <summary>
-		/// Gets oldest unprocessed received packet
+		/// Waits and gets oldest unprocessed received packet. Waits without timeout.
 		/// </summary>
 		/// <returns></returns>
 		public GamePacket GetReceivedPacket() {
@@ -114,9 +114,10 @@ namespace GAME_connection {
 		}
 
 		/// <summary>
-		/// Gets oldest unprocessed received packet with timeout in miliseconds, on timeout throws exception
+		/// Waits and gets oldest unprocessed received packet with timeout in miliseconds, on timeout throws exception
 		/// </summary>
 		/// <param name="timeoutMilis">timeout in miliseconds for receive operation</param>
+		/// <param name="playerNumber">number of player that had timeout</param>
 		/// <returns></returns>
 		public GamePacket GetReceivedPacket(int timeoutMilis, int playerNumber) {
 			int queueCount;

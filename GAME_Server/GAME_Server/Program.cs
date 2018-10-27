@@ -13,7 +13,7 @@ using GAME_connection;
 using System.Globalization;
 
 namespace GAME_Server {
-	internal class Program {
+	internal class Server {
 		private static int port = TcpConnection.DEFAULT_PORT;
 		private static string ip = "127.0.0.1";
 
@@ -51,7 +51,7 @@ namespace GAME_Server {
 		private static List<Thread> userThreads = new List<Thread>();
 
 		static void Main(string[] args) {
-			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");	//to change exception language to english
+			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
 			InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
@@ -77,39 +77,84 @@ namespace GAME_Server {
 		/// Reads basic game data from DB into memory. Does not read player and fleet data, these should be read by user threads
 		/// </summary>
 		private static void InitilizeGameDataFromDB() {
-			/*gameDataBase = new InMemoryGameDataBase();
-			baseModifiers = GameDataBase.GetBaseModifiers();
+			gameDataBase = new MySqlDataBase();
+
+			DbPlayer p1 = new DbPlayer(1, "player1", "haslo1", 0, 100, 0, 0, 0);
+			DbPlayer p2 = new DbPlayer(2, "player2", "haslo2", 0, 100, 0, 0, 0);
+
+			gameDataBase.AddPlayer(p1);
+			gameDataBase.AddPlayer(p2);
+
+			Thread.Sleep(500);
+			if (Server.GameDataBase.PlayerExists(p1.ToPlayer())) Console.WriteLine("ano jest");
+			else Console.WriteLine("nima");
+
+			Thread.Sleep(500);
+
+			var f1 = new Faction(1, "test");
+			var f2 = new Faction(2, "test2");
+			gameDataBase.AddFaction(f1);
+			gameDataBase.AddFaction(f2);
+			var faction = gameDataBase.GetAllFactions().First();
+
+			DbWeapon w1 = new DbWeapon(1, "w1", faction, 10.0, 15, WeaponType.KINETIC, 1.5, 1.4, 12.0);
+			DbWeapon w2 = new DbWeapon(2, "w2", faction, 12.0, 15, WeaponType.LASER, 2.6, 5.4, 88.0);
+			DbWeapon w3 = new DbWeapon(3, "w3", faction, 10.0, 17, WeaponType.KINETIC, 1.0, 1.4, 55.0);
+			gameDataBase.AddWeapon(w1);
+			gameDataBase.AddWeapon(w2);
+			gameDataBase.AddWeapon(w3);
+			DbDefenceSystem d1 = new DbDefenceSystem(1, "d1", faction, 5.0, DefenceSystemType.SHIELD, 2.0, 2.0, 1.3);
+			DbDefenceSystem d2 = new DbDefenceSystem(2, "s2", faction, 3.0, DefenceSystemType.INTEGRITY_FIELD, 1.2, 1.3, 1.5);
+			gameDataBase.AddDefenceSystem(d1);
+			gameDataBase.AddDefenceSystem(d2);
+
+			var weps = gameDataBase.GetAllWeapons();
+			var defs = gameDataBase.GetAllDefences(); 
+			List<DbWeapon> weapons1 = new List<DbWeapon> {
+				weps[0],
+				weps[1],
+				weps[2]
+			};
+			List<DbWeapon> weapons2 = new List<DbWeapon> {
+				weps[0],
+				weps[2]
+			};
+			List<DbWeapon> weapons3 = new List<DbWeapon> {
+				weps[0],
+				weps[2]
+			};
+			List<DbDefenceSystem> denences = new List<DbDefenceSystem> {
+				defs[0],
+				defs[1]
+			};
+			List<DbDefenceSystem> denences2 = new List<DbDefenceSystem> {
+				defs[0],
+				defs[1]
+			};
+			DbShip s1 = new DbShip(1, "s1", faction, 10, 10.0, 1000.0, 4.0, 54.0, weapons1, denences, 2000);
+			DbShip s2 = new DbShip(2, "s2", faction, 20, 5.0, 500.0, 1.0, 23.0, weapons2, denences2, 1000);
+			gameDataBase.AddShip(s1);
+			gameDataBase.AddShip(s2);
+
+			Thread.Sleep(500);
+			var ships = gameDataBase.GetAllShips();
+			foreach(DbShip ship in ships) Console.WriteLine(ship.Name + " " + ship.Id + " " + ship.Weapons[0].Name);
+
+			Console.WriteLine("teraz apdejt");
+			DbShip sUp = new DbShip(1, "s1", faction, 99, 10.0, 9999.0, 4.0, 54.0, weapons3, denences, 2000);
+			gameDataBase.UpdateShip(sUp);
+
+			Thread.Sleep(500);
+			Console.WriteLine("i delete");
+			gameDataBase.RemoveShipWithId(1);
+			//UWAGA NA UZYWANIE LIST!!! DLA KAZDEGO NOWEGO OBIEKTU ROB NOWA LISTE BO INACZEJ DOSTAJE DALNA I WYWALA CALA JOIN TABLE!!! 
+			//REFERENCJE W TYCH LISTACH MOGA BYC TE SAME ALE INSTANCJE LIST MUSZA BYC ROZNE!!!
+
+			Environment.Exit(0);
+
+			/*baseModifiers = GameDataBase.GetBaseModifiers();
 			allFactions = GameDataBase.GetAllFactions();
 			allShips = GameDataBase.GetAllShips();*/
-			using (GameDBContext dbContext = new GameDBContext()) {
-				dbContext.Database.Initialize(true);
-
-				var f1 = new Faction(1, "test");
-				DbWeapon w1 = new DbWeapon("w1", f1, 10.0, 15, WeaponType.KINETIC, 1.5, 1.4, 12.0, 1);
-				DbWeapon w2 = new DbWeapon("w2", f1, 12.0, 15, WeaponType.LASER, 2.6, 5.4, 88.0, 2);
-				DbWeapon w3 = new DbWeapon("w3", f1, 10.0, 17, WeaponType.KINETIC, 1.0, 1.4, 55.0, 3);
-				DbDefenceSystem d1 = new DbDefenceSystem("d1", f1, 5.0, DefenceSystemType.SHIELD, 2.0, 2.0, 1.3, 1);
-				DbDefenceSystem d2 = new DbDefenceSystem("s2", f1, 3.0, DefenceSystemType.INTEGRITY_FIELD, 1.2, 1.3, 1.5, 2);
-				List<DbWeapon> weapons1 = new List<DbWeapon>();
-				weapons1.Add(w1);
-				weapons1.Add(w2);
-				weapons1.Add(w3);
-				List<DbDefenceSystem> defs = new List<DbDefenceSystem>();
-				defs.Add(d1);
-				defs.Add(d2);
-				DbShip s1 = new DbShip(1, "s1", f1, 10, 10.0, 1000.0, weapons1, defs, 5.0, 54.0, 2000);
-				dbContext.Ships.Add(s1);
-				//dbContext.Factions.Add(f1);
-				dbContext.SaveChanges();
-
-				Thread.Sleep(2000);
-				var query = from ships in dbContext.Ships
-							where ships.Id == 1
-							select ships;
-				var selectedShip = query.First<DbShip>();
-				Ship properShip = selectedShip.ToShip();
-				Console.WriteLine(properShip.Name);
-			}
 		}
 
 		/// <summary>
@@ -127,6 +172,18 @@ namespace GAME_Server {
 				tempStream.Position = 0;
 				return (T)serializer.Deserialize(tempStream);
 			}
+		}
+
+		/// <summary>
+		/// casts Packet from inside GamePacket to proper type. Should be called like: ProperType p = CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType])
+		/// throws <see cref="InvalidCastException"/> if type is not correct so it should be called inside try-catch block
+		/// </summary>
+		/// <param name="packetToCast"></param>
+		/// <param name="properType"></param>
+		/// /// <exception cref="InvalidCastException"></exception>
+		/// <returns></returns>
+		internal static dynamic CastPacketToProperType(dynamic packetToCast, Type properType) {
+			return Convert.ChangeType(packetToCast, properType);
 		}
 
 		private static void Test(object clientObj) {
@@ -179,30 +236,84 @@ namespace GAME_Server {
 	}
 
 	#region User Thread
-	//-------------------------------------------
-	//---------USER THREAD-----------------------
-	//-------------------------------------------
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//---------USER THREAD--------------------------------------------------------------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	internal class UserThread {
+		#region properties attributes and constructors
 		private TcpConnection client;
 		private Player user;
 
 		internal UserThread(TcpConnection client) {
-			this.client = client;
+			this.Client = client;
 		}
 
+		public TcpConnection Client { get => client; set => client = value; }
+		public Player User { get => user; set => user = value; }
+		#endregion
 
+		/// <summary>
+		/// main function of <see cref="UserThread"/>
+		/// </summary>
 		internal void RunUserThread() {
+			try {
+				//first do login or register
+				bool loginSuccess = LoginOrRegister();
+				if(loginSuccess) {
+					//set and send user data
+					this.User = Server.GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
+					Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
+				}
+			} catch(ConnectionEndedException) {
+				Console.WriteLine("Connection ended without proper disconnect");
+			}
+		}
 
+		/// <summary>
+		/// Checks if login or register is allowed for given player data and returns true if it is so
+		/// </summary>
+		/// <returns></returns>
+		private bool LoginOrRegister() {
+			GamePacket packet = Client.GetReceivedPacket();
+			Player playerObject;
+			//cast to proper type
+			try {
+				playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
+			} catch(InvalidCastException) {
+				Console.WriteLine("Invalid type of internal packet");
+				return false;
+			}
+			//if type ok do login or register
+			if(packet.OperationType == OperationType.LOGIN) {
+				if (Server.GameDataBase.PlayerExists(playerObject) && Server.GameDataBase.ValidateUser(playerObject)) {
+					this.User = playerObject;
+					return true;
+				}
+				else return false;
+			}
+			else if(packet.OperationType == OperationType.REGISTER) {
+				if ((!Server.GameDataBase.PlayerExists(playerObject)) && Server.GameDataBase.PlayerNameIsUnique(playerObject)) {
+					Server.GameDataBase.AddPlayer(new DbPlayer(playerObject));
+					this.User = playerObject;
+					return true;
+				}
+				else return false;
+			}
+			else {
+				Console.WriteLine("Invalid packet OperationType received during login or register");
+				return false;
+			}
 		}
 
 	}
 	#endregion
 
 	#region Game Room Thread
-	//-------------------------------------------
-	//---------GAME ROOM THREAD------------------
-	//-------------------------------------------
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//---------GAME ROOM THREAD---------------------------------------------------------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	internal class GameRoomThread {
+		#region properties attributes and constructors
 		private Player player1;     //host
 		private Player player2;
 
@@ -210,10 +321,18 @@ namespace GAME_Server {
 		private TcpConnection player2Conn;
 
 		internal GameRoomThread(TcpConnection hostConnection, Player host) {
-			player1Conn = hostConnection;
-			player1 = host;
+			Player1 = host;
 		}
 
+		public Player Player1 { get => player1; set => player1 = value; }
+		public Player Player2 { get => player2; set => player2 = value; }
+		public TcpConnection Player1Conn { get => player1Conn; set => player1Conn = value; }
+		public TcpConnection Player2Conn { get => player2Conn; set => player2Conn = value; }
+		#endregion
+
+		/// <summary>
+		/// main function of <see cref="GameRoomThread"/>
+		/// </summary>
 		internal void RunGameThread() {
 
 		}

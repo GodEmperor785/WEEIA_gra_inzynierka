@@ -11,15 +11,31 @@ namespace GAME_Server {
 	public class DbPlayer {
 		public DbPlayer() { }
 
-		public DbPlayer(string username, string password, int experience, int maxFleetPoints, int id, int gamesPlayed, int gamesWon, List<DbShip> ownedShips) {
+		public DbPlayer( string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) {
 			Username = username;
 			Password = password;
 			Experience = experience;
 			MaxFleetPoints = maxFleetPoints;
-			Id = id;
 			GamesPlayed = gamesPlayed;
 			GamesWon = gamesWon;
-			OwnedShips = ownedShips;
+			OwnedShips = new List<DbShip>();
+			Money = money;
+		}
+
+		public DbPlayer(int id, string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) 
+			: this(username, password, experience, maxFleetPoints, gamesPlayed, gamesWon, money) {
+			Id = id;
+		}
+
+		public DbPlayer(Player player) {
+			Username = player.Username;
+			Password = player.Password;
+			Experience = player.Experience;
+			MaxFleetPoints = player.MaxFleetPoints;
+			Id = player.Id;
+			GamesPlayed = player.GamesPlayed;
+			GamesWon = player.GamesWon;
+			OwnedShips = new List<DbShip>();
 		}
 
 		public string Username { get; set; }
@@ -29,11 +45,12 @@ namespace GAME_Server {
 		public int Id { get; set; }
 		public int GamesPlayed { get; set; }
 		public int GamesWon { get; set; }
+		public int Money { get; set; }
 
 		public List<DbShip> OwnedShips { get; set; }
 
 		public Player ToPlayer() {
-			return new Player(Id, Username, Password, Experience, MaxFleetPoints, GamesPlayed, GamesWon);
+			return new Player(Id, Username, Password, Experience, MaxFleetPoints, GamesPlayed, GamesWon, Money);
 		}
 	}
 
@@ -42,7 +59,7 @@ namespace GAME_Server {
 
 		public DbWeapon() { }
 
-		public DbWeapon(string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double rangeMultiplier, double chanceToHit, double apEffectivity, int id) {
+		public DbWeapon(string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double rangeMultiplier, double chanceToHit, double apEffectivity) {
 			Name = name;
 			Faction = faction;
 			Damage = damage;
@@ -51,7 +68,24 @@ namespace GAME_Server {
 			RangeMultiplier = rangeMultiplier;
 			ChanceToHit = chanceToHit;
 			ApEffectivity = apEffectivity;
+			Ships = new List<DbShip>();
+		}
+
+		public DbWeapon(int id, string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double rangeMultiplier, double chanceToHit, double apEffectivity) 
+			: this(name, faction, damage, numberOfProjectiles, weaponType, rangeMultiplier, chanceToHit, apEffectivity) {
 			Id = id;
+		}
+
+		public DbWeapon(Weapon weapon) {
+			Name = weapon.Name;
+			Faction = weapon.Faction;
+			Damage = weapon.Damage;
+			NumberOfProjectiles = weapon.NumberOfProjectiles;
+			WeaponType = weapon.WeaponType;
+			RangeMultiplier = weapon.RangeMultiplier;
+			ChanceToHit = weapon.ChanceToHit;
+			ApEffectivity = weapon.ApEffectivity;
+			Id = weapon.Id;
 			Ships = new List<DbShip>();
 		}
 
@@ -77,7 +111,7 @@ namespace GAME_Server {
 
 		public DbDefenceSystem() { }
 
-		public DbDefenceSystem(string name, Faction faction, double defenceValue, DefenceSystemType systemType, double defAgainstKinetic, double defAgainstLaser, double defAgainstMissile, int id) {
+		public DbDefenceSystem(string name, Faction faction, double defenceValue, DefenceSystemType systemType, double defAgainstKinetic, double defAgainstLaser, double defAgainstMissile) {
 			Name = name;
 			Faction = faction;
 			DefenceValue = defenceValue;
@@ -85,7 +119,23 @@ namespace GAME_Server {
 			DefAgainstKinetic = defAgainstKinetic;
 			DefAgainstLaser = defAgainstLaser;
 			DefAgainstMissile = defAgainstMissile;
+			Ships = new List<DbShip>();
+		}
+
+		public DbDefenceSystem(int id, string name, Faction faction, double defenceValue, DefenceSystemType systemType, double defAgainstKinetic, double defAgainstLaser, double defAgainstMissile)
+			: this(name, faction, defenceValue, systemType, defAgainstKinetic, defAgainstLaser, defAgainstMissile) {
 			Id = id;
+		}
+
+		public DbDefenceSystem(DefenceSystem defenceSystem) {
+			Name = defenceSystem.Name;
+			Faction = defenceSystem.Faction;
+			DefenceValue = defenceSystem.DefenceValue;
+			SystemType = defenceSystem.SystemType;
+			DefAgainstKinetic = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.KINETIC];
+			DefAgainstLaser = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.LASER];
+			DefAgainstMissile = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.MISSILE];
+			Id = defenceSystem.Id;
 			Ships = new List<DbShip>();
 		}
 
@@ -110,8 +160,7 @@ namespace GAME_Server {
 
 		public DbShip() { }
 
-		public DbShip(int id, string name, Faction faction, int cost, double evasion, double hp, List<DbWeapon> weapons, List<DbDefenceSystem> defences, double size, double armor, int expUnlock) {
-			Id = id;
+		public DbShip(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock) {
 			Name = name;
 			Faction = faction;
 			Cost = cost;
@@ -124,6 +173,31 @@ namespace GAME_Server {
 			Fleets = new List<DbFleet>();
 			PlayersOwningShip = new List<DbPlayer>();
 			ExpUnlock = expUnlock;
+		}
+
+		public DbShip(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock)
+			: this(name, faction, cost, evasion, hp, size, armor, weapons, defences, expUnlock) {
+			Id = id;
+		}
+
+		public DbShip(Ship ship) {
+			Id = ship.Id;
+			Name = ship.Name;
+			Faction = ship.Faction;
+			Cost = ship.Cost;
+			Evasion = ship.Evasion;
+			Hp = ship.Hp;
+			List<DbWeapon> weapons = new List<DbWeapon>();
+			foreach(Weapon wep in ship.Weapons) weapons.Add(new DbWeapon(wep));
+			Weapons = weapons;
+			List<DbDefenceSystem> defences = new List<DbDefenceSystem>();
+			foreach (DefenceSystem def in ship.Defences) defences.Add(new DbDefenceSystem(def));
+			Defences = defences;
+			Size = ship.Size;
+			Armor = ship.Armor;
+			Fleets = new List<DbFleet>();
+			PlayersOwningShip = new List<DbPlayer>();
+			ExpUnlock = ship.ExpUnlock;
 		}
 
 		public int Id { get; set; }
@@ -159,11 +233,23 @@ namespace GAME_Server {
 
 		public DbFleet() { }
 
-		public DbFleet(DbPlayer owner, List<DbShip> ships, string name, int id) {
+		public DbFleet(DbPlayer owner, List<DbShip> ships, string name) {
 			Owner = owner;
 			Ships = ships;
 			Name = name;
+		}
+
+		public DbFleet(int id, DbPlayer owner, List<DbShip> ships, string name) : this(owner, ships, name) {
 			Id = id;
+		}
+
+		public DbFleet(Fleet fleet) {
+			Owner = new DbPlayer(fleet.Owner);
+			List<DbShip> ships = new List<DbShip>();
+			foreach (Ship ship in fleet.Ships) ships.Add(new DbShip(ship));
+			Ships = ships;
+			Name = fleet.Name;
+			Id = fleet.Id;
 		}
 
 		public DbPlayer Owner { get; set; }
@@ -184,14 +270,18 @@ namespace GAME_Server {
 	public class DbGameHistory {
 		public DbGameHistory() { }
 
-		public DbGameHistory(int id, DbPlayer winner, DbPlayer loser, DbFleet winnerFleet, DbFleet loserFleet, bool wasDraw, DateTime gameDate) {
-			Id = id;
+		public DbGameHistory( DbPlayer winner, DbPlayer loser, DbFleet winnerFleet, DbFleet loserFleet, bool wasDraw, DateTime gameDate) {
 			Winner = winner;
 			Loser = loser;
 			WinnerFleet = winnerFleet;
 			LoserFleet = loserFleet;
 			WasDraw = wasDraw;
 			GameDate = gameDate;
+		}
+
+		public DbGameHistory(int id, DbPlayer winner, DbPlayer loser, DbFleet winnerFleet, DbFleet loserFleet, bool wasDraw, DateTime gameDate)
+			: this(winner, loser, winnerFleet, loserFleet, wasDraw, gameDate) {
+			Id = id;
 		}
 
 		public int Id { get; set; }
@@ -206,6 +296,13 @@ namespace GAME_Server {
 			return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleet(), LoserFleet.ToFleet(), WasDraw, GameDate);
 		}
 	}
+
+	/*[Table("fleet_size_exp")]
+	public class DbFleetSizeExpMapping {
+		public int Id { get; set; }
+		public int Experience { get; set; }
+		public int MaxFleetSize { get; set; }
+	}*/
 
 	[Table("base_modifiers")]
 	public class DbBaseModifiers {

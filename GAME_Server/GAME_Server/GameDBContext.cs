@@ -22,6 +22,7 @@ namespace GAME_Server {
 		public DbSet<DbFleet> Fleets { get; set; }
 		public DbSet<DbBaseModifiers> BaseModifiers { get; set; }
 		public DbSet<DbGameHistory> GameHistories { get; set; }
+		//public DbSet<DbFleetSizeExpMapping> FleetSizeExpMappings { get; set; }
 
 		public GameDBContext() : base("GameContext") {
 			Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());
