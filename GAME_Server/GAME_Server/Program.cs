@@ -29,6 +29,8 @@ namespace GAME_Server {
 		//https://docs.microsoft.com/en-us/aspnet/mvc/overview/getting-started/getting-started-with-ef-using-mvc/creating-an-entity-framework-data-model-for-an-asp-net-mvc-application
 		//https://stackoverflow.com/questions/21115776/setting-maxlength-for-all-strings-in-entity-framework-code-first
 		//http://www.entityframeworktutorial.net/Querying-with-EDM.aspx
+		//http://www.entityframeworktutorial.net/eager-loading-in-entity-framework.aspx
+		//http://www.entityframeworktutorial.net/crud-operation-in-connected-scenario-entity-framework.aspx
 		//sciagnij mysql connector i zainstaluj, potem dodaj referencje
 		//nuget package manager -> browse -> MySQL i dodaj MySQL.Data.Entity (zwykly MySQL.Data powinien byc dodany wczesniej przy instalacji connectora i dodaniu referencji)
 		//6.9.12 mysql dziala
