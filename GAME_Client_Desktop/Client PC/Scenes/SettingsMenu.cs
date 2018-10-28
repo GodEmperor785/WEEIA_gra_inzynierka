@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 using Client_PC.UI;
+using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
@@ -33,13 +37,13 @@ namespace Client_PC.Scenes
             };
             Button dropElement1 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont,true)
             {
-                Text = "1920 x 1080",
+                Text = Constants.fullhd,
                 Id = 1
             };
             drop.Add(dropElement1,"fullHd", drop);
             Button dropElement2 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont,true)
             {
-                Text = "1280 x 720",
+                Text = Constants.hd,
                 Id = 2
             };
             Button buttonSave = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
@@ -76,23 +80,33 @@ namespace Client_PC.Scenes
             var element = drop.GetSelected();
             int width = 800;
             int height = 600;
+            Config conf = new Config();
             if (element is Button)
             {
                 Button button = (Button) element;
-                if (button.text.Equals("1280 x 720"))
+                if (button.text.Equals(Constants.hd))
                 {
                     width = 1280;
                     height = 720;
+                    conf.Resolution = Constants.hd;
                 }
-                else if (button.text.Equals("1920 x 1080"))
+                else if (button.text.Equals(Constants.fullhd))
                 {
                     width = 1920;
                     height = 1080;
+                    conf.Resolution = Constants.fullhd;
                 }
             }
             Game1.self.graphics.PreferredBackBufferHeight = height;
             Game1.self.graphics.PreferredBackBufferWidth = width;
             Game1.self.graphics.ApplyChanges();
+            
+            
+        
+            TextWriter writer = new StreamWriter("Config");
+            XmlSerializer xml = new XmlSerializer(typeof(Config));
+            xml.Serialize(writer,conf);
+
         }
         public void OnExit()
         {

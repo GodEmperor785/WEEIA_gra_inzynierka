@@ -1,6 +1,9 @@
-﻿using System.Net.Mime;
+﻿using System.IO;
+using System.Net.Mime;
+using System.Xml.Serialization;
 using Client_PC.Scenes;
 using Client_PC.UI;
+using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -28,7 +31,7 @@ namespace Client_PC
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
-        
+        public Config conf;
         internal object graphicsDevice;
         internal IClickable FocusedElement;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
@@ -60,8 +63,39 @@ namespace Client_PC
             registerMenu = new RegisterMenu();
             registerMenu.Initialize(Content);
             base.Initialize();
+            XmlSerializer serializer =
+                new XmlSerializer(typeof(Config));
+            using (Stream reader = new FileStream("Config", FileMode.Open))
+            {
+                // Call the Deserialize method to restore the object's state.
+                conf = (Config)serializer.Deserialize(reader);
+            }
+
+            UseConfig();
         }
 
+        private void UseConfig()
+        {
+            #region Resolution
+
+            int height = 0;
+            int width = 0;
+            if (conf.Resolution.Equals(Constants.hd))
+            {
+                height = 720;
+                width = 1280;
+            }
+            if (conf.Resolution.Equals(Constants.fullhd))
+            {
+                height = 1080;
+                width = 1920;
+            }
+
+            Game1.self.graphics.PreferredBackBufferHeight = height;
+            Game1.self.graphics.PreferredBackBufferWidth = width;
+            Game1.self.graphics.ApplyChanges();
+            #endregion
+        }
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
