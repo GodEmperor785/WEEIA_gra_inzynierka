@@ -14,5 +14,13 @@ namespace Client_PC.Utilities
         {
 
         }
+
+        public static Config Default()
+        {
+            Config conf = new Config();
+            conf.Resolution = Constants.hd;
+
+            return conf;
+        }
     }
 }

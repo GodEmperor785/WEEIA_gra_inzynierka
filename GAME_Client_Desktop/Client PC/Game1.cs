@@ -65,9 +65,26 @@ namespace Client_PC
             base.Initialize();
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
+            try
+            {
+                using (FileStream fs = new FileStream("Config", FileMode.Open))
+                {
+
+                }
+                
+            }
+            catch
+            {
+                TextWriter writer = new StreamWriter("Config");
+                XmlSerializer xml = new XmlSerializer(typeof(Config));
+                xml.Serialize(writer, Config.Default());
+                writer.Close();
+            }
+            
+
+
             using (Stream reader = new FileStream("Config", FileMode.Open))
             {
-                // Call the Deserialize method to restore the object's state.
                 conf = (Config)serializer.Deserialize(reader);
             }
 

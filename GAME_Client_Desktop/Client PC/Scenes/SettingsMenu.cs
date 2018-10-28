@@ -106,7 +106,7 @@ namespace Client_PC.Scenes
             TextWriter writer = new StreamWriter("Config");
             XmlSerializer xml = new XmlSerializer(typeof(Config));
             xml.Serialize(writer,conf);
-
+            writer.Close();
         }
         public void OnExit()
         {
