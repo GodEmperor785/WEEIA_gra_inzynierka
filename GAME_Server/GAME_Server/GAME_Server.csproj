@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbObjects.cs" />
+    <Compile Include="FailureReasons.cs" />
     <Compile Include="GameDBContext.cs" />
     <Compile Include="IGameDataBase.cs" />
     <Compile Include="InMemoryGameDataBase.cs" />
