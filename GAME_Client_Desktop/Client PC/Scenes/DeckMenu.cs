@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Client_PC.Scenes
 {
-    class DeckMenu
+    class DeckMenu : Menu
     {
     }
 }

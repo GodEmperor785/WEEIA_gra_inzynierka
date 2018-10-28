@@ -101,43 +101,6 @@ namespace Client_PC.UI
             Height += 5;
             return returnString + line;
         }
-
-        protected void UpdateBox()
-        {
-            String line = String.Empty;
-            String returnString = String.Empty;
-            String[] wordArray = text.Split(' ');
-            int usedHeight = 0;
-            Height = 5;
-            foreach (String word in wordArray)
-            {
-                int z = 0;
-                if (line == String.Empty)
-                {
-                    z = (int)Font.MeasureString(line + word).Y;
-                }
-                if (Font.MeasureString(line + word).Length() > TextBox.Width)
-                {
-                    returnString = returnString + line + '\n';
-                    line = String.Empty;
-                }
-
-
-                if (((usedHeight + z) > Height))
-                {
-                    //
-                   // this.Height += z;
-                    line = line + word + ' ';
-                    usedHeight += z;
-                }
-                if (!((usedHeight += z) > Height))
-                {
-                    line = line + word + ' ';
-                }
-
-
-            }
-        }
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();

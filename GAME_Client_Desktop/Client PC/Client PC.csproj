@@ -50,6 +50,7 @@
     <Compile Include="Scenes\DeckMenu.cs" />
     <Compile Include="Scenes\LoginMenu.cs" />
     <Compile Include="Scenes\MainMenu.cs" />
+    <Compile Include="Scenes\Menu.cs" />
     <Compile Include="Scenes\RegisterMenu.cs" />
     <Compile Include="Scenes\SettingsMenu.cs" />
     <Compile Include="UI\Button.cs" />

@@ -104,7 +104,7 @@ namespace Client_PC.UI
                 }
                 else
                 {
-                    return new Color(100,100,100,255);
+                    return new Color(104, 104, 104, 255);
                     
                 }
             }

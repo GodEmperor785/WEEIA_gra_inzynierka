@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Client_PC;
 using Client_PC.UI;
 using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
@@ -12,17 +13,10 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
 {
-    class MainMenu
+    class MainMenu : Menu
     {
-        private GUI Gui;
         private Grid grid;
-        private List<IClickable> Clickable;
-        private bool AbleToClick;
-        private Keys[] LastPressedKeys;
-        public MainMenu()
-        {
-            Clickable = new List<IClickable>();
-        }
+
 
         public void Initialize(ContentManager Content)
         {
@@ -66,34 +60,10 @@ namespace Client_PC.Scenes
         {
             Game1.self.state = Game1.State.OptionsMenu;
         }
-        public void Update(GameTime gameTime)
+       
+
+        public override void UpdateGrid()
         {
-            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
-            if (Game1.self.DeltaSeconds > 250)
-            {
-                Game1.self.AbleToClick = true;
-            }
-            var mouseState = Mouse.GetState();
-            var keyboardState = Keyboard.GetState();
-            Utils.UpdateKeyboard(keyboardState,ref LastPressedKeys);
-            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
-            {
-                Game1.self.DeltaSeconds = 0;
-                Game1.self.AbleToClick = false;
-                int x = mouseState.X;
-                int y = mouseState.Y;
-                Point xy = new Point(x,y);
-                IClickable button = Clickable.SingleOrDefault(p=> p.GetBoundary().Contains(xy));
-                if (button != null)
-                {
-                    Game1.self.FocusedElement = button;
-                    button.OnClick();
-                }
-                else
-                {
-                    Game1.self.FocusedElement = null;
-                }
-            }
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
         }

@@ -11,19 +11,13 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
 {
-    class SettingsMenu
+    class SettingsMenu : Menu
     {
-        private List<IClickable> Clickable;
-        private Grid grid;
-        private GUI Gui;
-        private bool AbleToClick = false;
-        private int i = 0;
-        private Dropdown drop;
-        public SettingsMenu()
-        {
-            Clickable = new List<IClickable>();
-        }
 
+        private Grid grid;
+
+        private Dropdown drop;
+        bool dropClicked = false;
         public void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -104,70 +98,52 @@ namespace Client_PC.Scenes
         {
             Game1.self.state = Game1.State.MainMenu;
         }
-        public void Update(GameTime gameTime)
+        
+
+        public override void UpdateGrid()
         {
-            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
-            var mouseState = Mouse.GetState();
-            if (Game1.self.DeltaSeconds > 250)
-            {
-                Game1.self.AbleToClick = true;
-            }
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
-            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
+        }
+
+        public override IClickable GetClickable(Point xy)
+        {
+            return Clickable.Where(p => p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
+        }
+        public override void UpdateFields()
+        {
+            dropClicked = false;
+        }
+        public override void UpdateClick(IClickable button)
+        {
+            
+            Game1.self.FocusedElement = button;
+            if (button is Dropdown)
             {
-                Game1.self.DeltaSeconds = 0;
-                Game1.self.AbleToClick = false;
-                int x = mouseState.X;
-                int y = mouseState.Y;
-                i++;
-                bool dropClicked = false;
-                Point xy = new Point(x, y);
-                IClickable button = Clickable.Where(p=> p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
-                if (button != null)
+                Dropdown d = (Dropdown)button;
+                if (d.ShowChildren)
                 {
-                    Game1.self.FocusedElement = button;
-                    if (button is Dropdown)
-                    {
-                        Dropdown d = (Dropdown) button;
-                        if (d.ShowChildren)
-                        {
-                            button.OnClick();
-                        }
-                        else
-                        {
-                            d.ShowChildren = true;
-                            d.Update();
-                            dropClicked = true;
-                            button.Active = false;
-                        }
-                    }
-                    else if (button.Parent is Dropdown)
-                    {
-                        dropClicked = true;
-                        Dropdown d = (Dropdown) button.Parent;
-                        d.Active = true;
-                        button.OnClick();
-                    }
-                    else
-                    {
-                        button.OnClick();
-                    }
+                    button.OnClick();
                 }
                 else
                 {
-                    Game1.self.FocusedElement = null;
-                }
-
-                if (!dropClicked)
-                {
-                    Dropdown drop = (Dropdown)Clickable.SingleOrDefault(p => p is Dropdown);
-                    drop.ShowChildren = false;
-                    drop.Update();
-                    drop.Active = true;
+                    d.ShowChildren = true;
+                    d.Update();
+                    dropClicked = true;
+                    button.Active = false;
                 }
             }
-            grid.UpdateP();
+            else if (button.Parent is Dropdown)
+            {
+                dropClicked = true;
+                Dropdown d = (Dropdown)button.Parent;
+                d.Active = true;
+                button.OnClick();
+            }
+            else
+            {
+                button.OnClick();
+            }
         }
         public void Draw(GameTime gameTime)
         {

@@ -11,18 +11,10 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
 {
-    class RegisterMenu
+    class RegisterMenu : Menu
     {
-        private GUI Gui;
         private Grid grid;
-        private List<IClickable> Clickable;
-        private bool AbleToClick;
-        private Keys[] LastPressedKeys;
 
-        public RegisterMenu()
-        {
-            Clickable = new List<IClickable>();
-        }
 
         public void Initialize(ContentManager Content)
         {
@@ -43,7 +35,7 @@ namespace Client_PC.Scenes
             {
                 Text = "Password"
             };
-            Label passwordLabel2 = new Label(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label passwordLabel2 = new Label(new Point(0, 0), 100, 55, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password again"
             };
@@ -105,25 +97,16 @@ namespace Client_PC.Scenes
         {
             Game1.self.state = Game1.State.LoginMenu;
         }
-        public void Update(GameTime gameTime)
+
+
+        public override void UpdateTooltips(IClickable button, Point xy)
         {
-            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
-            if (Game1.self.DeltaSeconds > 250)
-            {
-                Game1.self.AbleToClick = true;
-            }
-            var mouseState = Mouse.GetState();
-            var keyboardState = Keyboard.GetState();
-            Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
-            int x = mouseState.X;
-            int y = mouseState.Y;
-            Point xy = new Point(x, y);
             foreach (var clickable in Clickable.Where(p => p.Tooltip != null).ToList())
             {
                 Game1.self.tooltipToDraw = null;
             }
-            
-            IClickable button = Clickable.SingleOrDefault(p => p.GetBoundary().Contains(xy));
+
+
             if (button != null)
             {
                 if (button.Tooltip != null)
@@ -132,22 +115,6 @@ namespace Client_PC.Scenes
                     button.Tooltip.Update(xy);
                 }
             }
-            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
-            {
-                Game1.self.DeltaSeconds = 0;
-                Game1.self.AbleToClick = false;
-                if (button != null)
-                {
-                    Game1.self.FocusedElement = button;
-                    button.OnClick();
-                }
-                else
-                {
-                    Game1.self.FocusedElement = null;
-                }
-            }
-            grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
-            grid.UpdateP();
         }
         public void Draw(GameTime gameTime)
         {
