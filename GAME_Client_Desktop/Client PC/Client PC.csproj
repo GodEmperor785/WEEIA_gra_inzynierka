@@ -62,6 +62,8 @@
     <Compile Include="UI\IHasText.cs" />
     <Compile Include="UI\InputBox.cs" />
     <Compile Include="UI\Label.cs" />
+    <Compile Include="UI\Layout.cs" />
+    <Compile Include="UI\RelativeLayout.cs" />
     <Compile Include="UI\Tooltip.cs" />
     <Compile Include="UI\Util.cs" />
     <Compile Include="Utilities\Config.cs" />

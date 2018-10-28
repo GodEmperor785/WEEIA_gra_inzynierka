@@ -11,19 +11,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Client_PC.UI
 {
-    class Grid : GuiElement
+    class Grid : Layout 
     {
         public bool Active { get; set; }
-        private class Child
-        {
-            public GuiElement element;
-            public int id;
-            public int column;
-            public int row;
-            public string name;
-            public int columnWidth = 1;
-        }
-        public Rectangle Boundary { get; set; }
+        
+        
 
         public override int  Width
         {
@@ -75,7 +67,7 @@ namespace Client_PC.UI
 
         public int columnOffset = 5;
         public int rowOffset = 5;
-        private List<Child> Children;
+        
         private List<float> ColumnsSize;
         private List<float> RowsSize;
 
@@ -295,14 +287,7 @@ namespace Client_PC.UI
         {
             return Children.Single(p => p.column == column && p.row == row).element;
         }
-        public GuiElement GetChild(string name)
-        {
-            return Children.SingleOrDefault(p => p.name.Equals(name)).element;
-        }
-        public GuiElement GetChild(int id)
-        {
-            return Children.SingleOrDefault(p => p.element.Id == id).element;
-        }
+        
         public override void Draw(SpriteBatch spriteBatch)
         {
             foreach (var child in Children)
