@@ -11,6 +11,7 @@ using System.IO;
 using MySql.Data.MySqlClient;
 using GAME_connection;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace GAME_Server {
 	internal class Server {
@@ -22,6 +23,8 @@ namespace GAME_Server {
 		private static List<Ship> allShips;
 		private static List<Faction> allFactions;
 		private static BaseModifiers baseModifiers;
+
+		private static readonly object logLock = new object();
 
 		//http://www.entityframeworktutorial.net/code-first/database-initialization-strategy-in-code-first.aspx
 		//https://dev.mysql.com/doc/connector-net/en/connector-net-entityframework60.html
@@ -52,6 +55,8 @@ namespace GAME_Server {
 		//thread management specific fields and properties
 		private static List<Thread> userThreads = new List<Thread>();
 
+		internal static bool continueAcceptingConnections = true;
+
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
 			InitilizeGameDataFromDB();
@@ -59,13 +64,13 @@ namespace GAME_Server {
 			IPAddress ipAddress = IPAddress.Parse(ip);
 			TcpListener listener = new TcpListener(ipAddress, port);
 			listener.Start();
-			Console.WriteLine("Server listening on: " + ip + ":" + port);
+			Log("Server listening on: " + ip + ":" + port);
 
-			while (true) {
-				Console.WriteLine("Server is waiting for client...");
+			while (continueAcceptingConnections) {
+				Log("Server is waiting for client...");
 				TcpClient client = listener.AcceptTcpClient();
 				TcpConnection gameClient = new TcpConnection(client, false);
-				Console.WriteLine("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
+				Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
 				Thread t = new Thread(new ParameterizedThreadStart(Test));
 				//UserThread userThread = new UserThread(gameClient);
@@ -188,6 +193,32 @@ namespace GAME_Server {
 			return Convert.ChangeType(packetToCast, properType);
 		}
 
+		/// <summary>
+		/// To ne used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc.
+		/// </summary>
+		/// <param name="message"></param>
+		internal static void Log(string message) {
+			lock (logLock) {
+				Console.WriteLine(message);
+			}
+		}
+
+		/// <summary>
+		/// To ne used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. This overload also logs caller line
+		/// </summary>
+		internal static void Log(string message, bool isCritical, [CallerLineNumber] int callerLine = 0) {
+			string msg = "";
+			if (isCritical) msg += "CRITICAL: ";
+			msg = message + " at line: " + callerLine;
+			lock (logLock) {
+				Console.WriteLine(msg);
+			}
+		}
+
+		/// <summary>
+		/// Temporary connection tester method. Should be removed later
+		/// </summary>
+		/// <param name="clientObj"></param>
 		private static void Test(object clientObj) {
 			try {
 				TcpConnection client = (TcpConnection)clientObj;
@@ -260,19 +291,23 @@ namespace GAME_Server {
 		internal void RunUserThread() {
 			try {
 				//first do login or register
-				bool loginSuccess = LoginOrRegister();
+				bool loginSuccess = false;
+				while (!loginSuccess) {		//while login is not succesful
+					loginSuccess = LoginOrRegister();
+				}
 				if(loginSuccess) {
+					Client.Send(new GamePacket(OperationType.SUCCESS, new object()));
 					//set and send user data
 					this.User = Server.GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 					Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
 				}
 			} catch(ConnectionEndedException) {
-				Console.WriteLine("Connection ended without proper disconnect");
+				Server.Log(FailureReasons.CLIENT_DISCONNECTED, true);
 			}
 		}
 
 		/// <summary>
-		/// Checks if login or register is allowed for given player data and returns true if it is so
+		/// Checks if login or register is allowed for given player data and returns true if it is so. Receive 1 msg (typeof(packet) = Player), send 1 msg (opType = FAILURE/SUCCESS)
 		/// </summary>
 		/// <returns></returns>
 		private bool LoginOrRegister() {
@@ -282,7 +317,7 @@ namespace GAME_Server {
 			try {
 				playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
 			} catch(InvalidCastException) {
-				Console.WriteLine("Invalid type of internal packet");
+				SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
 				return false;
 			}
 			//if type ok do login or register
@@ -291,7 +326,10 @@ namespace GAME_Server {
 					this.User = playerObject;
 					return true;
 				}
-				else return false;
+				else {
+					SendFailure(FailureReasons.INCORRECT_LOGIN + playerObject.Username);
+					return false;
+				}
 			}
 			else if(packet.OperationType == OperationType.REGISTER) {
 				if ((!Server.GameDataBase.PlayerExists(playerObject)) && Server.GameDataBase.PlayerNameIsUnique(playerObject)) {
@@ -299,12 +337,30 @@ namespace GAME_Server {
 					this.User = playerObject;
 					return true;
 				}
-				else return false;
+				else {
+					SendFailure(FailureReasons.USERNAME_ALREADY_EXISTS + playerObject.Username);
+					return false;
+				}
 			}
-			else {
-				Console.WriteLine("Invalid packet OperationType received during login or register");
+			else if(packet.OperationType == OperationType.DISCONNECT) {
+				Server.Log("User disconnected before succesful login!");
 				return false;
 			}
+			else {
+				SendFailure(FailureReasons.INVALID_PACKET_TYPE);
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// sends <see cref="OperationType.FAILURE"/> <see cref="GamePacket"/> to client and logs reason and caller line
+		/// </summary>
+		/// <param name="reason"></param>
+		/// <param name="callerLine">DO NOT SET</param>
+		private void SendFailure(string reason, [CallerLineNumber] int callerLine = 0) {
+			string failMsg = "Operation Failed! at: " + callerLine + ". Reason: " + reason;
+			Server.Log(failMsg);
+			this.Client.Send(new GamePacket(OperationType.FAILURE, reason));
 		}
 
 	}
