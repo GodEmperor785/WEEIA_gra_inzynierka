@@ -54,6 +54,7 @@ namespace Client_PC
         {
             // TODO: Add your initialization logic here
             self = this;
+            LoadConfig();
             //  gd = GraphicsDevice;
             mainMenu = new MainMenu();
             settingsMenu = new SettingsMenu();
@@ -66,6 +67,11 @@ namespace Client_PC
             deckMenu = new DeckMenu();
             deckMenu.Initialize(Content);
             base.Initialize();
+            
+        }
+
+        private void LoadConfig()
+        {
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
             try
@@ -74,7 +80,7 @@ namespace Client_PC
                 {
 
                 }
-                
+
             }
             catch
             {
@@ -83,7 +89,7 @@ namespace Client_PC
                 xml.Serialize(writer, Config.Default());
                 writer.Close();
             }
-            
+
 
 
             using (Stream reader = new FileStream("Config", FileMode.Open))
@@ -93,7 +99,6 @@ namespace Client_PC
 
             UseConfig();
         }
-
         private void UseConfig()
         {
             #region Resolution

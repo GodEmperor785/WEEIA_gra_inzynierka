@@ -9,12 +9,11 @@ namespace Client_PC.UI
 {
     class RelativeLayout : Layout
     {
-        public void AddChild(GuiElement element, Point origin)
+        public void AddChild(GuiElement element)
         {
             Child ch = new Child();
             ch.element = element;
             ch.id = Children.Count;
-            ch.origin = origin;
             Children.Add(ch);
         }
     }
