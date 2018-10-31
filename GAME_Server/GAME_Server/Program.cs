@@ -59,10 +59,11 @@ namespace GAME_Server {
 
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			InitilizeGameDataFromDB();
+			//InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
-			TcpListener listener = new TcpListener(ipAddress, port);
+			//TcpListener listener = new TcpListener(ipAddress, port);
+			TcpListener listener = new TcpListener(IPAddress.Any, port);
 			listener.Start();
 			Log("Server listening on: " + ip + ":" + port);
 

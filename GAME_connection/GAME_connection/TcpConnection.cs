@@ -35,6 +35,7 @@ namespace GAME_connection {
 		private readonly object queueLock = new object();
 		private readonly object keepReceivingLock = new object();
 		private readonly object keepTestingConnectionLock = new object();
+		private readonly object alreadyDisconnectedLock = new object();
 
 		private Queue<GamePacket> receivedPackets = new Queue<GamePacket>();
 		private Thread receiver;
@@ -42,9 +43,11 @@ namespace GAME_connection {
 		private bool keepReceiving;
 		private bool keepTestingConnection;
 		private AutoResetEvent messageReceivedEvent;
+		private AutoResetEvent connectionEndedEvent;
 
 		private bool remotePlannedDisconnect;
 		private bool connectionEnded;
+		private bool alreadyDisconnected;
 
 		#region Constructor
 		/// <summary>
@@ -61,7 +64,9 @@ namespace GAME_connection {
 			this.RemotePortNumber = ipData.Port;
 			this.serializer = new BinaryFormatter();
 			this.messageReceivedEvent = new AutoResetEvent(false);
+			this.connectionEndedEvent = new AutoResetEvent(false);
 
+			alreadyDisconnected = false;
 			keepReceiving = true;
 			RemotePlannedDisconnect = false;
 			receiver = new Thread(new ThreadStart(DoReceiving));
@@ -158,6 +163,7 @@ namespace GAME_connection {
 							messageReceivedEvent.Set();
 						}
 					}
+					if (receivedPacket.OperationType == OperationType.DISCONNECT) KeepReceiving = false;        //stop receiving if disconnect
 				} catch(IOException ex) {
 					Console.WriteLine("Connection ended");
 					//Console.WriteLine(ex.StackTrace);
@@ -171,7 +177,7 @@ namespace GAME_connection {
 				}
 				//than block on another read operation
 			}
-			this.Disconnect();
+			if(AlreadyDisconnected) this.Disconnect();
 		}
 
 		/// <summary>
@@ -209,7 +215,8 @@ namespace GAME_connection {
 			while(KeepTestingConnection) {
 				try {
 					if(!connectionEnded) Send(GamePacket.CreateConnectionTestPacket());
-					Thread.Sleep(connectionTestIntervalMilis);
+					connectionEndedEvent.WaitOne(connectionTestIntervalMilis);
+					//Thread.Sleep(connectionTestIntervalMilis);
 				} catch (IOException ex) {
 					Console.WriteLine("Connection ended");
 					//Console.WriteLine(ex.StackTrace);
@@ -247,14 +254,36 @@ namespace GAME_connection {
 		public bool RemotePlannedDisconnect { get => remotePlannedDisconnect; set => remotePlannedDisconnect = value; }
 
 		#region IDisposable and Disconnect
+		private void ProcessDisconnectInternal(bool sendDisconnectToRemote) {
+			if(sendDisconnectToRemote) Send(new GamePacket(OperationType.DISCONNECT, new object()));
+			RemotePlannedDisconnect = true;
+			KeepTestingConnection = false;
+			KeepReceiving = false;
+			messageReceivedEvent.Set();
+			connectionEndedEvent.Set();
+		}
+
+		private bool AlreadyDisconnected {
+			get {
+				bool localAlreadyDisconnected;
+				lock (alreadyDisconnectedLock) {
+					localAlreadyDisconnected = alreadyDisconnected;
+				}
+				return localAlreadyDisconnected;
+			}
+			set {
+				lock (alreadyDisconnectedLock) {
+					alreadyDisconnected = value;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Use this method to send proper disconnect to remote. DO NOT send packet <see cref="OperationType.CONNECTION_TEST"/> manually and call Dispose or Disconnect!
 		/// </summary>
 		public void SendDisconnect() {
-			Send(new GamePacket(OperationType.DISCONNECT, null));
-			RemotePlannedDisconnect = true;
-			messageReceivedEvent.Set();
-			Thread.Sleep(100);
+			ProcessDisconnectInternal(true);
+			Thread.Sleep(100);		//give threads some time to process disconnect
 			this.Dispose();
 		}
 
@@ -262,8 +291,7 @@ namespace GAME_connection {
 		/// Use this method when you receive <see cref="OperationType.CONNECTION_TEST"/> packet from remote. DO NOT use it when you want to SEND <see cref="OperationType.CONNECTION_TEST"/>
 		/// </summary>
 		public void Disconnect() {
-			RemotePlannedDisconnect = true;
-			messageReceivedEvent.Set();
+			ProcessDisconnectInternal(false);
 			this.Dispose();
 		}
 
@@ -271,15 +299,14 @@ namespace GAME_connection {
 		/// called internally by proper <see cref="Disconnect"/> and <see cref="SendDisconnect"/>. SHOULDN'T be used manually!
 		/// </summary>
 		public void Dispose() {
-			KeepTestingConnection = false;
-			KeepReceiving = false;
 			TcpClient.Dispose();
 
-			Console.WriteLine("0");
+			//Console.WriteLine("0");
 			if (connectionTester != null) connectionTester.Join();
-			Console.WriteLine("1");
+			//Console.WriteLine("1");
 			if (receiver.ManagedThreadId != Thread.CurrentThread.ManagedThreadId) receiver.Join();
-			Console.WriteLine("2");
+			//Console.WriteLine("2");
+			AlreadyDisconnected = true;
 		}
 		#endregion
 
