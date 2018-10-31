@@ -28,6 +28,7 @@ namespace Client_PC
         private SettingsMenu settingsMenu;
         private LoginMenu loginMenu;
         private RegisterMenu registerMenu;
+        private DeckMenu deckMenu;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
@@ -62,6 +63,8 @@ namespace Client_PC
             loginMenu.Initialize(Content);
             registerMenu = new RegisterMenu();
             registerMenu.Initialize(Content);
+            deckMenu = new DeckMenu();
+            deckMenu.Initialize(Content);
             base.Initialize();
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
@@ -157,6 +160,9 @@ namespace Client_PC
                 case State.RegisterMenu:
                     registerMenu.Update(gameTime);
                     break;
+                case State.DeckMenu:
+                    deckMenu.Update(gameTime);
+                    break;
             }
             base.Update(gameTime);
         }
@@ -180,6 +186,9 @@ namespace Client_PC
                     break;
                 case State.RegisterMenu:
                     registerMenu.Draw(gameTime);
+                    break;
+                case State.DeckMenu:
+                    deckMenu.Draw(gameTime);
                     break;
             }
 

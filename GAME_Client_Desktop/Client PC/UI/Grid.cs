@@ -14,29 +14,43 @@ namespace Client_PC.UI
     class Grid : Layout 
     {
         public bool Active { get; set; }
-        
-        
+        public bool WitdhAndHeightColumnDependant { get; set; }
 
+        private int width;
         public override int  Width
         {
             get
             {
-                int sum = 0;
-                ColumnsSize.ForEach(p=> sum+= (int)p);
-                sum += (ColumnsSize.Count - 1) * columnOffset;
-                return sum;
+                if (WitdhAndHeightColumnDependant)
+                {
+                    int sum = 0;
+                    ColumnsSize.ForEach(p => sum += (int) p);
+                    sum += (ColumnsSize.Count - 1) * columnOffset;
+                    return sum;
+                }
+                else
+                    return width;
+
             }
+            set { width = value; }
         }
 
+        private int height;
         public override int Height
         {
             get
             {
-                int sum = 0;
-                RowsSize.ForEach(p => sum += (int)p);
-                sum += (RowsSize.Count - 1) * rowOffset;
-                return sum;
+                if (WitdhAndHeightColumnDependant)
+                {
+                    int sum = 0;
+                    RowsSize.ForEach(p => sum += (int) p);
+                    sum += (RowsSize.Count - 1) * rowOffset;
+                    return sum;
+                }
+                else return height;
+
             }
+            set { height = value; }
         }
         
         public int Rows
@@ -95,9 +109,9 @@ namespace Client_PC.UI
             }
             return sum;
         }
-        public Grid()
+        public Grid() : base()
         {
-            Children = new List<Child>();
+            WitdhAndHeightColumnDependant = true;
             ColumnsSize = new List<float>();
             RowsSize = new List<float>();
         }
@@ -290,6 +304,12 @@ namespace Client_PC.UI
         
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (DrawBorder)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.Black,BorderSize,0), Boundary, Color.White);
+                spriteBatch.End();
+            }
             foreach (var child in Children)
             {
                 if (child.name != null && child.name.Equals("gridW"))

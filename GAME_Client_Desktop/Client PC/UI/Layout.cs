@@ -10,7 +10,6 @@ namespace Client_PC.UI
 {
     class Layout : GuiElement
     {
-        public Rectangle Boundary { get; set; }
         protected class Child
         {
             public GuiElement element;
@@ -21,7 +20,14 @@ namespace Client_PC.UI
             public int columnWidth = 1;
             public Point origin;
         }
+
+        public Layout()
+        {
+            Children = new List<Child>();
+        }
         protected List<Child> Children;
+        public bool DrawBorder { get; set; }
+        public int BorderSize { get; set; }
         public GuiElement GetChild(string name)
         {
             return Children.SingleOrDefault(p => p.name.Equals(name)).element;

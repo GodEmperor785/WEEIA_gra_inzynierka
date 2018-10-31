@@ -23,7 +23,7 @@ namespace Client_PC.Scenes
             Gui = new GUI(Content);
             Button z = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
-                Text = "z1 button"
+                Text = "Deck"
             };
             Button z2 = new Button(new Point(100, 200), 70, 125, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
             {
@@ -46,11 +46,16 @@ namespace Client_PC.Scenes
             grid.AddChild(inputBox,4,0);
             z3.clickEvent += ExitClick;
             z2.clickEvent += GoToSettings;
+            z.clickEvent += GoToDeck;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
             grid.ResizeChildren();
         }
 
+        public void GoToDeck()
+        {
+            Game1.self.state = Game1.State.DeckMenu;
+        }
         public void ExitClick()
         {
             Game1.self.Exit();

@@ -10,7 +10,7 @@ namespace Client_PC.UI
 {
     class Util
     {
-        public static Texture2D CreateTexture(GraphicsDevice device, int width, int height, Func<int, Color> paint)
+        public static Texture2D CreateTexture(GraphicsDevice device, int width, int height, Func<int, Color> paint,int bordersize = 10,int alpha = 255)
         {
             //initialize a texture
             Texture2D texture = new Texture2D(device, width, height);
@@ -20,7 +20,7 @@ namespace Client_PC.UI
             for (int pixel = 0; pixel < data.Count(); pixel++)
             {
                 //the function applies the color according to the specified pixel
-                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height, false);
+                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height, false, bordersize, alpha);
                 // data[pixel] = paint(pixel);
             }
 
@@ -28,7 +28,7 @@ namespace Client_PC.UI
             texture.SetData(data);
             return texture;
         }
-        public static Texture2D CreateTextureHollow(GraphicsDevice device, int width, int height, Func<int, Color> paint)
+        public static Texture2D CreateTextureHollow(GraphicsDevice device, int width, int height, Func<int, Color> paint,int bordersize = 10,int alpha = 255)
         {
             //initialize a texture
             Texture2D texture = new Texture2D(device, width, height);
@@ -38,7 +38,7 @@ namespace Client_PC.UI
             for (int pixel = 0; pixel < data.Count(); pixel++)
             {
                 //the function applies the color according to the specified pixel
-                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height, true);
+                data[pixel] = SetColor(GetPosition(pixel, width, height), width, height, true, bordersize,alpha);
                 // data[pixel] = paint(pixel);
             }
 
@@ -47,18 +47,18 @@ namespace Client_PC.UI
             return texture;
         }
 
-        private static Color SetColor(Point position, int width, int height, bool hollow)
+        private static Color SetColor(Point position, int width, int height, bool hollow, int bordersize,int alpha)
         {
             
-            if (position.X < 10)
+            if (position.X < bordersize)
             {
                 int difference = position.X;
-                if (position.Y < 10)
+                if (position.Y < bordersize)
                 {
                     int differenceY = position.Y;
                     return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
                 }
-                else if (position.Y > height - 10)
+                else if (position.Y > height - bordersize)
                 {
                     int differenceY = height - position.Y;
                     return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
@@ -68,15 +68,15 @@ namespace Client_PC.UI
                     return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4,255);
                 }
             }
-            else if (position.X > width - 10)
+            else if (position.X > width - bordersize)
             {
                 int difference = width - position.X ;
-                if (position.Y > height - 10)
+                if (position.Y > height - bordersize)
                 {
                     int differenceY = height - position.Y;
                     return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
                 }
-                else if (position.Y < 10)
+                else if (position.Y < bordersize)
                 {
                     int differenceY = position.Y;
                     return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
@@ -86,12 +86,12 @@ namespace Client_PC.UI
                     return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, 255);
                 }
             }
-            else if (position.Y < 10)
+            else if (position.Y < bordersize)
             {
                 int difference = position.Y;
                 return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, 255);
             }
-            else if (position.Y > height - 10)
+            else if (position.Y > height - bordersize)
             {
                 int difference = height - position.Y;
                 return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, 255);
@@ -100,7 +100,7 @@ namespace Client_PC.UI
             {
                 if (hollow)
                 {
-                    return new Color(240, 240, 240, 255);
+                     return new Color(240, 240, 240, alpha);
                 }
                 else
                 {
