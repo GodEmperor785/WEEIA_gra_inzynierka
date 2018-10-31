@@ -31,7 +31,7 @@ namespace Client_PC.Scenes
             ;
             gridTopLeft.DrawBorder = true;
             gridRight.DrawBorder = true;
-            gridRightBottom.DrawBorder = true;
+            gridRightBottom.DrawBorder = false;
             gridCenter.DrawBorder = true;
 
             gridTopLeft.BorderSize = 3;
@@ -61,10 +61,49 @@ namespace Client_PC.Scenes
                                     (int)(Game1.self.graphics.PreferredBackBufferHeight * RightGridHeightMulti + 20));
             gridCenter.Origin = new Point(10, (int)(Game1.self.graphics.PreferredBackBufferHeight - gridCenter.Height - 10));
 
+            Button b = new Button(new Point(0, 0), (int) (gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2),
+                (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "Add"
+            };
+            Button b2 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2), (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "Save"
+            };
+            Button b3 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2), (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "Remove"
+            };
+            Button b4 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2), (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "Exit"
+            };
+            Clickable.Add(b4);
+            b4.clickEvent += OnExit;
+            gridRightBottom.AddChild(b,0,0);
+            gridRightBottom.AddChild(b2, 0, 1);
+            gridRightBottom.AddChild(b3, 1, 0);
+            gridRightBottom.AddChild(b4, 1, 1);
+
+
+
+
+
+
+
             layout.AddChild(gridTopLeft);
             layout.AddChild(gridRight);
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
+        }
+
+        private void OnExit()
+        {
+            Game1.self.state = Game1.State.MainMenu;
         }
 
         public override void UpdateGrid()
