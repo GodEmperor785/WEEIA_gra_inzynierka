@@ -33,17 +33,25 @@ namespace Client_PC.Scenes
             {
                 Text = "Exit"
             };
-            InputBox inputBox = new InputBox(new Point(0,0),100,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
-            inputBox.TextLimit = 30;
-            Clickable.Add(inputBox);
+            Button p1 = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont, true)
+            {
+                Text = "Play ranked"
+            };
+            Button p2 = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont, true)
+            {
+                Text = "Play custom"
+            };
+            Clickable.Add(p1);
             Clickable.Add(z);
             Clickable.Add(z2);
             Clickable.Add(z3);
             grid = new Grid();
-            grid.AddChild(z, 0, 0);
-            grid.AddChild(z2, 1, 0);
-            grid.AddChild(z3,2,0);
-            grid.AddChild(inputBox,4,0);
+            grid.AddChild(p1,0,0);
+            grid.AddChild(p2,1,0);
+            grid.AddChild(z, 2, 0);
+            grid.AddChild(z2, 3, 0);
+            grid.AddChild(z3,4,0);
+            p1.clickEvent += Play;
             z3.clickEvent += ExitClick;
             z2.clickEvent += GoToSettings;
             z.clickEvent += GoToDeck;
@@ -52,6 +60,10 @@ namespace Client_PC.Scenes
             grid.ResizeChildren();
         }
 
+        public void Play()
+        {
+            Game1.self.state = Game1.State.GameWindow;
+        }
         public void GoToDeck()
         {
             Game1.self.state = Game1.State.DeckMenu;

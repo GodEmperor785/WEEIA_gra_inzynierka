@@ -7,6 +7,7 @@ using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using GameWindow = Client_PC.Scenes.GameWindow;
 
 namespace Client_PC
 {
@@ -29,6 +30,7 @@ namespace Client_PC
         private LoginMenu loginMenu;
         private RegisterMenu registerMenu;
         private DeckMenu deckMenu;
+        private GameWindow gameWindow;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
@@ -66,6 +68,8 @@ namespace Client_PC
             registerMenu.Initialize(Content);
             deckMenu = new DeckMenu();
             deckMenu.Initialize(Content);
+            gameWindow = new GameWindow();
+            gameWindow.Initialize(Content);
             base.Initialize();
             
         }
@@ -168,6 +172,9 @@ namespace Client_PC
                 case State.DeckMenu:
                     deckMenu.Update(gameTime);
                     break;
+                case State.GameWindow:
+                    gameWindow.Update(gameTime);
+                    break;
             }
             base.Update(gameTime);
         }
@@ -194,6 +201,9 @@ namespace Client_PC
                     break;
                 case State.DeckMenu:
                     deckMenu.Draw(gameTime);
+                    break;
+                case State.GameWindow:
+                    gameWindow.Draw(gameTime);
                     break;
             }
 
