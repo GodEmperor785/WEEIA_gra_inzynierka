@@ -29,8 +29,6 @@ namespace GAME_Server {
 
 		void AddPlayer(DbPlayer player);
 
-		void AddShip(DbShip ship);
-
 		void AddFaction(Faction faction);
 
 		void AddWeapon(DbWeapon weapon);
@@ -41,15 +39,21 @@ namespace GAME_Server {
 
 		List<DbDefenceSystem> GetAllDefences();
 
-		void UpdateShip(DbShip newData);
+		void UpdateShipTemplate(DbShipTemplate newData);
 
-		bool RemoveShipWithId(int id);
+		bool RemoveTemplateShipWithId(int id);
 
-		List<DbShip> GetShipsAvailableForExp(int exp);
+		List<DbShipTemplate> GetShipsAvailableForExp(int exp);
 
 		bool ValidateUser(Player player);
 
 		void AddFleet(Fleet fleet);
+
+		void AddShipTemplate(DbShipTemplate shipTemplate);
+
+		void AddShip(DbShip ship);
+
+		DbShipTemplate GetShipTemplateWithId(int id);
 
 		//TODO
 		//deletes, updates and inserts

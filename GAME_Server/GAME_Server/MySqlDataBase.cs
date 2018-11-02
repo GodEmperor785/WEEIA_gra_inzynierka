@@ -41,6 +41,11 @@ namespace GAME_Server {
 			SaveChanges();
 		}
 
+		public void AddShipTemplate(DbShipTemplate shipTemplate) {
+			DbContext.ShipTemplates.Add(shipTemplate);
+			SaveChanges();
+		}
+
 		public void AddFaction(Faction faction) {
 			DbContext.Factions.Add(faction);
 			SaveChanges();
@@ -124,6 +129,13 @@ namespace GAME_Server {
 			return query.FirstOrDefault();
 		}
 
+		public DbShipTemplate GetShipTemplateWithId(int id) {
+			var query = from shipTemplates in dbContext.ShipTemplates
+						where shipTemplates.Id == id
+						select shipTemplates;
+			return query.FirstOrDefault();
+		}
+
 		public List<DbWeapon> GetAllWeapons() {
 			var query = from weapons in dbContext.Weapons
 						select weapons;
@@ -174,12 +186,12 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// returns ships that have exp requirement equal or lower than specified in parameter
+		/// returns ships templates that have exp requirement equal or lower than specified in parameter
 		/// </summary>
 		/// <param name="exp"></param>
 		/// <returns></returns>
-		public List<DbShip> GetShipsAvailableForExp(int exp) {
-			var query = from ships in dbContext.Ships
+		public List<DbShipTemplate> GetShipsAvailableForExp(int exp) {
+			var query = from ships in dbContext.ShipTemplates
 						where ships.ExpUnlock <= exp
 						select ships;
 			return query.ToList();
@@ -189,11 +201,11 @@ namespace GAME_Server {
 
 		#region UPDATE
 		/// <summary>
-		/// updates ship with new data, weapon and defence systems lists in newData must be got from DB! Make sure you have a previously unused list from DB before you update with it
+		/// updates ship template with new data, weapon and defence systems lists in newData must be got from DB! Make sure you have a previously unused list from DB before you update with it
 		/// </summary>
 		/// <param name="newData"></param>
-		public void UpdateShip(DbShip newData) {
-			var shipToUpdate = (from ship in dbContext.Ships where ship.Id == newData.Id select ship).First();
+		public void UpdateShipTemplate(DbShipTemplate newData) {
+			var shipToUpdate = (from ship in dbContext.ShipTemplates where ship.Id == newData.Id select ship).First();
 			//update should be done like this
 			shipToUpdate.Name = newData.Name;
 			shipToUpdate.Faction = newData.Faction;
@@ -205,24 +217,25 @@ namespace GAME_Server {
 			shipToUpdate.ExpUnlock = newData.ExpUnlock;
 			shipToUpdate.Weapons = newData.Weapons;
 			shipToUpdate.Defences = newData.Defences;
+			shipToUpdate.ShipRarity = newData.ShipRarity;
 			SaveChanges();
 		}
 		#endregion
 
 		#region DELETE
 		/// <summary>
-		/// deletes ship with specified id, can't delete ship that belongs to any player or to any fleet. returns true if delete completed, false if at least one player owns this ship or any fleet has this ship in it
+		/// deletes ship with specified id, can't delete ship that belongs to any player or to any fleet. returns true if delete completed, false if at least one ship of this template exists
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		public bool RemoveShipWithId(int id) {
-			var shipToDelete = (from ship in dbContext.Ships where ship.Id == id select ship).First();
-			if (shipToDelete.PlayersOwningShip.Count > 0 || shipToDelete.Fleets.Count > 0) return false;
+		public bool RemoveTemplateShipWithId(int id) {
+			var shipToDelete = (from ship in dbContext.ShipTemplates where ship.Id == id select ship).First();
+			if (shipToDelete.ShipsOfThisTemplate.Count > 0) return false;
 
 			//shipToDelete.Weapons.Clear();
 			//shipToDelete.Defences.Clear();
 			//SaveChanges();
-			dbContext.Ships.Remove(shipToDelete);
+			dbContext.ShipTemplates.Remove(shipToDelete);
 			SaveChanges();
 			return true;
 		}
@@ -252,12 +265,12 @@ namespace GAME_Server {
 		}
 
 		public bool FleetPointsInRange(Fleet fleet, Player player) {
-			//TODO
+			// TODO
 			return true;
 		}
 
 		public bool FleetShipsExpRequirement(Fleet fleet, Player player) {
-			//TODO
+			// TODO
 			return true;
 		}
 

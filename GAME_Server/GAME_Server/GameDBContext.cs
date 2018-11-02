@@ -22,6 +22,8 @@ namespace GAME_Server {
 		public DbSet<DbFleet> Fleets { get; set; }
 		public DbSet<DbBaseModifiers> BaseModifiers { get; set; }
 		public DbSet<DbGameHistory> GameHistories { get; set; }
+		public DbSet<DbShipTemplate> ShipTemplates { get; set; }
+		public DbSet<DbLootBoxes> LootBoxes { get; set; }
 		//public DbSet<DbFleetSizeExpMapping> FleetSizeExpMappings { get; set; }
 
 		public GameDBContext() : base("GameContext") {
@@ -41,29 +43,21 @@ namespace GAME_Server {
 			modelBuilder.Entity<DbPlayer>().HasIndex(user => user.Username).IsUnique(true);       //make player username unique
 
 			//many-to-many join tables custom names
-			modelBuilder.Entity<DbPlayer>()
-				.HasMany(x => x.OwnedShips)
-				.WithMany(x => x.PlayersOwningShip)
-				.Map(x => {
-					x.MapLeftKey("OwningPlayerID");
-					x.MapRightKey("OwnedShipID");
-					x.ToTable("Players_Ships");
-				});
-			modelBuilder.Entity<DbShip>()
+			modelBuilder.Entity<DbShipTemplate>()
 				.HasMany(x => x.Weapons)
 				.WithMany(x => x.Ships)
 				.Map(x => {
 					x.MapLeftKey("ShipID");
 					x.MapRightKey("WeaponID");
-					x.ToTable("Ships_Weapons");
+					x.ToTable("ShipTemplates_Weapons");
 				});
-			modelBuilder.Entity<DbShip>()
+			modelBuilder.Entity<DbShipTemplate>()
 				.HasMany(x => x.Defences)
 				.WithMany(x => x.Ships)
 				.Map(x => {
 					x.MapLeftKey("ShipID");
 					x.MapRightKey("DefenceSystemID");
-					x.ToTable("Ships_DefenceSystems");
+					x.ToTable("ShipTemplates_DefenceSystems");
 				});
 			modelBuilder.Entity<DbFleet>()
 				.HasMany(x => x.Ships)

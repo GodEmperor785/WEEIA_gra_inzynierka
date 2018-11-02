@@ -17,11 +17,14 @@ namespace GAME_connection {
 		private double armor;
 		private List<Weapon> weapons;
 		private List<DefenceSystem> defences;
-		private int expUnlock;		//exp necessary to unlock this ship
+		private int expUnlock;      //exp necessary to unlock this ship
+		private int shipExp;    //this ships exp
+		private Rarity rarity;
+		private double shipExpModifier;     //applies to: evasion, weapon-chanceToHit, defenceSystem-defenceValue, weapon-dmg (and maybe to armor and hp). Used like: realStats = baseStats + baseStats*(BaseModifiers.baseShipStatsExpModifier * shipExp) where shis in () is this modifier
 
 		public Ship() { }
 
-		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock) {
+		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock, int shipExp, Rarity rarity, double shipExpModifier) {
 			this.id = id;
 			this.name = name;
 			this.faction = faction;
@@ -33,6 +36,9 @@ namespace GAME_connection {
 			this.weapons = weapons;
 			this.defences = defences;
 			this.expUnlock = expUnlock;
+			this.shipExp = shipExp;
+			this.rarity = rarity;
+			this.shipExpModifier = shipExpModifier;
 		}
 
 		public string Name { get => name; set => name = value; }
@@ -46,5 +52,8 @@ namespace GAME_connection {
 		public double Armor { get => armor; set => armor = value; }
 		public int Id { get => id; set => id = value; }
 		public int ExpUnlock { get => expUnlock; set => expUnlock = value; }
+		public int ShipExp { get => shipExp; set => shipExp = value; }
+		public Rarity Rarity { get => rarity; set => rarity = value; }
+		public double ShipExpModifier { get => shipExpModifier; set => shipExpModifier = value; }
 	}
 }

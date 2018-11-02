@@ -68,7 +68,7 @@ namespace GAME_Server {
 			RangeMultiplier = rangeMultiplier;
 			ChanceToHit = chanceToHit;
 			ApEffectivity = apEffectivity;
-			Ships = new List<DbShip>();
+			Ships = new List<DbShipTemplate>();
 		}
 
 		public DbWeapon(int id, string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double rangeMultiplier, double chanceToHit, double apEffectivity) 
@@ -86,7 +86,7 @@ namespace GAME_Server {
 			ChanceToHit = weapon.ChanceToHit;
 			ApEffectivity = weapon.ApEffectivity;
 			Id = weapon.Id;
-			Ships = new List<DbShip>();
+			Ships = new List<DbShipTemplate>();
 		}
 
 		public string Name { get; set; }
@@ -99,7 +99,7 @@ namespace GAME_Server {
 		public double ApEffectivity { get; set; }
 		public int Id { get; set; }
 
-		public List<DbShip> Ships { get; set; }
+		public List<DbShipTemplate> Ships { get; set; }
 
 		public Weapon ToWeapon() {
 			return new Weapon(Id, Name, Faction, Damage, NumberOfProjectiles, WeaponType, ApEffectivity, RangeMultiplier, ChanceToHit);
@@ -119,7 +119,7 @@ namespace GAME_Server {
 			DefAgainstKinetic = defAgainstKinetic;
 			DefAgainstLaser = defAgainstLaser;
 			DefAgainstMissile = defAgainstMissile;
-			Ships = new List<DbShip>();
+			Ships = new List<DbShipTemplate>();
 		}
 
 		public DbDefenceSystem(int id, string name, Faction faction, double defenceValue, DefenceSystemType systemType, double defAgainstKinetic, double defAgainstLaser, double defAgainstMissile)
@@ -136,7 +136,7 @@ namespace GAME_Server {
 			DefAgainstLaser = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.LASER];
 			DefAgainstMissile = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.MISSILE];
 			Id = defenceSystem.Id;
-			Ships = new List<DbShip>();
+			Ships = new List<DbShipTemplate>();
 		}
 
 		public string Name { get; set; }
@@ -148,19 +148,18 @@ namespace GAME_Server {
 		public double DefAgainstMissile { get; set; }
 		public int Id { get; set; }
 
-		public List<DbShip> Ships { get; set; }
+		public List<DbShipTemplate> Ships { get; set; }
 
 		public DefenceSystem ToDefenceSystem() {
 			return new DefenceSystem(Id, Name, Faction, DefenceValue, SystemType, DefAgainstKinetic, DefAgainstLaser, DefAgainstMissile);
 		}
 	}
 
-	[Table("ships")]
-	public class DbShip {
+	[Table("ship_templates")]
+	public class DbShipTemplate {
+		public DbShipTemplate() { }
 
-		public DbShip() { }
-
-		public DbShip(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock) {
+		public DbShipTemplate(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock, Rarity rarity) {
 			Name = name;
 			Faction = faction;
 			Cost = cost;
@@ -170,34 +169,14 @@ namespace GAME_Server {
 			Defences = defences;
 			Size = size;
 			Armor = armor;
-			Fleets = new List<DbFleet>();
-			PlayersOwningShip = new List<DbPlayer>();
 			ExpUnlock = expUnlock;
+			ShipRarity = rarity;
+			ShipsOfThisTemplate = new List<DbShip>();
 		}
 
-		public DbShip(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock)
-			: this(name, faction, cost, evasion, hp, size, armor, weapons, defences, expUnlock) {
+		public DbShipTemplate(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock, Rarity rarity)
+			: this(name, faction, cost, evasion, hp, size, armor, weapons, defences, expUnlock, rarity) {
 			Id = id;
-		}
-
-		public DbShip(Ship ship) {
-			Id = ship.Id;
-			Name = ship.Name;
-			Faction = ship.Faction;
-			Cost = ship.Cost;
-			Evasion = ship.Evasion;
-			Hp = ship.Hp;
-			List<DbWeapon> weapons = new List<DbWeapon>();
-			foreach(Weapon wep in ship.Weapons) weapons.Add(new DbWeapon(wep));
-			Weapons = weapons;
-			List<DbDefenceSystem> defences = new List<DbDefenceSystem>();
-			foreach (DefenceSystem def in ship.Defences) defences.Add(new DbDefenceSystem(def));
-			Defences = defences;
-			Size = ship.Size;
-			Armor = ship.Armor;
-			Fleets = new List<DbFleet>();
-			PlayersOwningShip = new List<DbPlayer>();
-			ExpUnlock = ship.ExpUnlock;
 		}
 
 		public int Id { get; set; }
@@ -211,20 +190,55 @@ namespace GAME_Server {
 		public double Size { get; set; }
 		public double Armor { get; set; }
 		public int ExpUnlock { get; set; }
+		public Rarity ShipRarity { get; set; }
+
+		public List<DbShip> ShipsOfThisTemplate { get; set; }
+
+		/// <summary>
+		/// creates new <see cref="DbShip"/> of this <see cref="DbShipTemplate"/>. Remember to get this <see cref="DbShipTemplate"/> and owning <see cref="DbPlayer"/> for DB!!
+		/// </summary>
+		/// <param name="owner"></param>
+		/// <returns></returns>
+		public DbShip GenerateNewShipOfThisTemplate(DbPlayer owner) {
+			return new DbShip(owner, 0, this);
+		}
+	}
+
+	[Table("ships")]
+	public class DbShip {
+
+		public DbShip() { }
+
+		public DbShip(DbPlayer owner, int shipExp, DbShipTemplate shipBaseStats) {
+			Owner = owner;
+			ShipExp = shipExp;
+			ShipBaseStats = shipBaseStats;
+			Fleets = new List<DbFleet>();
+		}
+
+		public DbShip(int id, DbPlayer owner, int shipExp, DbShipTemplate shipBaseStats)
+			: this(owner, shipExp, shipBaseStats) {
+			Id = id;
+		}
+
+		public int Id { get; set; }
+		public DbPlayer Owner { get; set; }
+		public int ShipExp { get; set; }
+		public DbShipTemplate ShipBaseStats { get; set; }
 
 		public List<DbFleet> Fleets { get; set; }
-		public List<DbPlayer> PlayersOwningShip { get; set; }
 
 		public Ship ToShip() {
 			List<Weapon> nonDbWeapons = new List<Weapon>();
 			List<DefenceSystem> nonDbDefenceSystems = new List<DefenceSystem>();
-			foreach(DbWeapon weapon in Weapons) {
+			foreach(DbWeapon weapon in ShipBaseStats.Weapons) {
 				nonDbWeapons.Add(weapon.ToWeapon());
 			}
-			foreach(DbDefenceSystem defSystem in Defences) {
+			foreach(DbDefenceSystem defSystem in ShipBaseStats.Defences) {
 				nonDbDefenceSystems.Add(defSystem.ToDefenceSystem());
 			}
-			return new Ship(Id, Name, Faction, Cost, Evasion, Hp, Size, Armor, nonDbWeapons, nonDbDefenceSystems, ExpUnlock);
+			return new Ship(Id, ShipBaseStats.Name, ShipBaseStats.Faction, ShipBaseStats.Cost, ShipBaseStats.Evasion, ShipBaseStats.Hp, ShipBaseStats.Size,
+				ShipBaseStats.Armor, nonDbWeapons, nonDbDefenceSystems, ShipBaseStats.ExpUnlock, ShipExp, ShipBaseStats.ShipRarity, Server.BaseModifiers.BaseShipStatsExpModifier*ShipExp);	//this may not work for now... needs working BaseModifiers
 		}
 	}
 
@@ -241,15 +255,6 @@ namespace GAME_Server {
 
 		public DbFleet(int id, DbPlayer owner, List<DbShip> ships, string name) : this(owner, ships, name) {
 			Id = id;
-		}
-
-		public DbFleet(Fleet fleet) {
-			Owner = new DbPlayer(fleet.Owner);
-			List<DbShip> ships = new List<DbShip>();
-			foreach (Ship ship in fleet.Ships) ships.Add(new DbShip(ship));
-			Ships = ships;
-			Name = fleet.Name;
-			Id = fleet.Id;
 		}
 
 		public DbPlayer Owner { get; set; }
@@ -304,6 +309,39 @@ namespace GAME_Server {
 		public int MaxFleetSize { get; set; }
 	}*/
 
+	[Table("lootboxes")]
+	public class DbLootBoxes {
+		public int Id { get; set; }
+		public int Cost { get; set; }
+		public string Name { get; set; }
+		public double CommonChance { get; set; }
+		public double RareChance { get; set; }
+		public double VeryRareChance { get; set; }
+		public double LegendaryChance { get; set; }
+
+		public DbLootBoxes() { }
+
+		public DbLootBoxes(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance) {
+			Id = id;
+			Cost = cost;
+			Name = name;
+			CommonChance = commonChance;
+			RareChance = rareChance;
+			VeryRareChance = veryRareChance;
+			LegendaryChance = legendaryChance;
+		}
+
+		public LootBox ToLootBox() {
+			Dictionary<Rarity, double> chancesForRarities = new Dictionary<Rarity, double>() {
+				{ Rarity.COMMON, CommonChance },
+				{ Rarity.RARE, RareChance },
+				{ Rarity.VERY_RARE, VeryRareChance },
+				{ Rarity.LEGENDARY, LegendaryChance }
+			};
+			return new LootBox(Id, Cost, Name, chancesForRarities);
+		}
+	}
+
 	[Table("base_modifiers")]
 	public class DbBaseModifiers {
 		public int Id { get; set; }
@@ -328,6 +366,9 @@ namespace GAME_Server {
 		public double MissileShield { get; set; }
 		public double MissileIF { get; set; }
 
+		//baseShipStatsExpModifier
+		public double BaseShipStatsExpModifier { get; set; }
+
 		public BaseModifiers ToBaseModifiers() {
 			Dictionary<WeaponType, double> weaponTypeRangeMultMap = new Dictionary<WeaponType, double>() {
 				{ WeaponType.KINETIC, KineticRange },
@@ -347,7 +388,7 @@ namespace GAME_Server {
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE), MissileShield },
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), MissileIF }
 			};
-			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap);
+			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier);
 		}
 	}
 

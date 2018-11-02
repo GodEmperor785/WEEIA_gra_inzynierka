@@ -47,6 +47,9 @@ namespace GAME_Server {
 		// - turnieje po okolo 8 graczy o duze nagrody
 		// - apka windows forms dla admina
 
+		//DLA WEAPONS I DEFENCE_SYSTEMS:
+		// zeby byly duplikaty a raczej ich obejscie to beda nowe rekordy typu "Kinetic Cannon 120mm x4" co oznacza poczworne dzialo typu "Kinetic Cannon 120mm"
+
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
 		public static List<Ship> AllShips { get => allShips; }
 		public static List<Faction> AllFactions { get => allFactions; }
@@ -59,7 +62,7 @@ namespace GAME_Server {
 
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			//InitilizeGameDataFromDB();
+			InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
 			//TcpListener listener = new TcpListener(ipAddress, port);
@@ -87,7 +90,8 @@ namespace GAME_Server {
 		private static void InitilizeGameDataFromDB() {
 			gameDataBase = new MySqlDataBase();
 
-			DbPlayer p1 = new DbPlayer(1, "player1", "haslo1", 0, 100, 0, 0, 0);
+			string p1Name = "player1";
+			DbPlayer p1 = new DbPlayer(1, p1Name, "haslo1", 0, 100, 0, 0, 0);
 			DbPlayer p2 = new DbPlayer(2, "player2", "haslo2", 0, 100, 0, 0, 0);
 
 			gameDataBase.AddPlayer(p1);
@@ -99,12 +103,14 @@ namespace GAME_Server {
 
 			Thread.Sleep(500);
 
+			//create factions
 			var f1 = new Faction(1, "test");
 			var f2 = new Faction(2, "test2");
 			gameDataBase.AddFaction(f1);
 			gameDataBase.AddFaction(f2);
 			var faction = gameDataBase.GetAllFactions().First();
 
+			//create weapons and defences (independent of one another)
 			DbWeapon w1 = new DbWeapon(1, "w1", faction, 10.0, 15, WeaponType.KINETIC, 1.5, 1.4, 12.0);
 			DbWeapon w2 = new DbWeapon(2, "w2", faction, 12.0, 15, WeaponType.LASER, 2.6, 5.4, 88.0);
 			DbWeapon w3 = new DbWeapon(3, "w3", faction, 10.0, 17, WeaponType.KINETIC, 1.0, 1.4, 55.0);
@@ -116,6 +122,7 @@ namespace GAME_Server {
 			gameDataBase.AddDefenceSystem(d1);
 			gameDataBase.AddDefenceSystem(d2);
 
+			//make lists of weapons and defences - NEW LIST FOR EACH SHIP
 			var weps = gameDataBase.GetAllWeapons();
 			var defs = gameDataBase.GetAllDefences(); 
 			List<DbWeapon> weapons1 = new List<DbWeapon> {
@@ -139,24 +146,48 @@ namespace GAME_Server {
 				defs[0],
 				defs[1]
 			};
-			DbShip s1 = new DbShip(1, "s1", faction, 10, 10.0, 1000.0, 4.0, 54.0, weapons1, denences, 2000);
-			DbShip s2 = new DbShip(2, "s2", faction, 20, 5.0, 500.0, 1.0, 23.0, weapons2, denences2, 1000);
-			gameDataBase.AddShip(s1);
-			gameDataBase.AddShip(s2);
+			//create ship template objects
+			DbShipTemplate st1 = new DbShipTemplate(1, "s1", faction, 10, 10.0, 1000.0, 4.0, 54.0, weapons1, denences, 2000, Rarity.COMMON);
+			DbShipTemplate st2 = new DbShipTemplate(2, "s2", faction, 20, 5.0, 500.0, 1.0, 23.0, weapons2, denences2, 1000, Rarity.VERY_RARE);
+			gameDataBase.AddShipTemplate(st1);
+			gameDataBase.AddShipTemplate(st2);
 
 			Thread.Sleep(500);
-			var ships = gameDataBase.GetAllShips();
-			foreach(DbShip ship in ships) Console.WriteLine(ship.Name + " " + ship.Id + " " + ship.Weapons[0].Name);
-
 			Console.WriteLine("teraz apdejt");
-			DbShip sUp = new DbShip(1, "s1", faction, 99, 10.0, 9999.0, 4.0, 54.0, weapons3, denences, 2000);
-			gameDataBase.UpdateShip(sUp);
+			DbShipTemplate sUp = new DbShipTemplate(1, "s1", faction, 99, 10.0, 9999.0, 4.0, 54.0, weapons3, denences, 2000, Rarity.RARE);
+			gameDataBase.UpdateShipTemplate(sUp);
 
 			Thread.Sleep(500);
 			Console.WriteLine("i delete");
-			gameDataBase.RemoveShipWithId(1);
+			gameDataBase.RemoveTemplateShipWithId(2);
+
+			Thread.Sleep(500);
+			Console.WriteLine("no i insert DbShip");
+			var player = gameDataBase.GetPlayerWithUsername(p1Name);
+			var shpT = gameDataBase.GetShipTemplateWithId(1);
+			DbShip sh1 = new DbShip(1, player, 1000, shpT);
+			gameDataBase.AddShip(sh1);
+
+			Thread.Sleep(500);
+			Console.WriteLine("select ships");
+			var ships = gameDataBase.GetAllShips();
+			foreach (DbShip ship in ships) Console.WriteLine(ship.ShipBaseStats.Name + " " + ship.Id + " " + ship.ShipBaseStats.Weapons[0].Name + " " + ship.ShipBaseStats.ShipRarity);
+
+			Thread.Sleep(500);
+			Console.WriteLine("no i 2 insert DbShip - przez generate");
+			var player_ = gameDataBase.GetPlayerWithUsername(p1Name);
+			var shpT_ = gameDataBase.GetShipTemplateWithId(1);
+			DbShip sh2 = shpT_.GenerateNewShipOfThisTemplate(player_);
+			gameDataBase.AddShip(sh2);
+
+			Thread.Sleep(500);
+			Console.WriteLine("select ships po raz 2");
+			var ships2 = gameDataBase.GetAllShips();
+			foreach (DbShip ship in ships2) Console.WriteLine(ship.ShipBaseStats.Name + " " + ship.Id + " " + ship.ShipBaseStats.Weapons[0].Name + " " + ship.ShipBaseStats.ShipRarity);
 			//UWAGA NA UZYWANIE LIST!!! DLA KAZDEGO NOWEGO OBIEKTU ROB NOWA LISTE BO INACZEJ DOSTAJE DALNA I WYWALA CALA JOIN TABLE!!! 
 			//REFERENCJE W TYCH LISTACH MOGA BYC TE SAME ALE INSTANCJE LIST MUSZA BYC ROZNE!!!
+
+			Console.ReadKey();
 
 			Environment.Exit(0);
 

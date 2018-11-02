@@ -27,6 +27,11 @@ namespace GAME_connection {
 		PLAYER_DATA,
 		GET_PLAYER_STATS,
 
+		//shop
+		GET_LOOTBOXES,
+		BUY,
+		SELL_SHIP,
+
 		//action results
 		SUCCESS,
 		FAILURE
@@ -55,6 +60,9 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.MAKE_MOVE, typeof(string));                  //TODO <---------------------------------------------
 			operationMapping.Add(OperationType.SUCCESS, typeof(object));                    //nothing - never used
 			operationMapping.Add(OperationType.FAILURE, typeof(string));                    //reason for failure
+			operationMapping.Add(OperationType.GET_LOOTBOXES, typeof(List<LootBox>));       //list of available lootboxes
+			operationMapping.Add(OperationType.BUY, typeof(LootBox));                       //lootbox to buy
+			operationMapping.Add(OperationType.SELL_SHIP, typeof(Ship));					//ship to sell for money				
 		}
 
 		public static Dictionary<OperationType, Type> OperationMapping => operationMapping;
