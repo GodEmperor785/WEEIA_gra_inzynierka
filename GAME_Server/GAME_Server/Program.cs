@@ -19,8 +19,7 @@ namespace GAME_Server {
 		private static string ip = "127.0.0.1";
 
 		//database specific fields and properties
-		private static IGameDataBase gameDataBase;
-		private static List<Ship> allShips;
+		private static IGameDataBase gameDataBase;		//used only for initialization of BaseModifiers etc. Other IGameDataBase are created in user threads
 		private static List<Faction> allFactions;
 		private static BaseModifiers baseModifiers;
 
@@ -34,6 +33,7 @@ namespace GAME_Server {
 		//http://www.entityframeworktutorial.net/Querying-with-EDM.aspx
 		//http://www.entityframeworktutorial.net/eager-loading-in-entity-framework.aspx
 		//http://www.entityframeworktutorial.net/crud-operation-in-connected-scenario-entity-framework.aspx
+		//https://mehdi.me/ambient-dbcontext-in-ef6/
 		//sciagnij mysql connector i zainstaluj, potem dodaj referencje
 		//nuget package manager -> browse -> MySQL i dodaj MySQL.Data.Entity (zwykly MySQL.Data powinien byc dodany wczesniej przy instalacji connectora i dodaniu referencji)
 		//6.9.12 mysql dziala
@@ -50,8 +50,9 @@ namespace GAME_Server {
 		//DLA WEAPONS I DEFENCE_SYSTEMS:
 		// zeby byly duplikaty a raczej ich obejscie to beda nowe rekordy typu "Kinetic Cannon 120mm x4" co oznacza poczworne dzialo typu "Kinetic Cannon 120mm"
 
+		//aplikacja admina nie powinna dzialac podczas dzialania serwera gry - serwer powinien byc wylaczany na czas potrzebny adminowi do zmian!
+
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
-		public static List<Ship> AllShips { get => allShips; }
 		public static List<Faction> AllFactions { get => allFactions; }
 		public static BaseModifiers BaseModifiers { get => baseModifiers; }
 
@@ -62,7 +63,7 @@ namespace GAME_Server {
 
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			InitilizeGameDataFromDB();
+			//InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
 			//TcpListener listener = new TcpListener(ipAddress, port);
@@ -88,7 +89,7 @@ namespace GAME_Server {
 		/// Reads basic game data from DB into memory. Does not read player and fleet data, these should be read by user threads
 		/// </summary>
 		private static void InitilizeGameDataFromDB() {
-			gameDataBase = new MySqlDataBase();
+			gameDataBase = GetGameDBContext();
 
 			string p1Name = "player1";
 			DbPlayer p1 = new DbPlayer(1, p1Name, "haslo1", 0, 100, 0, 0, 0);
@@ -192,8 +193,7 @@ namespace GAME_Server {
 			Environment.Exit(0);
 
 			/*baseModifiers = GameDataBase.GetBaseModifiers();
-			allFactions = GameDataBase.GetAllFactions();
-			allShips = GameDataBase.GetAllShips();*/
+			allFactions = GameDataBase.GetAllFactions();*/
 		}
 
 		/// <summary>
@@ -245,6 +245,14 @@ namespace GAME_Server {
 			lock (logLock) {
 				Console.WriteLine(msg);
 			}
+		}
+
+		/// <summary>
+		/// Creates new object implementing <see cref="IGameDataBase"/> 
+		/// </summary>
+		/// <returns></returns>
+		internal static IGameDataBase GetGameDBContext() {
+			return new MySqlDataBase();
 		}
 
 		/// <summary>
@@ -308,13 +316,16 @@ namespace GAME_Server {
 		#region properties attributes and constructors
 		private TcpConnection client;
 		private Player user;
+		private IGameDataBase gameDataBase;
 
 		internal UserThread(TcpConnection client) {
 			this.Client = client;
+			this.GameDataBase = Server.GetGameDBContext();
 		}
 
 		public TcpConnection Client { get => client; set => client = value; }
 		public Player User { get => user; set => user = value; }
+		public IGameDataBase GameDataBase { get => gameDataBase; set => gameDataBase = value; }		//use only this as DB in this thread
 		#endregion
 
 		/// <summary>
@@ -330,7 +341,7 @@ namespace GAME_Server {
 				if(loginSuccess) {
 					Client.Send(new GamePacket(OperationType.SUCCESS, new object()));
 					//set and send user data
-					this.User = Server.GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
+					this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 					Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
 				}
 			} catch(ConnectionEndedException) {
@@ -354,7 +365,7 @@ namespace GAME_Server {
 			}
 			//if type ok do login or register
 			if(packet.OperationType == OperationType.LOGIN) {
-				if (Server.GameDataBase.PlayerExists(playerObject) && Server.GameDataBase.ValidateUser(playerObject)) {
+				if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
 					this.User = playerObject;
 					return true;
 				}
@@ -364,8 +375,8 @@ namespace GAME_Server {
 				}
 			}
 			else if(packet.OperationType == OperationType.REGISTER) {
-				if ((!Server.GameDataBase.PlayerExists(playerObject)) && Server.GameDataBase.PlayerNameIsUnique(playerObject)) {
-					Server.GameDataBase.AddPlayer(new DbPlayer(playerObject));
+				if ((!GameDataBase.PlayerExists(playerObject)) && GameDataBase.PlayerNameIsUnique(playerObject)) {
+					GameDataBase.AddPlayer(new DbPlayer(playerObject));
 					this.User = playerObject;
 					return true;
 				}
@@ -410,14 +421,21 @@ namespace GAME_Server {
 		private TcpConnection player1Conn;	//host
 		private TcpConnection player2Conn;
 
-		internal GameRoomThread(TcpConnection hostConnection, Player host) {
+		private IGameDataBase player1DB;
+		private IGameDataBase player2DB;
+
+		internal GameRoomThread(TcpConnection hostConnection, Player host, IGameDataBase player1DB) {
 			Player1 = host;
+			Player1Conn = hostConnection;
+			Player1DB = player1DB;
 		}
 
 		public Player Player1 { get => player1; set => player1 = value; }
 		public Player Player2 { get => player2; set => player2 = value; }
 		public TcpConnection Player1Conn { get => player1Conn; set => player1Conn = value; }
 		public TcpConnection Player2Conn { get => player2Conn; set => player2Conn = value; }
+		internal IGameDataBase Player1DB { get => player1DB; set => player1DB = value; }
+		internal IGameDataBase Player2DB { get => player2DB; set => player2DB = value; }
 		#endregion
 
 		/// <summary>

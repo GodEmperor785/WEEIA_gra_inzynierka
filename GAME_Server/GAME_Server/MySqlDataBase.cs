@@ -18,7 +18,7 @@ namespace GAME_Server {
 		#endregion
 
 		private int SaveChanges() {
-			return dbContext.SaveChanges();
+			return DbContext.SaveChanges();
 		}
 
 		#region INSERT
@@ -77,26 +77,26 @@ namespace GAME_Server {
 
 		#region SELECT
 		public List<Faction> GetAllFactions() {
-			var query = from factions in dbContext.Factions
+			var query = from factions in DbContext.Factions
 						select factions;
 			return query.ToList();
 		}
 
 		public List<DbFleet> GetAllFleetsOfPlayer(Player player) {
-			var query = from fleets in dbContext.Fleets
+			var query = from fleets in DbContext.Fleets
 						where fleets.Owner.Id == player.Id
 						select fleets;
 			return query.ToList();
 		}
 
 		public List<DbShip> GetAllShips() {
-			var query = from dbShips in dbContext.Ships
+			var query = from dbShips in DbContext.Ships
 						select dbShips;
 			return query.ToList();
 		}
 
 		public BaseModifiers GetBaseModifiers() {
-			var query = from baseMods in dbContext.BaseModifiers
+			var query = from baseMods in DbContext.BaseModifiers
 						where baseMods.Id == 1
 						select baseMods;
 			var baseModifiers = query.FirstOrDefault();
@@ -104,7 +104,7 @@ namespace GAME_Server {
 		}
 
 		public DbFleet GetFleetWithId(int id) {
-			var query = from fleets in dbContext.Fleets
+			var query = from fleets in DbContext.Fleets
 						where fleets.Id == id
 						select fleets;
 			return query.FirstOrDefault();
@@ -116,34 +116,34 @@ namespace GAME_Server {
 		/// <param name="username"></param>
 		/// <returns></returns>
 		public DbPlayer GetPlayerWithUsername(string username) {
-			var query = from players in dbContext.Players
+			var query = from players in DbContext.Players
 						where players.Username == username
 						select players;
 			return query.FirstOrDefault();	//player username is unique
 		}
 
 		public DbShip GetShipWithId(int id) {
-			var query = from ships in dbContext.Ships
+			var query = from ships in DbContext.Ships
 						where ships.Id == id
 						select ships;
 			return query.FirstOrDefault();
 		}
 
 		public DbShipTemplate GetShipTemplateWithId(int id) {
-			var query = from shipTemplates in dbContext.ShipTemplates
+			var query = from shipTemplates in DbContext.ShipTemplates
 						where shipTemplates.Id == id
 						select shipTemplates;
 			return query.FirstOrDefault();
 		}
 
 		public List<DbWeapon> GetAllWeapons() {
-			var query = from weapons in dbContext.Weapons
+			var query = from weapons in DbContext.Weapons
 						select weapons;
 			return query.ToList();
 		}
 
 		public List<DbDefenceSystem> GetAllDefences() {
-			var query = from defences in dbContext.DefenceSystems
+			var query = from defences in DbContext.DefenceSystems
 						select defences;
 			return query.ToList();
 		}
@@ -155,7 +155,7 @@ namespace GAME_Server {
 		/// <returns></returns>
 		public List<DbWeapon> GetDbWeapons(List<int> weps) {
 			//
-			var query = from weapons in dbContext.Weapons
+			var query = from weapons in DbContext.Weapons
 						where weps.Contains(weapons.Id)
 						select weapons;
 			return query.ToList();
@@ -167,7 +167,7 @@ namespace GAME_Server {
 		/// <param name="defs"></param>
 		/// <returns></returns>
 		public List<DbDefenceSystem> GetDbDefenceSystems(List<int> defs) {
-			var query = from defences in dbContext.DefenceSystems
+			var query = from defences in DbContext.DefenceSystems
 						where defs.Contains(defences.Id)
 						select defences;
 			return query.ToList();
@@ -179,7 +179,7 @@ namespace GAME_Server {
 		/// <param name="shipIds"></param>
 		/// <returns></returns>
 		public List<DbShip> GetShips(List<int> shipIds) {
-			var query = from ships in dbContext.Ships
+			var query = from ships in DbContext.Ships
 						where shipIds.Contains(ships.Id)
 						select ships;
 			return query.ToList();
@@ -191,7 +191,7 @@ namespace GAME_Server {
 		/// <param name="exp"></param>
 		/// <returns></returns>
 		public List<DbShipTemplate> GetShipsAvailableForExp(int exp) {
-			var query = from ships in dbContext.ShipTemplates
+			var query = from ships in DbContext.ShipTemplates
 						where ships.ExpUnlock <= exp
 						select ships;
 			return query.ToList();
@@ -205,7 +205,7 @@ namespace GAME_Server {
 		/// </summary>
 		/// <param name="newData"></param>
 		public void UpdateShipTemplate(DbShipTemplate newData) {
-			var shipToUpdate = (from ship in dbContext.ShipTemplates where ship.Id == newData.Id select ship).First();
+			var shipToUpdate = (from ship in DbContext.ShipTemplates where ship.Id == newData.Id select ship).First();
 			//update should be done like this
 			shipToUpdate.Name = newData.Name;
 			shipToUpdate.Faction = newData.Faction;
@@ -229,13 +229,13 @@ namespace GAME_Server {
 		/// <param name="id"></param>
 		/// <returns></returns>
 		public bool RemoveTemplateShipWithId(int id) {
-			var shipToDelete = (from ship in dbContext.ShipTemplates where ship.Id == id select ship).First();
+			var shipToDelete = (from ship in DbContext.ShipTemplates where ship.Id == id select ship).First();
 			if (shipToDelete.ShipsOfThisTemplate.Count > 0) return false;
 
 			//shipToDelete.Weapons.Clear();
 			//shipToDelete.Defences.Clear();
 			//SaveChanges();
-			dbContext.ShipTemplates.Remove(shipToDelete);
+			DbContext.ShipTemplates.Remove(shipToDelete);
 			SaveChanges();
 			return true;
 		}
@@ -252,7 +252,7 @@ namespace GAME_Server {
 		}
 
 		public bool ValidateUser(Player player) {
-			var playerFromDb = (from players in dbContext.Players
+			var playerFromDb = (from players in DbContext.Players
 							   where players.Username == player.Username
 							   select players).First();
 			if (playerFromDb.Password == player.Password) return true;
@@ -278,7 +278,7 @@ namespace GAME_Server {
 
 		#region IDisposable
 		public void Dispose() {
-			this.dbContext.Dispose();
+			this.DbContext.Dispose();
 		}
 		#endregion
 	}

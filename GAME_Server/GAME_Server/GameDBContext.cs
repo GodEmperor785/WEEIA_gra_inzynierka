@@ -29,6 +29,8 @@ namespace GAME_Server {
 		public GameDBContext() : base("GameContext") {
 			Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());
 			//Database.SetInitializer<GameDBContext>(new DropCreateDatabaseIfModelChanges<GameDBContext>());
+			//Database.SetInitializer<GameDBContext>(new CreateDatabaseIfNotExists<GameDBContext>());
+			//Database.SetInitializer<SchoolDBContext>(null);
 
 			//uncomment this to enable SQL logging to console
 			//Database.Log = (string message) => { Console.WriteLine(message); };
