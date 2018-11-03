@@ -41,6 +41,17 @@ namespace Client_PC.Utilities
                                 {
                                     inputBox.Text += " ";
                                 }
+
+                                if (key == Keys.Back)
+                                {
+                                    if(inputBox.Text.Length > 0)
+                                        inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
+                                }
+                            }
+                            else if (key == Keys.Back)
+                            {
+                                if (inputBox.Text.Length > 0)
+                                    inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
                             }
                         }
 

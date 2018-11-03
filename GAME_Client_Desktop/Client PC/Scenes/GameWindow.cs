@@ -46,16 +46,29 @@ namespace Client_PC.Scenes
             enemyGrid.rowOffset = 20;
             yourGrid.rowOffset = 20;
 
-            Button b1 = new Button(new Point(), 50, (int)((enemyGrid.Height - 2 * enemyGrid.rowOffset) / 3f) , Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            enemyGrid.columnOffset = 100;
+            Button b1 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), (int)((enemyGrid.Height - 2 * enemyGrid.rowOffset) / 3f) , Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             Button b2 = new Button(new Point(), 50, (int)((enemyGrid.Height - 2 * enemyGrid.rowOffset) / 3f), Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             Button b3 = new Button(new Point(), 50, (int)((enemyGrid.Height - 2 * enemyGrid.rowOffset) / 3f), Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             Button b4 = new Button(new Point(), 50, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             Button b5 = new Button(new Point(), 50, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             Button b6 = new Button(new Point(), 50, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
 
+            Button z1 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z2 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z3 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z4 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+
+
+
             enemyGrid.AddChild(b1,2,0);
             enemyGrid.AddChild(b2, 1, 0);
             enemyGrid.AddChild(b3, 0, 0);
+            enemyGrid.AddChild(z1,0,1);
+            enemyGrid.AddChild(z2, 0, 2);
+            enemyGrid.AddChild(z3, 0, 3);
+            enemyGrid.AddChild(z4, 0, 4);
+
 
             yourGrid.AddChild(b4, 0, 0);
             yourGrid.AddChild(b5, 0, 0);

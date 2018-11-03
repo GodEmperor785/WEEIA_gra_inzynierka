@@ -56,7 +56,10 @@ namespace Client_PC
         {
             // TODO: Add your initialization logic here
             self = this;
-            LoadConfig();
+            
+            graphics.PreferredBackBufferHeight = 155;
+            graphics.PreferredBackBufferWidth = 300;
+            graphics.ApplyChanges();
             //  gd = GraphicsDevice;
             mainMenu = new MainMenu();
             settingsMenu = new SettingsMenu();
@@ -74,7 +77,7 @@ namespace Client_PC
             
         }
 
-        private void LoadConfig()
+        public void LoadConfig()
         {
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
@@ -112,7 +115,7 @@ namespace Client_PC
             if (conf.Resolution.Equals(Constants.hd))
             {
                 height = 720;
-                width = 1280;
+                width = 1080;
             }
             if (conf.Resolution.Equals(Constants.fullhd))
             {

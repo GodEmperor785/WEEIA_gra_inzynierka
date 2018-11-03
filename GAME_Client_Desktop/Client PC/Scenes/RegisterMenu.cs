@@ -43,11 +43,11 @@ namespace Client_PC.Scenes
             {
                 TextLimit = 30
             };
-            InputBox passwordInputBox = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            InputBox passwordInputBox = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30
             };
-            InputBox passwordInputBox2 = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            InputBox passwordInputBox2 = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30
             };
@@ -88,6 +88,11 @@ namespace Client_PC.Scenes
             grid.ResizeChildren();
         }
 
+        public override void UpdateGrid()
+        {
+            grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
+            grid.UpdateP();
+        }
         public void backClick()
         {
             Game1.self.state = Game1.State.LoginMenu;
