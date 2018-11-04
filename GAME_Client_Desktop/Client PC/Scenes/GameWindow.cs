@@ -54,10 +54,10 @@ namespace Client_PC.Scenes
             Button b5 = new Button(new Point(), 50, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             Button b6 = new Button(new Point(), 50, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
 
-            Button z1 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
-            Button z2 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
-            Button z3 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
-            Button z4 = new Button(new Point(), (int)((enemyGrid.Width - 4 * enemyGrid.columnOffset) / 5f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z1 = new Button(new Point(), (int)((enemyGrid.Width - 8 * enemyGrid.columnOffset) / 9f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z2 = new Button(new Point(), (int)((enemyGrid.Width - 8 * enemyGrid.columnOffset) / 9f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z3 = new Button(new Point(), (int)((enemyGrid.Width - 8 * enemyGrid.columnOffset) / 9f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            Button z4 = new Button(new Point(), (int)((enemyGrid.Width - 8 * enemyGrid.columnOffset) / 9f), 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
 
 
 
@@ -91,7 +91,6 @@ namespace Client_PC.Scenes
         }
         public void Draw(GameTime gameTime)
         {
-            Game1.self.GraphicsDevice.Clear(Color.BlueViolet);
             layout.Draw(Game1.self.spriteBatch);
         }
 

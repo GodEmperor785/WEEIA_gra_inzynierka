@@ -19,7 +19,6 @@ namespace Client_PC.Scenes
         public void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            
             Label labelLogin = new Label(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Login"
@@ -71,7 +70,7 @@ namespace Client_PC.Scenes
         }
         public void Draw(GameTime gameTime)
         {
-            Game1.self.GraphicsDevice.Clear(Color.IndianRed);
+           
             grid.Draw(Game1.self.spriteBatch);
         }
         public void ExitClick()
@@ -80,14 +79,12 @@ namespace Client_PC.Scenes
         }
 
         public void LoginClick()
-        {
-            Game1.self.LoadConfig();
+        { 
             Game1.self.state = Game1.State.MainMenu;
         }
 
         public void RegisterClick()
         {
-            Game1.self.LoadConfig();
             Game1.self.state = Game1.State.RegisterMenu;
         }
 

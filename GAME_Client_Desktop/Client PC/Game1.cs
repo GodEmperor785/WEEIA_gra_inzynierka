@@ -37,6 +37,7 @@ namespace Client_PC
         public Config conf;
         internal object graphicsDevice;
         internal IClickable FocusedElement;
+        internal Texture2D Wallpaper;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
         public Game1()
         {
@@ -56,10 +57,9 @@ namespace Client_PC
         {
             // TODO: Add your initialization logic here
             self = this;
-            
-            graphics.PreferredBackBufferHeight = 155;
-            graphics.PreferredBackBufferWidth = 300;
-            graphics.ApplyChanges();
+            LoadConfig();
+            Wallpaper = Utils.CreateTexture(GraphicsDevice, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+
             //  gd = GraphicsDevice;
             mainMenu = new MainMenu();
             settingsMenu = new SettingsMenu();
@@ -77,7 +77,7 @@ namespace Client_PC
             
         }
 
-        public void LoadConfig()
+        private void LoadConfig()
         {
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
@@ -188,6 +188,9 @@ namespace Client_PC
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            Game1.self.spriteBatch.Begin();
+            Game1.self.spriteBatch.Draw(Game1.self.Wallpaper, new Vector2(0, 0), Color.White);
+            Game1.self.spriteBatch.End();
             switch (state)
             {
                 case State.MainMenu:

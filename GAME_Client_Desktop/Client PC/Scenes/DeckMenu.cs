@@ -100,7 +100,7 @@ namespace Client_PC.Scenes
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
         }
-
+        
         private void OnExit()
         {
             Game1.self.state = Game1.State.MainMenu;
@@ -112,7 +112,7 @@ namespace Client_PC.Scenes
         }
         public void Draw(GameTime gameTime)
         {
-            Game1.self.GraphicsDevice.Clear(Color.BlueViolet);
+
             layout.Draw(Game1.self.spriteBatch);
         }
 

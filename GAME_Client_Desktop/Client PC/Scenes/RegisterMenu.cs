@@ -123,10 +123,9 @@ namespace Client_PC.Scenes
         }
         public void Draw(GameTime gameTime)
         {
-            Game1.self.GraphicsDevice.Clear(Color.YellowGreen);
-            // Game1.self.spriteBatch.Begin();
+
             grid.Draw(Game1.self.spriteBatch);
-            //Game1.self.spriteBatch.End();
+
         }
     }
 }
