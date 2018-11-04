@@ -7,6 +7,7 @@ using Client_PC.UI;
 using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
@@ -49,7 +50,9 @@ namespace Client_PC.Scenes
             Clickable.Add(registerButton);
             Clickable.Add(exitButton);
             grid = new Grid();
-            
+            Button refresh = new Button(new Point(0, 0), 50, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            refresh.clickEvent += RefResh;
+            Clickable.Add(refresh);
             grid.AddChild(labelLogin,0,0);
             grid.AddChild(inputLogin,0,1,2);
             grid.AddChild(labelPassword,1,0);
@@ -57,12 +60,17 @@ namespace Client_PC.Scenes
             grid.AddChild(loginButton,2,0);
             grid.AddChild(registerButton,2,1);
             grid.AddChild(exitButton,2,2);
+            grid.AddChild(refresh,3,0);
             loginButton.clickEvent += LoginClick;
             exitButton.clickEvent += ExitClick;
             registerButton.clickEvent += RegisterClick;
             grid.ResizeChildren();
         }
 
+        public void RefResh()
+        {
+            Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
+        }
         public override void UpdateGrid()
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
