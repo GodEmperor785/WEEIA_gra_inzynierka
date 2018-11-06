@@ -24,7 +24,7 @@ namespace Client_PC.Scenes
             {
                 Text = "Login"
             };
-            Label labelPassword = new Label(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label labelPassword = new Label(new Point(0, 0), 115, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password"
             };
@@ -32,15 +32,15 @@ namespace Client_PC.Scenes
             inputLogin.TextLimit = 30;
             InputBox inputPassword = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             inputPassword.TextLimit = 30;
-            Button loginButton = new Button(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            Button loginButton = new Button(new Point(0,0),105,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Log in"
             };
-            Button registerButton = new Button(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Button registerButton = new Button(new Point(0, 0), 105, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Register"
             };
-            Button exitButton = new Button(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Button exitButton = new Button(new Point(0, 0), 105, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
             };

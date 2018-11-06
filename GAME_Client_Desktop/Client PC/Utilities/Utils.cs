@@ -77,6 +77,8 @@ namespace Client_PC.Utilities
             int colorRange = 5;
             int startMin = 0;
             int startMax = 255;
+            double minAddition = 2.56;
+            double maxAddition = 1;
             for (int pixel = 0; pixel < data.Count(); pixel++)
             {
                 
@@ -87,16 +89,16 @@ namespace Client_PC.Utilities
                     if (pixel - width > 0 && data[pixel - width] != empty) // inside
                     {
 
-                        if (pixel - 2 * width > 0 && data[pixel - 2 * width] != empty && (pixel -2) % width > 0)
+                        if (pixel - 2 * width > 0 && data[pixel - 2 * width] != empty && (pixel -2) % width > 0) // further rows inside
                         {
                             Color cl = new Color(
-                                    rndRandom.Next((int)Math.Floor((data[pixel - 1].R + data[pixel - width].R + data[pixel - 2].R + data[pixel -  2 * width].R + 2) / 4.0f - colorRange), (int)Math.Ceiling((data[pixel - 1].R + data[pixel - width].R + data[pixel - 2].R + data[pixel - 2 * width].R + 1) / 4.0f + colorRange)),
-                                    rndRandom.Next((int)Math.Floor((data[pixel - 1].G + data[pixel - width].G + data[pixel - 2].G + data[pixel - 2 * width].G + 2) / 4.0f - colorRange), (int)Math.Ceiling((data[pixel - 1].G + data[pixel - width].G + data[pixel - 2].G + data[pixel - 2 * width].G + 1) / 4.0f + colorRange)),
-                                    rndRandom.Next((int)Math.Floor((data[pixel - 1].B + data[pixel - width].B + data[pixel - 2].B + data[pixel - 2 * width].B + 2) / 4.0f - colorRange), (int)Math.Ceiling((data[pixel - 1].B + data[pixel - width].B + data[pixel - 2].B + data[pixel - 2 * width].B + 1) / 4.0f + colorRange)))
+                                    rndRandom.Next((int)Math.Round((data[pixel - 1].R + data[pixel - width].R + data[pixel - 2].R + data[pixel -  2 * width].R + minAddition) / 4.0f - colorRange), (int)Math.Round((data[pixel - 1].R + data[pixel - width].R + data[pixel - 2].R + data[pixel - 2 * width].R + maxAddition) / 4.0f + colorRange)),
+                                    rndRandom.Next((int)Math.Round((data[pixel - 1].G + data[pixel - width].G + data[pixel - 2].G + data[pixel - 2 * width].G + minAddition) / 4.0f - colorRange), (int)Math.Round((data[pixel - 1].G + data[pixel - width].G + data[pixel - 2].G + data[pixel - 2 * width].G + maxAddition) / 4.0f + colorRange)),
+                                    rndRandom.Next((int)Math.Round((data[pixel - 1].B + data[pixel - width].B + data[pixel - 2].B + data[pixel - 2 * width].B + minAddition) / 4.0f - colorRange), (int)Math.Round((data[pixel - 1].B + data[pixel - width].B + data[pixel - 2].B + data[pixel - 2 * width].B + maxAddition) / 4.0f + colorRange)))
                                 ;
                             data[pixel] = cl;
                         }
-                        else
+                        else // first row inside
                         {
                             Color cl = new Color(
                                 rndRandom.Next((int)Math.Floor((data[pixel - 1].R + data[pixel - width].R) / 2.0f - colorRange), (int)Math.Ceiling((data[pixel - 1].R + data[pixel - width].R) / 2.0f + colorRange)), 
@@ -109,6 +111,9 @@ namespace Client_PC.Utilities
                     }
                     else // top edge
                     {
+
+
+
                         Color cl = new Color(
                             rndRandom.Next(data[pixel - 1].R - colorRange, data[pixel - 1].R + colorRange), 
                             rndRandom.Next(data[pixel - 1].G - colorRange, data[pixel - 1].G + colorRange), 

@@ -56,16 +56,16 @@ namespace Client_PC.UI
                 if (position.Y < bordersize)
                 {
                     int differenceY = position.Y;
-                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
+                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, alpha);
                 }
                 else if (position.Y > height - bordersize)
                 {
                     int differenceY = height - position.Y;
-                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
+                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, alpha);
                 }
                 else
                 {
-                    return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4,255);
+                    return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, alpha);
                 }
             }
             else if (position.X > width - bordersize)
@@ -74,27 +74,27 @@ namespace Client_PC.UI
                 if (position.Y > height - bordersize)
                 {
                     int differenceY = height - position.Y;
-                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
+                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, alpha);
                 }
                 else if (position.Y < bordersize)
                 {
                     int differenceY = position.Y;
-                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 255);
+                    return new Color(180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, 180 - differenceY * 4 - difference * 4, alpha);
                 }
                 else
                 {
-                    return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, 255);
+                    return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, alpha);
                 }
             }
             else if (position.Y < bordersize)
             {
                 int difference = position.Y;
-                return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, 255);
+                return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, alpha);
             }
             else if (position.Y > height - bordersize)
             {
                 int difference = height - position.Y;
-                return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, 255);
+                return new Color(140 - difference * 4, 140 - difference * 4, 140 - difference * 4, alpha);
             }
             else
             {
@@ -104,7 +104,7 @@ namespace Client_PC.UI
                 }
                 else
                 {
-                    return new Color(104, 104, 104, 255);
+                    return new Color(104, 104, 104, alpha);
                     
                 }
             }

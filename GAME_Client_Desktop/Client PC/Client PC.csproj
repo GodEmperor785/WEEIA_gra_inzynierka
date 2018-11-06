@@ -55,6 +55,7 @@
     <Compile Include="Scenes\RegisterMenu.cs" />
     <Compile Include="Scenes\SettingsMenu.cs" />
     <Compile Include="UI\Button.cs" />
+    <Compile Include="UI\Card.cs" />
     <Compile Include="UI\Dropdown.cs" />
     <Compile Include="UI\Grid.cs" />
     <Compile Include="UI\GUI.cs" />

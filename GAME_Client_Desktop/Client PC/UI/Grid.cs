@@ -13,9 +13,10 @@ namespace Client_PC.UI
 {
     class Grid : Layout 
     {
+        #region fields
         public bool Active { get; set; }
         public bool WitdhAndHeightColumnDependant { get; set; }
-
+        public bool ConstantRowsAndColumns { get; set; }
         private int width;
         public override int  Width
         {
@@ -85,6 +86,13 @@ namespace Client_PC.UI
         private List<float> ColumnsSize;
         private List<float> RowsSize;
 
+        #endregion
+
+
+
+
+
+        #region methods
         private float ColumnOffset(int numberOfColumn)
         {
             float sum = 0.0f;
@@ -114,6 +122,28 @@ namespace Client_PC.UI
             WitdhAndHeightColumnDependant = true;
             ColumnsSize = new List<float>();
             RowsSize = new List<float>();
+            ConstantRowsAndColumns = false;
+        }
+
+        public Grid(int columns, int rows, int columnWidth, int rowHeight) : base()
+        {
+            WitdhAndHeightColumnDependant = true;
+            ColumnsSize = new List<float>();
+            RowsSize = new List<float>();
+            ConstantRowsAndColumns = true;
+            ColumnsSize = new List<float>(columns);
+            RowsSize = new List<float>(rows);
+
+            for (int i = 0; i < columns; i++)
+            {
+                ColumnsSize.Add(columnWidth);
+            }
+
+            for (int i = 0; i < rows; i++)
+            {
+                RowsSize.Add(rowHeight);
+            }
+
         }
 
         public void AddChild(GuiElement element, int row,int column)
@@ -180,47 +210,55 @@ namespace Client_PC.UI
         }
         private void Update()
         {
-            float[] ColumnsSiz = new float[Columns];
-            float[] RowsSiz = new float[Rows];
-            float[] columnMaxWidth = new float[Columns];
-            List<Child> multiElements = new List<Child>();
-            for(int i = 0; i < Rows; i++)
+            
+            if (!ConstantRowsAndColumns)
             {
-                List<GuiElement> elements = new List<GuiElement>();
-                Children.Where(p=> p.row == i).ToList().ForEach(p=> elements.Add(p.element));
-                int maxHeight = 0;
-                if (elements.Count > 0)
+                float[] ColumnsSiz = new float[Columns];
+                float[] RowsSiz = new float[Rows];
+                float[] columnMaxWidth = new float[Columns];
+                List<Child> multiElements = new List<Child>();
+                for (int i = 0; i < Rows; i++)
                 {
-                    maxHeight = elements.Max(p => p.Height);
-                }
-                RowsSiz[i] = (maxHeight);
-            }
-            for (int i = 0; i < Columns; i++)
-            {
-
-                var elements = Children.Where(p => p.column == i).ToList();
-                if (elements.Count > 0)
-                {
-                    foreach (var element in elements)
+                    List<GuiElement> elements = new List<GuiElement>();
+                    Children.Where(p => p.row == i).ToList().ForEach(p => elements.Add(p.element));
+                    int maxHeight = 0;
+                    if (elements.Count > 0)
                     {
-                        if(element.element.Width > columnMaxWidth[i])
+                        maxHeight = elements.Max(p => p.Height);
+                    }
+
+                    RowsSiz[i] = (maxHeight);
+                }
+
+
+                for (int i = 0; i < Columns; i++)
+                {
+
+                    var elements = Children.Where(p => p.column == i).ToList();
+                    if (elements.Count > 0)
+                    {
+                        foreach (var element in elements)
                         {
-                            if (element.columnWidth > 1)
+                            if (element.element.Width > columnMaxWidth[i])
                             {
-                                multiElements.Add(element);
-                            }
-                            else
-                            {
-                                columnMaxWidth[i] = element.element.Width;
+                                if (element.columnWidth > 1)
+                                {
+                                    multiElements.Add(element);
+                                }
+                                else
+                                {
+                                    columnMaxWidth[i] = element.element.Width;
+                                }
                             }
                         }
                     }
                 }
+                ColumnsSiz = columnMaxWidth;
+                RowsSize = RowsSiz.ToList();
+                ColumnsSize = ColumnsSiz.ToList();
             }
 
-            ColumnsSiz = columnMaxWidth;
-            RowsSize = RowsSiz.ToList();
-            ColumnsSize = ColumnsSiz.ToList();
+            
         }
 
         public void UpdateActive(bool isActive)
@@ -319,5 +357,6 @@ namespace Client_PC.UI
                 child.element.Draw(spriteBatch);
             }
         }
+#endregion
     }
 }

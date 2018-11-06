@@ -99,6 +99,7 @@ namespace Client_PC.Scenes
             layout.AddChild(gridRight);
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
+            Card dc = new Card();
         }
         
         private void OnExit()
