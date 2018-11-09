@@ -13,11 +13,17 @@ namespace Client_PC.UI
         public Texture2D Texture { get; set; }
         public Vector2 Scale { get; set; }
         public Vector2 Position { get; set; }
+        public string Text { get; set; }
+        public SpriteFont Font { get;  set; }
+        public Vector2 TextPosition { get;  set; }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
-            spriteBatch.Draw(Texture, Position, scale: Scale);
+            if(Texture != null)
+                spriteBatch.Draw(Texture, Position, scale: Scale);
+            if (Text != null)
+                spriteBatch.DrawString(Font, Text, Position, Color.Black);
             spriteBatch.End();
         }
     }

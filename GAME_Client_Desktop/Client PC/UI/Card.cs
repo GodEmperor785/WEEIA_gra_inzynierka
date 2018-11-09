@@ -58,16 +58,34 @@ namespace Client_PC.UI
             armorIconPosition = new Vector2(25, height - 10);
             hpIconScale = new Vector2(0.15f * Width / hpIcon.Width ,0.10f * Height / hpIcon.Height);
             armorIconScale = new Vector2(0.15f * Width /  armorIcon.Width,0.10f * Height / armorIcon.Height);
-            Graphic g = new Graphic();
-            g.Scale = hpIconScale;
-            g.Texture = hpIcon;
-            g.Position = hpIconPosition;
+            Graphic g = new Graphic
+            {
+                Scale = hpIconScale,
+                Texture = hpIcon,
+                Position = hpIconPosition
+            };
             overlay.AddChild(g, "hpIcon");
-            Graphic armorGraphic = new Graphic();
-            armorGraphic.Texture = armorIcon;
-            armorGraphic.Scale = armorIconScale;
-            armorGraphic.Position = armorIconPosition;
+            Graphic armorGraphic = new Graphic
+            {
+                Texture = armorIcon,
+                Scale = armorIconScale,
+                Position = armorIconPosition
+            };
+            hp = 10;
+            armor = 20;
             overlay.AddChild(armorGraphic,"armorIcon");
+            Graphic hpText = new Graphic()
+            {
+                Text = hp.ToString(),
+                Font =  Gui.mediumFont
+            };
+            Graphic armorText = new Graphic()
+            {
+                Text = armor.ToString(),
+                Font = Gui.mediumFont
+            };
+            overlay.AddChild(hpText,"hpText");
+            overlay.AddChild(armorText,"armorText");
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
@@ -78,10 +96,17 @@ namespace Client_PC.UI
         }
         public override void Update()
         {
-            Graphic g = (Graphic) overlay.GetChild("hpIcon");
-            g.Position= new Vector2(Origin.X + 0.02f * Width, Origin.Y + Height - 0.10f * Height);
-            Graphic a = (Graphic) overlay.GetChild("armorIcon");
-            a.Position = new Vector2(Origin.X + 0.42f * Width, Origin.Y + Height - 0.10f * Height);
+            Graphic hpIcon = (Graphic) overlay.GetChild("hpIcon");
+            hpIcon.Position= new Vector2(Origin.X + 0.02f * Width, Origin.Y + Height - 0.10f * Height);
+
+            Graphic armorIcon = (Graphic) overlay.GetChild("armorIcon");
+            armorIcon.Position = new Vector2(Origin.X + 0.42f * Width, Origin.Y + Height - 0.10f * Height);
+
+            Graphic hpText = (Graphic) overlay.GetChild("hpText");
+            hpText.Position = hpIcon.Position + new Vector2(0.175f * Width, - 0.025f * Height);
+
+            Graphic armorText = (Graphic) overlay.GetChild("armorText");
+            armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
         }
         public void OnClick()
         {
