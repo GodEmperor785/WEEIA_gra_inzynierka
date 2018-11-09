@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Mime;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Client_PC.Scenes;
 using Client_PC.UI;
@@ -155,7 +157,7 @@ namespace Client_PC
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-                
+            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             switch (state)
@@ -180,6 +182,99 @@ namespace Client_PC
                     break;
             }
             base.Update(gameTime);
+        }
+
+        private void WallpaperChange()
+        {
+            Random rndRandom = new Random();
+            int width = Wallpaper.Width;
+            double minAddition = 1;
+            double maxAddition = 1;
+            int colorRange = 5;
+            int startMin = 0;
+            int startMax = 255;
+            Color[] data = new Color[Wallpaper.Width * Wallpaper.Height];
+            Wallpaper.GetData(data);
+            for (int i = 0; i < 10000; i++)
+            {
+                int z = rndRandom.Next(0, data.Length - 1);
+                ChangePixel(z, width, data, rndRandom, minAddition, colorRange, maxAddition, startMin, startMax);
+
+
+
+
+            }
+            Wallpaper.SetData(data);
+            
+        }
+
+        private void ChangePixel(int z, int width, Color[] data, Random rndRandom, double minAddition, int colorRange,
+            double maxAddition, int startMin, int startMax)
+        {
+            Color empty = new Color();
+            if (z % width > 0 && data[z - 1] != empty)
+            {
+                if (z - width > 0 && data[z - width] != empty) // inside
+                {
+                    if (z - 2 * width > 0 && data[z - 2 * width] != empty && (z - 2) % width > 0) // further rows inside
+                    {
+                        Color cl = new Color(
+                                rndRandom.Next(
+                                    (int) Math.Round((data[z - 1].R + data[z - width].R + data[z - 2].R +
+                                                      data[z - 2 * width].R + minAddition) / 4.0f - colorRange),
+                                    (int) Math.Round((data[z - 1].R + data[z - width].R + data[z - 2].R +
+                                                      data[z - 2 * width].R + maxAddition) / 4.0f + colorRange)),
+                                rndRandom.Next(
+                                    (int) Math.Round((data[z - 1].G + data[z - width].G + data[z - 2].G +
+                                                      data[z - 2 * width].G + minAddition) / 4.0f - colorRange),
+                                    (int) Math.Round((data[z - 1].G + data[z - width].G + data[z - 2].G +
+                                                      data[z - 2 * width].G + maxAddition) / 4.0f + colorRange)),
+                                rndRandom.Next(
+                                    (int) Math.Round((data[z - 1].B + data[z - width].B + data[z - 2].B +
+                                                      data[z - 2 * width].B + minAddition) / 4.0f - colorRange),
+                                    (int) Math.Round((data[z - 1].B + data[z - width].B + data[z - 2].B +
+                                                      data[z - 2 * width].B + maxAddition) / 4.0f + colorRange)))
+                            ;
+                        data[z] = cl;
+                    }
+                    else // first row inside
+                    {
+                        Color cl = new Color(
+                                rndRandom.Next((int) Math.Floor((data[z - 1].R + data[z - width].R) / 2.0f - colorRange),
+                                    (int) Math.Ceiling((data[z - 1].R + data[z - width].R) / 2.0f + colorRange)),
+                                rndRandom.Next((int) Math.Floor((data[z - 1].G + data[z - width].G) / 2.0f - colorRange),
+                                    (int) Math.Ceiling((data[z - 1].G + data[z - width].G) / 2.0f + colorRange)),
+                                rndRandom.Next((int) Math.Floor((data[z - 1].B + data[z - width].B) / 2.0f - colorRange),
+                                    (int) Math.Ceiling((data[z - 1].B + data[z - width].B) / 2.0f + colorRange)))
+                            ;
+                        data[z] = cl;
+                    }
+                }
+                else // top edge
+                {
+                    Color cl = new Color(
+                        rndRandom.Next(data[z - 1].R - colorRange, data[z - 1].R + colorRange),
+                        rndRandom.Next(data[z - 1].G - colorRange, data[z - 1].G + colorRange),
+                        rndRandom.Next(data[z - 1].B - colorRange, data[z - 1].B + colorRange)
+                    );
+                    data[z] = cl;
+                }
+            }
+            else if (z - width >= 0 && data[z - width] != empty) // left edge
+            {
+                Color cl = new Color(
+                    rndRandom.Next((data[z - width].R) - colorRange, (data[z - width].R) + colorRange),
+                    rndRandom.Next((data[z - width].G) - colorRange, (data[z - width].G) + colorRange),
+                    rndRandom.Next((data[z - width].B) - colorRange, (data[z - width].B) + colorRange));
+
+                data[z] = cl;
+            }
+            else //  first pixel
+            {
+                Color cl = new Color(rndRandom.Next(startMin, startMax), rndRandom.Next(startMin, startMax),
+                    rndRandom.Next(startMin, startMax));
+                data[z] = cl;
+            }
         }
 
         /// <summary>

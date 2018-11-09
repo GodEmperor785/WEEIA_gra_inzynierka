@@ -99,7 +99,8 @@ namespace Client_PC.Scenes
             layout.AddChild(gridRight);
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
-            Card dc = new Card();
+            Card dc = new Card(new Point(),100,150,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true );
+            gridTopLeft.AddChild(dc,0,0);
         }
         
         private void OnExit()

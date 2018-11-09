@@ -2,24 +2,48 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Client_PC.UI
 {
-    class Card : GuiElement
+    class Card : GuiElement, IClickable, IHasText
     {
         private Texture2D skin;
         private Texture2D hpIcon;
         private Texture2D armorIcon;
+        private Vector2 hpIconPosition;
+        private Vector2 armorIconPosition;
+        private Vector2 hpIconScale;
+        private Vector2 armorIconScale;
         private double hp;
         private double armor;
         private string name;
+        private Vector2 hpPosition;
+        private Vector2 armorPosition;
+        private Vector2 namePosition;
         private RelativeLayout overlay;
-        public Card()
+
+        public bool Active { get; set; }
+        public bool ActiveChangeable { get; set; }
+        public object Parent { get; set; }
+        public Tooltip Tooltip { get; set; }
+        public string Text { get; set; }
+        public Vector2 TextPosition { get; set; }
+        public SpriteFont Font { get; set; }
+        public bool TextWrappable { get; set; }
+
+        public Card(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin, width, height, device, gui)
         {
+            Font = font;
+            ActiveChangeable = true;
+            TextWrappable = wrapable;
             overlay = new RelativeLayout();
+            this.Width = width;
+            this.Height = height;
             using (FileStream fileStream = new FileStream("Content/Icons/hp.png", FileMode.Open))
             {
                 hpIcon = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
@@ -30,6 +54,43 @@ namespace Client_PC.UI
                 armorIcon = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
                 fileStream.Dispose();
             }
+            hpIconPosition = new Vector2(5, height - 10);
+            armorIconPosition = new Vector2(25, height - 10);
+            hpIconScale = new Vector2(0.15f * Width / hpIcon.Width ,0.10f * Height / hpIcon.Height);
+            armorIconScale = new Vector2(0.15f * Width /  armorIcon.Width,0.10f * Height / armorIcon.Height);
+            Graphic g = new Graphic();
+            g.Scale = hpIconScale;
+            g.Texture = hpIcon;
+            g.Position = hpIconPosition;
+            overlay.AddChild(g, "hpIcon");
+            Graphic armorGraphic = new Graphic();
+            armorGraphic.Texture = armorIcon;
+            armorGraphic.Scale = armorIconScale;
+            armorGraphic.Position = armorIconPosition;
+            overlay.AddChild(armorGraphic,"armorIcon");
+        }
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+            spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
+            spriteBatch.End();
+            overlay.Draw(spriteBatch);
+        }
+        public override void Update()
+        {
+            Graphic g = (Graphic) overlay.GetChild("hpIcon");
+            g.Position= new Vector2(Origin.X + 0.02f * Width, Origin.Y + Height - 0.10f * Height);
+            Graphic a = (Graphic) overlay.GetChild("armorIcon");
+            a.Position = new Vector2(Origin.X + 0.42f * Width, Origin.Y + Height - 0.10f * Height);
+        }
+        public void OnClick()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Rectangle GetBoundary()
+        {
+            throw new NotImplementedException();
         }
     }
 }
