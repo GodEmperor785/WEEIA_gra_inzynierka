@@ -71,6 +71,7 @@ namespace Client_PC.Scenes
 
             int cardWidth = (int) (yourGrid.Width * cardWidthPercentage);
             int cardHeight = (int) (yourGrid.Height * cardHeightPercentage);
+
             Button b1 = new Button(new Point(0,0),cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true );
             Button b2 = new Button(new Point(0, 0), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             Button b3 = new Button(new Point(0, 0), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);

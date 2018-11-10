@@ -18,6 +18,8 @@ namespace Client_PC.UI
         public bool WitdhAndHeightColumnDependant { get; set; }
         public bool ConstantRowsAndColumns { get; set; }
         private int width;
+        public int ChildMaxAmount;
+        public bool MaxChildren =  false;
         public override int  Width
         {
             get
@@ -190,17 +192,79 @@ namespace Client_PC.UI
         }
         public void AddChild(GuiElement element, string name)
         {
+            
             Child ch = new Child()
             {
                 element = element,
                 name = name,
                 column =  0
             };
+            
             ch.id = Children.Count;
             ch.row = Rows;
             Children.Add(ch);
             Update();
             UpdateChildren();
+        }
+        public void AddChild(GuiElement element)
+        {
+            if (MaxChildren)
+            {
+                Vector2 pos = new Vector2();
+                if (Children.Count < ChildMaxAmount)
+                {
+                    pos = GetFreeSpace();
+                }
+                Child ch = new Child()
+                {
+                    element = element,
+                    column = (int)pos.Y,
+                    row = (int)pos.X
+                };
+
+                ch.id = Children.Count;
+                if (Children.Count < ChildMaxAmount)
+                    Children.Add(ch);
+                Update();
+                UpdateChildren();
+            }
+            else
+            {
+                Child ch = new Child()
+                {
+                    element = element,
+                    column = 0
+                };
+
+                ch.id = Children.Count;
+                ch.row = Rows;
+                
+                Children.Add(ch);
+                Update();
+                UpdateChildren();
+            }
+        }
+
+        private Vector2 GetFreeSpace()
+        {
+            Vector2 t = new Vector2();
+            if(Children.Count == 0)
+                return Vector2.Zero;
+            int row = Children.Max(p => p.row);
+            int column = Children.Where(p=> p.row == row).Max(p => p.column);
+            if (column < 4)
+            {
+                t.X = row;
+                t.Y = column + 1;
+
+            }
+            else
+            {
+                t.X = row + 1;
+                t.Y = 0;
+            }
+
+            return t;
         }
         public void UpdateP()
         {
@@ -290,11 +354,13 @@ namespace Client_PC.UI
                 }
                 else
                 {
+                    /*
                     if (child.element is IHasText)
                     {
                         IHasText element = (IHasText) child.element;
                         element.Update();
                     }
+                    */
                     child.element.Update();
                 }
             }

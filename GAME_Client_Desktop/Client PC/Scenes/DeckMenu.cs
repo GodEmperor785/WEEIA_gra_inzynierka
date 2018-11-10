@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
+using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
@@ -20,11 +21,16 @@ namespace Client_PC.Scenes
         private double CardGridHeightMulti = 0.15;
         private double CardGridWidthMulti = 0.75;
         private double RightGridHeightMulti = 0.75;
+        private int cardWidth = 100;
+        private int cardHeight = 150;
         public void Initialize(ContentManager Content)
         {
             layout = new RelativeLayout();
             Gui = new GUI(Content);
-            gridTopLeft = new Grid();
+
+            int ColumnWidth = (int) ((int) Game1.self.graphics.PreferredBackBufferWidth * CardGridWidthMulti * 0.2);
+            int rowHeight = (int) ((int) Game1.self.graphics.PreferredBackBufferHeight * CardGridHeightMulti);
+            gridTopLeft = new Grid(5, 3, ColumnWidth, rowHeight);
             gridRight = new Grid();
             gridRightBottom = new Grid();
             gridCenter = new Grid();
@@ -94,13 +100,42 @@ namespace Client_PC.Scenes
 
 
 
-
             layout.AddChild(gridTopLeft);
             layout.AddChild(gridRight);
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
-            Card dc = new Card(new Point(),100,150,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true );
-            gridTopLeft.AddChild(dc,0,0);
+            List<Ship> ships = new List<Ship>();
+            Random rndRandom = new Random();
+            for (int i = 0; i < 30; i++)
+            {
+                Ship ship = new Ship();
+                ship.Armor = rndRandom.Next(1, 30);
+                ship.Hp = rndRandom.Next(1, 30);
+                ships.Add(ship);
+            }
+
+            gridTopLeft.ConstantRowsAndColumns = true;
+            gridTopLeft.MaxChildren = true;
+            gridTopLeft.ChildMaxAmount = 15;
+            cardHeight = gridTopLeft.Height;
+            Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[0]);
+            Card dc1 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[1]);
+            Card dc2 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[2]);
+            Card dc3 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[3]);
+            Card dc4 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[4]);
+            Card dc5 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[5]);
+            Card dc6 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[6]);
+            Card dc7 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[7]);
+
+            gridTopLeft.AddChild(dc);
+            gridTopLeft.AddChild(dc1);
+            gridTopLeft.AddChild(dc2);
+            gridTopLeft.AddChild(dc3);
+            gridTopLeft.AddChild(dc4);
+            gridTopLeft.AddChild(dc5);
+            gridTopLeft.AddChild(dc6);
+            gridTopLeft.AddChild(dc7);
+            gridTopLeft.Update();
         }
         
         private void OnExit()

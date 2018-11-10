@@ -5,8 +5,10 @@ using System.Linq;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 
 namespace Client_PC.UI
 {
@@ -26,7 +28,7 @@ namespace Client_PC.UI
         private Vector2 armorPosition;
         private Vector2 namePosition;
         private RelativeLayout overlay;
-
+        private Ship ship;
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }
         public object Parent { get; set; }
@@ -36,8 +38,9 @@ namespace Client_PC.UI
         public SpriteFont Font { get; set; }
         public bool TextWrappable { get; set; }
 
-        public Card(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin, width, height, device, gui)
+        public Card(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base(origin, width, height, device, gui)
         {
+            ship = shipInc;
             Font = font;
             ActiveChangeable = true;
             TextWrappable = wrapable;
@@ -71,8 +74,8 @@ namespace Client_PC.UI
                 Scale = armorIconScale,
                 Position = armorIconPosition
             };
-            hp = 10;
-            armor = 20;
+            hp = ship.Hp;
+            armor = ship.Armor;
             overlay.AddChild(armorGraphic,"armorIcon");
             Graphic hpText = new Graphic()
             {
@@ -113,6 +116,13 @@ namespace Client_PC.UI
             throw new NotImplementedException();
         }
 
+        public bool Equals(Card cd)
+        {
+            if (this.ship.Id == cd.ship.Id)
+                return true;
+            else
+                return false;
+        }
         public Rectangle GetBoundary()
         {
             throw new NotImplementedException();

@@ -10,6 +10,6 @@ namespace Client_PC.Utilities
     {
         public static string hd = "1280 x 720";
         public static string fullhd = "1920 x 1080";
-        public static int clickDelay = 250;
+        public static int clickDelay = 150;
     }
 }
