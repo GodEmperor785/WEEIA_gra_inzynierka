@@ -10,6 +10,7 @@ namespace Client_PC.UI
 {
     class Layout : GuiElement
     {
+        protected Texture2D Background;
         protected class Child
         {
             public GuiElement element;

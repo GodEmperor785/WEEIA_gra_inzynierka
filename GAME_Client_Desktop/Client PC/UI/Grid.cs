@@ -338,7 +338,12 @@ namespace Client_PC.UI
             }
 
             
+
+
+
         }
+        
+
 
         public void UpdateActive(bool isActive)
         {
@@ -429,8 +434,11 @@ namespace Client_PC.UI
         {
             if (DrawBorder)
             {
+                if (Background == null)
+                    Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.Black,
+                        BorderSize, 0);
                 spriteBatch.Begin();
-                spriteBatch.Draw(Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.Black,BorderSize,0), Boundary, Color.White);
+                spriteBatch.Draw(Background, Boundary, Color.White);
                 spriteBatch.End();
             }
 

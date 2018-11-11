@@ -161,6 +161,7 @@ namespace Client_PC.Scenes
             gridTopLeft.AddChild(dc5);
             gridTopLeft.AddChild(dc6);
             gridTopLeft.AddChild(dc7);
+
             gridTopLeft.Update();
 
         }

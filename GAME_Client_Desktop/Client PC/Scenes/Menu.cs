@@ -24,6 +24,15 @@ namespace Client_PC.Scenes
 
         public virtual void Update(GameTime gameTime)
         {
+            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
+            if (Game1.self.DeltaSeconds > Constants.clickDelay)
+            {
+                Game1.self.AbleToClick = true;
+            }
+            else
+            {
+                Game1.self.AbleToClick = false;
+            }
             var mouseState = Mouse.GetState();
             
             var keyboardState = Keyboard.GetState();
@@ -46,7 +55,7 @@ namespace Client_PC.Scenes
             IClickable button = GetClickable(xy);
             if (button == null)
                 UpdateTooltips(button, xy);
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
             {
                 UpdateFields();
                 Game1.self.DeltaSeconds = 0;
