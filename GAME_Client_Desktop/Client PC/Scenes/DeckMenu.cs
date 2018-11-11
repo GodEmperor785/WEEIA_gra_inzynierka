@@ -88,6 +88,30 @@ namespace Client_PC.Scenes
             {
                 Text = "Exit"
             };
+            Button up = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width / 2), gridTopLeft.Origin.Y + gridTopLeft.Height - 10 - 20), 60, 30, Game1.self.GraphicsDevice,
+            Gui, Gui.mediumFont, true)
+            {
+                Text = "up"
+            };
+            Button down = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width / 2), gridTopLeft.Origin.Y + gridTopLeft.Height ), 60, 30, Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "down"
+            };
+            
+            up.Update();
+            down.Update();
+
+            up.clickEvent += UpClick;
+            down.clickEvent += DownClick;
+
+            Clickable.Add(up);
+            Clickable.Add(down);
+
+            RelativeLayout rl = new RelativeLayout();
+            rl.AddChild(up);
+            rl.AddChild(down);
+            
             Clickable.Add(b4);
             b4.clickEvent += OnExit;
             gridRightBottom.AddChild(b,0,0);
@@ -104,6 +128,7 @@ namespace Client_PC.Scenes
             layout.AddChild(gridRight);
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
+            layout.AddChild(rl);
             List<Ship> ships = new List<Ship>();
             Random rndRandom = new Random();
             for (int i = 0; i < 30; i++)
@@ -126,7 +151,8 @@ namespace Client_PC.Scenes
             Card dc5 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[5]);
             Card dc6 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[6]);
             Card dc7 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[7]);
-
+            gridTopLeft.AllVisible = false;
+            gridTopLeft.VisibleRows = 1;
             gridTopLeft.AddChild(dc);
             gridTopLeft.AddChild(dc1);
             gridTopLeft.AddChild(dc2);
@@ -136,6 +162,19 @@ namespace Client_PC.Scenes
             gridTopLeft.AddChild(dc6);
             gridTopLeft.AddChild(dc7);
             gridTopLeft.Update();
+
+        }
+
+        private void UpClick()
+        {
+            Console.WriteLine(-1);
+            gridTopLeft.ChangeRow(-1);
+        }
+
+        private void DownClick()
+        {
+            Console.WriteLine(1);
+            gridTopLeft.ChangeRow(1);
         }
         
         private void OnExit()
@@ -149,8 +188,18 @@ namespace Client_PC.Scenes
         }
         public void Draw(GameTime gameTime)
         {
-
-            layout.Draw(Game1.self.spriteBatch);
+            if (false)
+            {
+                Clickable.ForEach(p =>
+                {
+                    var z = (GuiElement) p;
+                    z.Draw(Game1.self.spriteBatch);
+                });
+            }
+            else
+            {
+                layout.Draw(Game1.self.spriteBatch);
+            }
         }
 
 

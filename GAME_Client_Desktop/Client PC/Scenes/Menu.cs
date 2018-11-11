@@ -16,6 +16,7 @@ namespace Client_PC.Scenes
         protected GUI Gui;
         protected bool AbleToClick = false;
         protected Keys[] LastPressedKeys;
+        private ButtonState lastState;
         public Menu()
         {
             Clickable = new List<IClickable>();
@@ -23,30 +24,34 @@ namespace Client_PC.Scenes
 
         public virtual void Update(GameTime gameTime)
         {
-            Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
-            if (Game1.self.DeltaSeconds > 250)
-            {
-                Game1.self.AbleToClick = true;
-            }
-            else
-            {
-                Game1.self.AbleToClick = false;
-            }
             var mouseState = Mouse.GetState();
+            
             var keyboardState = Keyboard.GetState();
             Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
             UpdateGrid();
+            if(lastState != mouseState.LeftButton)
+            Task.Run(()=> {
+                CheckClickables(mouseState);
+            });
+
+            lastState = mouseState.LeftButton;
+            UpdateGrid();
+        }
+
+        private void CheckClickables(MouseState mouseState)
+        {
             int x = mouseState.X;
             int y = mouseState.Y;
             Point xy = new Point(x, y);
             IClickable button = GetClickable(xy);
-            UpdateTooltips(button,xy);
-            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
+            if (button == null)
+                UpdateTooltips(button, xy);
+            if (mouseState.LeftButton == ButtonState.Pressed)
             {
                 UpdateFields();
                 Game1.self.DeltaSeconds = 0;
                 Game1.self.AbleToClick = false;
-                
+
                 if (button != null)
                 {
                     UpdateClick(button);
@@ -56,8 +61,6 @@ namespace Client_PC.Scenes
                     Game1.self.FocusedElement = null;
                 }
             }
-
-            UpdateGrid();
         }
 
         public virtual void UpdateGrid()
@@ -71,7 +74,10 @@ namespace Client_PC.Scenes
         }
         public virtual IClickable GetClickable(Point xy)
         {
-            return Clickable.SingleOrDefault(p => p.GetBoundary().Contains(xy));
+            
+            IClickable click = Clickable.FirstOrDefault(p => p.GetBoundary().Contains(xy));
+           
+            return click;
         }
         public virtual void UpdateClick(IClickable button)
         {

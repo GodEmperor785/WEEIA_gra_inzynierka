@@ -20,6 +20,9 @@ namespace Client_PC.UI
         private int width;
         public int ChildMaxAmount;
         public bool MaxChildren =  false;
+        public bool AllVisible = true;
+        public int VisibleRows;
+        private int ShowedRow = 0;
         public override int  Width
         {
             get
@@ -266,6 +269,15 @@ namespace Client_PC.UI
 
             return t;
         }
+
+        public void ChangeRow(int i)
+        {
+            int newRow = ShowedRow + i;
+            if (newRow >= 0 && newRow < RowsSize.Count)
+            {
+                ShowedRow = newRow;
+            }
+        }
         public void UpdateP()
         {
             Update();
@@ -281,17 +293,20 @@ namespace Client_PC.UI
                 float[] RowsSiz = new float[Rows];
                 float[] columnMaxWidth = new float[Columns];
                 List<Child> multiElements = new List<Child>();
-                for (int i = 0; i < Rows; i++)
+                if (AllVisible)
                 {
-                    List<GuiElement> elements = new List<GuiElement>();
-                    Children.Where(p => p.row == i).ToList().ForEach(p => elements.Add(p.element));
-                    int maxHeight = 0;
-                    if (elements.Count > 0)
+                    for (int i = 0; i < Rows; i++)
                     {
-                        maxHeight = elements.Max(p => p.Height);
-                    }
+                        List<GuiElement> elements = new List<GuiElement>();
+                        Children.Where(p => p.row == i).ToList().ForEach(p => elements.Add(p.element));
+                        int maxHeight = 0;
+                        if (elements.Count > 0)
+                        {
+                            maxHeight = elements.Max(p => p.Height);
+                        }
 
-                    RowsSiz[i] = (maxHeight);
+                        RowsSiz[i] = (maxHeight);
+                    }
                 }
 
 
@@ -345,8 +360,12 @@ namespace Client_PC.UI
         {
             foreach (var child in Children)
             {
-                child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),this.Origin.Y + (int)RowOffset(child.row));
-                
+                if(AllVisible)
+                    child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),this.Origin.Y + (int)RowOffset(child.row));
+                else
+                {
+                    child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column), this.Origin.Y + (int)RowOffset(0));
+                }
                 if (child.element is Grid)
                 {
                     Grid g = (Grid) child.element;
@@ -414,13 +433,29 @@ namespace Client_PC.UI
                 spriteBatch.Draw(Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.Black,BorderSize,0), Boundary, Color.White);
                 spriteBatch.End();
             }
-            foreach (var child in Children)
+
+            if (AllVisible)
             {
-                if (child.name != null && child.name.Equals("gridW"))
+                foreach (var child in Children)
                 {
-                    int z = 0;
+                    if (child.name != null && child.name.Equals("gridW"))
+                    {
+                        int z = 0;
+                    }
+                    child.element.Draw(spriteBatch);
                 }
-                child.element.Draw(spriteBatch);
+            }
+            else
+            {
+                List<Child> childrenToShow = Children.Where(p => p.row >= ShowedRow && p.row < ShowedRow + VisibleRows).ToList();
+                foreach (var child in childrenToShow)
+                {
+                    if (child.name != null && child.name.Equals("gridW"))
+                    {
+                        int z = 0;
+                    }
+                    child.element.Draw(spriteBatch);
+                }
             }
         }
 #endregion
