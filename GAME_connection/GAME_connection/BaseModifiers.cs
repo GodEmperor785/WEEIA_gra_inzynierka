@@ -96,18 +96,25 @@ namespace GAME_connection {
 		private Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap;
 
 		private double baseShipStatsExpModifier;
+		private int maxShipsPerPlayer;
+		private int startingMoney;
 
 		public BaseModifiers() { }
 
-		public BaseModifiers(Dictionary<WeaponType, double> weaponTypeRangeMultMap, Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap, double baseShipStatsExpModifier) {
+		public BaseModifiers(Dictionary<WeaponType, double> weaponTypeRangeMultMap, Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap,
+				double baseShipStatsExpModifier, int maxShipsPerPlayer, int startingMoney) {
 			this.WeaponTypeRangeMultMap = weaponTypeRangeMultMap;
 			this.DefTypeToWepTypeMap = defTypeToWepTypeMap;
 			this.BaseShipStatsExpModifier = baseShipStatsExpModifier;
+			this.MaxShipsPerPlayer = maxShipsPerPlayer;
+			this.StartingMoney = startingMoney;
 		}
 
 		public Dictionary<WeaponType, double> WeaponTypeRangeMultMap { get => weaponTypeRangeMultMap; set => weaponTypeRangeMultMap = value; }
 		public Dictionary<Tuple<DefenceSystemType, WeaponType>, double> DefTypeToWepTypeMap { get => defTypeToWepTypeMap; set => defTypeToWepTypeMap = value; }
 		public double BaseShipStatsExpModifier { get => baseShipStatsExpModifier; set => baseShipStatsExpModifier = value; }
+		public int MaxShipsPerPlayer { get => maxShipsPerPlayer; set => maxShipsPerPlayer = value; }
+		public int StartingMoney { get => startingMoney; set => startingMoney = value; }
 	}
 
 	/*

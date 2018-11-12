@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GAME_connection;
 
 namespace GAME_Server {
-	interface IGameDataBase {
+	interface IGameDataBase : IDisposable {
 		DbFleet GetFleetWithId(int id);
 
 		DbShip GetShipWithId(int id);
@@ -55,7 +55,20 @@ namespace GAME_Server {
 
 		DbShipTemplate GetShipTemplateWithId(int id);
 
-		//TODO
-		//deletes, updates and inserts
+		List<DbShipTemplate> GetShipTemplatesWithRarityAndReqExp(Rarity rarity, int reqExp);
+
+		int GetPlayerShipCount(Player player);
+
+		DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity);
+
+		DbLootBox GetLootBoxWithId(int id);
+
+		List<DbLootBox> GetAllLootBoxes();
+
+		void UpdatePlayer(DbPlayer newData);
+
+		bool RemoveShipWithId(int id, bool isAdmin, int playerId = 0);
+
+		List<DbGameHistory> GetPlayersGameHistory(int playerId);
 	}
 }

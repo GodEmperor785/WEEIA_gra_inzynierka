@@ -16,7 +16,7 @@ using System.Runtime.CompilerServices;
 namespace GAME_Server {
 	internal class Server {
 		private static int port = TcpConnection.DEFAULT_PORT;
-		private static string ip = "127.0.0.1";
+		private static string ip = "25.34.213.187";
 
 		//database specific fields and properties
 		private static IGameDataBase gameDataBase;		//used only for initialization of BaseModifiers etc. Other IGameDataBase are created in user threads
@@ -42,8 +42,8 @@ namespace GAME_Server {
 		//wymagane jest ssl i/lub tls 1.2 bo inaczej paypal moze odrzucic, wymagane sa certyfikaty, informacje sa tylko o aplikacjach webowych w przegladarce, jakies dane przekazywane przez sesje - trzebaby robic to inaczej
 		//w sumie kilkaset linii kodu - w tym ponad 300 na sama klase z tutoriala (a sama klasa nie wystarczy)
 
-		// - historia rozgrywek, kto z kim i jakie floty
-		// - wirtualna waluta i kupowanie kart, przypisywanie kart do gracza, player w wersji DB, many-to-many
+		// - historia rozgrywek, kto z kim i jakie floty - in progress
+		// - wirtualna waluta i kupowanie kart, przypisywanie kart do gracza, player w wersji DB, many-to-many - in progress
 		// - turnieje po okolo 8 graczy o duze nagrody
 		// - apka windows forms dla admina
 
@@ -63,11 +63,11 @@ namespace GAME_Server {
 
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			//InitilizeGameDataFromDB();
+			InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
-			//TcpListener listener = new TcpListener(ipAddress, port);
-			TcpListener listener = new TcpListener(IPAddress.Any, port);
+			TcpListener listener = new TcpListener(ipAddress, port);
+			//TcpListener listener = new TcpListener(IPAddress.Any, port);
 			listener.Start();
 			Log("Server listening on: " + ip + ":" + port);
 
@@ -342,13 +342,18 @@ namespace GAME_Server {
 					Client.Send(new GamePacket(OperationType.SUCCESS, new object()));
 					//set and send user data
 					this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
+					this.User.Password = "";
 					Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
+
+					UserProcessing();	//main logic
 				}
 			} catch(ConnectionEndedException) {
 				Server.Log(FailureReasons.CLIENT_DISCONNECTED, true);
+				EndThread();
 			}
 		}
 
+		#region login/register
 		/// <summary>
 		/// Checks if login or register is allowed for given player data and returns true if it is so. Receive 1 msg (typeof(packet) = Player), send 1 msg (opType = FAILURE/SUCCESS)
 		/// </summary>
@@ -367,6 +372,7 @@ namespace GAME_Server {
 			if(packet.OperationType == OperationType.LOGIN) {
 				if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
 					this.User = playerObject;
+					Server.Log("Succesfully logged in player " + playerObject.Username);
 					return true;
 				}
 				else {
@@ -376,7 +382,8 @@ namespace GAME_Server {
 			}
 			else if(packet.OperationType == OperationType.REGISTER) {
 				if ((!GameDataBase.PlayerExists(playerObject)) && GameDataBase.PlayerNameIsUnique(playerObject)) {
-					GameDataBase.AddPlayer(new DbPlayer(playerObject));
+					RegisterNewPlayer(playerObject);
+					Server.Log("Succesfully registered player " + playerObject.Username);
 					this.User = playerObject;
 					return true;
 				}
@@ -387,13 +394,99 @@ namespace GAME_Server {
 			}
 			else if(packet.OperationType == OperationType.DISCONNECT) {
 				Server.Log("User disconnected before succesful login!");
-				return false;
+				throw new ConnectionEndedException("User disconnected before succesful login!");
 			}
 			else {
 				SendFailure(FailureReasons.INVALID_PACKET_TYPE);
 				return false;
 			}
 		}
+
+		private void RegisterNewPlayer(Player newPlayerData) {
+			DbPlayer newPlayer = new DbPlayer(newPlayerData, Server.BaseModifiers.StartingMoney);	//new player with basic data and 0s
+			newPlayer.OwnedShips = ShipTemplatesToShips( GameDataBase.GetShipTemplatesWithRarityAndReqExp(Rarity.COMMON, 0), newPlayer );   //basic ships
+			newPlayer.OwnedShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(Rarity.VERY_RARE).GenerateNewShipOfThisTemplate(newPlayer));	//and add one VERY_RARE ship
+			GameDataBase.AddPlayer(newPlayer);  //finally add player to db
+		}
+		#endregion
+
+		#region main logic
+		private void UserProcessing() {
+			bool clientConnected = true;
+			DbPlayer thisUser;
+			mainLoop: while (clientConnected) {
+				GamePacket gamePacket = Client.GetReceivedPacket();
+				try {
+					gameSwitch: switch (gamePacket.OperationType) {
+						//shop
+						case OperationType.GET_LOOTBOXES:       //dont care about internal packet
+							Server.Log("Player " + User.Username + " wants to view lootboxes");
+							List<DbLootBox> dbLootBoxes = GameDataBase.GetAllLootBoxes();
+							List<LootBox> lootBoxes = dbLootBoxes.Select(x => x.ToLootBox()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_LOOTBOXES, lootBoxes));
+							break;
+						case OperationType.BUY:
+							LootBox targetLootBox;
+							targetLootBox = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("Player " + User.Username + " wants to buy lootbox " + targetLootBox.Name);
+							DbLootBox lootbox = GameDataBase.GetLootBoxWithId(targetLootBox.Id);
+							thisUser = GetPlayerFromDb();
+							if (lootbox.Cost > User.Money) SendFailure(FailureReasons.NOT_ENOUGH_MONEY);
+							else {
+								thisUser.Money -= lootbox.Cost;
+								User.Money -= lootbox.Cost;
+								//TODO add right ships
+								GameDataBase.UpdatePlayer(thisUser);
+							}
+							break;
+						case OperationType.SELL_SHIP:
+							Ship shipToSell = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("Player " + User.Username + " wants to sell ship with id " + shipToSell.Id + " for " + shipToSell.Cost);
+							DbShip dbShipToSell = GameDataBase.GetShipWithId(shipToSell.Id);
+							int shipValue = dbShipToSell.ShipBaseStats.Cost;
+							thisUser = GetPlayerFromDb();
+							if(gameDataBase.RemoveShipWithId(dbShipToSell.Id, false, thisUser.Id)) {
+								thisUser.Money += shipValue;
+								User.Money += shipValue;
+								GameDataBase.UpdatePlayer(thisUser);
+							} else {
+								SendFailure(FailureReasons.INVALID_ID);
+							}
+							break;
+						//TODO fleets menu
+						case OperationType.VIEW_FLEETS:
+
+							break;
+						case OperationType.VIEW_ALL_PLAYER_SHIPS:
+
+							break;
+						case OperationType.ADD_FLEET:
+
+							break;
+						case OperationType.UPDATE_FLEET:
+
+							break;
+						case OperationType.DELETE_FLEET:
+
+							break;
+						//player stats
+						case OperationType.GET_PLAYER_STATS:
+							Server.Log("Player " + User.Username + " wants to view game history");
+							List<DbGameHistory> dbGameHistory = GameDataBase.GetPlayersGameHistory(User.Id);
+							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
+							break;
+					}
+				}
+				catch (InvalidCastException) {
+					SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
+				}
+				catch (NullReferenceException) {
+					SendFailure(FailureReasons.INVALID_ID);
+				}
+			}
+		}
+		#endregion
 
 		/// <summary>
 		/// sends <see cref="OperationType.FAILURE"/> <see cref="GamePacket"/> to client and logs reason and caller line
@@ -404,6 +497,24 @@ namespace GAME_Server {
 			string failMsg = "Operation Failed! at: " + callerLine + ". Reason: " + reason;
 			Server.Log(failMsg);
 			this.Client.Send(new GamePacket(OperationType.FAILURE, reason));
+		}
+
+		private List<DbShip> ShipTemplatesToShips(List<DbShipTemplate> shipTemplates, DbPlayer player) {
+			return shipTemplates.Select(x => x.GenerateNewShipOfThisTemplate(player)).ToList();
+		}
+
+		private DbPlayer GetPlayerFromDb() {
+			DbPlayer player = GameDataBase.GetPlayerWithUsername(this.User.Username);
+			this.User = player.ToPlayer();
+			return player;
+		}
+
+		/// <summary>
+		/// does necessary resource cleanup: disconnects from DB and disconnects TcpConnection
+		/// </summary>
+		private void EndThread() {
+			this.GameDataBase.Dispose();
+			this.Client.Disconnect();
 		}
 
 	}

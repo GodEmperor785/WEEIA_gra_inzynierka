@@ -23,7 +23,7 @@ namespace GAME_Server {
 		public DbSet<DbBaseModifiers> BaseModifiers { get; set; }
 		public DbSet<DbGameHistory> GameHistories { get; set; }
 		public DbSet<DbShipTemplate> ShipTemplates { get; set; }
-		public DbSet<DbLootBoxes> LootBoxes { get; set; }
+		public DbSet<DbLootBox> LootBoxes { get; set; }
 		//public DbSet<DbFleetSizeExpMapping> FleetSizeExpMappings { get; set; }
 
 		public GameDBContext() : base("GameContext") {
@@ -49,7 +49,7 @@ namespace GAME_Server {
 				.HasMany(x => x.Weapons)
 				.WithMany(x => x.Ships)
 				.Map(x => {
-					x.MapLeftKey("ShipID");
+					x.MapLeftKey("ShipTemplateID");
 					x.MapRightKey("WeaponID");
 					x.ToTable("ShipTemplates_Weapons");
 				});
@@ -57,7 +57,7 @@ namespace GAME_Server {
 				.HasMany(x => x.Defences)
 				.WithMany(x => x.Ships)
 				.Map(x => {
-					x.MapLeftKey("ShipID");
+					x.MapLeftKey("ShipTemplateID");
 					x.MapRightKey("DefenceSystemID");
 					x.ToTable("ShipTemplates_DefenceSystems");
 				});

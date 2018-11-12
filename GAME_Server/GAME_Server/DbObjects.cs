@@ -27,15 +27,20 @@ namespace GAME_Server {
 			Id = id;
 		}
 
-		public DbPlayer(Player player) {
+		/// <summary>
+		/// used to create new player
+		/// </summary>
+		/// <param name="player"></param>
+		public DbPlayer(Player player, int startingMoney) {
 			Username = player.Username;
 			Password = player.Password;
-			Experience = player.Experience;
-			MaxFleetPoints = player.MaxFleetPoints;
+			Experience = 0;
+			MaxFleetPoints = 0;
 			Id = player.Id;
-			GamesPlayed = player.GamesPlayed;
-			GamesWon = player.GamesWon;
+			GamesPlayed = 0;
+			GamesWon = 0;
 			OwnedShips = new List<DbShip>();
+			Money = startingMoney;
 		}
 
 		public string Username { get; set; }
@@ -310,7 +315,7 @@ namespace GAME_Server {
 	}*/
 
 	[Table("lootboxes")]
-	public class DbLootBoxes {
+	public class DbLootBox {
 		public int Id { get; set; }
 		public int Cost { get; set; }
 		public string Name { get; set; }
@@ -319,9 +324,9 @@ namespace GAME_Server {
 		public double VeryRareChance { get; set; }
 		public double LegendaryChance { get; set; }
 
-		public DbLootBoxes() { }
+		public DbLootBox() { }
 
-		public DbLootBoxes(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance) {
+		public DbLootBox(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance) {
 			Id = id;
 			Cost = cost;
 			Name = name;
@@ -369,6 +374,12 @@ namespace GAME_Server {
 		//baseShipStatsExpModifier
 		public double BaseShipStatsExpModifier { get; set; }
 
+		//maxShipsPerPlayer
+		public int MaxShipsPerPlayer { get; set; }
+
+		//starting money
+		public int StartingMoney { get; set; }
+
 		public BaseModifiers ToBaseModifiers() {
 			Dictionary<WeaponType, double> weaponTypeRangeMultMap = new Dictionary<WeaponType, double>() {
 				{ WeaponType.KINETIC, KineticRange },
@@ -388,7 +399,7 @@ namespace GAME_Server {
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE), MissileShield },
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), MissileIF }
 			};
-			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier);
+			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney);
 		}
 	}
 
