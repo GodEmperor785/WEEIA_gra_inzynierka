@@ -22,7 +22,8 @@ namespace Client_PC.Scenes
 
         private Dropdown drop;
         bool dropClicked = false;
-        public void Initialize(ContentManager Content)
+        List<Menu> menus = new List<Menu>();
+        public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
             grid = new Grid();
@@ -75,6 +76,10 @@ namespace Client_PC.Scenes
             int z = 243123;
         }
 
+        public void SetMenus(List<Menu> menuList)
+        {
+            menus = menuList;
+        }
         public void onSave()
         {
             var element = drop.GetSelected();
@@ -100,9 +105,12 @@ namespace Client_PC.Scenes
             Game1.self.graphics.PreferredBackBufferHeight = height;
             Game1.self.graphics.PreferredBackBufferWidth = width;
             Game1.self.graphics.ApplyChanges();
-            
-            
-        
+            menus.ForEach(p=>
+            {
+                p.Reinitialize(Game1.self.Content);
+            });
+            Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
+
             TextWriter writer = new StreamWriter("Config");
             XmlSerializer xml = new XmlSerializer(typeof(Config));
             xml.Serialize(writer,conf);
@@ -112,7 +120,7 @@ namespace Client_PC.Scenes
         {
             Game1.self.state = Game1.State.MainMenu;
         }
-        
+
 
         public override void UpdateGrid()
         {

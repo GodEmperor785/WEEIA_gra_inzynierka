@@ -18,7 +18,7 @@ namespace Client_PC.Scenes
         private Grid grid;
 
 
-        public void Initialize(ContentManager Content)
+        public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
             Button z = new Button(new Point(100, 200), 120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)

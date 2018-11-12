@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Client_PC.UI;
 using Client_PC.Utilities;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
@@ -25,23 +26,16 @@ namespace Client_PC.Scenes
         public virtual void Update(GameTime gameTime)
         {
             Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
-            if (Game1.self.DeltaSeconds > Constants.clickDelay)
-            {
-                Game1.self.AbleToClick = true;
-            }
-            else
-            {
-                Game1.self.AbleToClick = false;
-            }
+            Game1.self.AbleToClick = Game1.self.DeltaSeconds > Constants.clickDelay;
             var mouseState = Mouse.GetState();
             
             var keyboardState = Keyboard.GetState();
             Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
             UpdateGrid();
             if(lastState != mouseState.LeftButton)
-            Task.Run(()=> {
-                CheckClickables(mouseState);
-            });
+            
+             CheckClickables(mouseState);
+            
 
             lastState = mouseState.LeftButton;
             UpdateGrid();
@@ -72,6 +66,14 @@ namespace Client_PC.Scenes
             }
         }
 
+        public virtual void Initialize(ContentManager Content)
+        {
+
+        }
+        public void Reinitialize(ContentManager Content)
+        {
+            Initialize(Content);
+        }
         public virtual void UpdateGrid()
         {
 

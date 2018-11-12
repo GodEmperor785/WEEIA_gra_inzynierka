@@ -17,7 +17,7 @@ namespace Client_PC.Scenes
         private Grid grid;
 
 
-        public void Initialize(ContentManager Content)
+        public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
             Label labelLogin = new Label(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)

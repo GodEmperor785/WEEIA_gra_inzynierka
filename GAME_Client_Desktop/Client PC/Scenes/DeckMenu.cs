@@ -23,7 +23,7 @@ namespace Client_PC.Scenes
         private double RightGridHeightMulti = 0.75;
         private int cardWidth = 100;
         private int cardHeight = 150;
-        public void Initialize(ContentManager Content)
+        public override void Initialize(ContentManager Content)
         {
             layout = new RelativeLayout();
             Gui = new GUI(Content);

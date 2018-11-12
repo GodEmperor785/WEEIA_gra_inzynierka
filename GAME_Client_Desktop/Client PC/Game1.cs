@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Mime;
@@ -42,6 +43,7 @@ namespace Client_PC
         internal IClickable FocusedElement;
         internal Texture2D Wallpaper;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
+        List<Menu> menus = new List<Menu>();
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -76,6 +78,15 @@ namespace Client_PC
             deckMenu.Initialize(Content);
             gameWindow = new GameWindow();
             gameWindow.Initialize(Content);
+
+            menus.Add(mainMenu);
+            menus.Add(settingsMenu);
+            menus.Add(loginMenu);
+            menus.Add(registerMenu);
+            menus.Add(deckMenu);
+            menus.Add(gameWindow);
+
+            settingsMenu.SetMenus(menus);
             base.Initialize();
             
         }

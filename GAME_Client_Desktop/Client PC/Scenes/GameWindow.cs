@@ -15,7 +15,7 @@ namespace Client_PC.Scenes
         private Grid enemyGrid;
         private Grid yourGrid;
         private Grid yourCards;
-        public void Initialize(ContentManager Content)
+        public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
             layout = new RelativeLayout();
