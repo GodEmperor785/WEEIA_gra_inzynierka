@@ -61,7 +61,7 @@ namespace GAME_Server {
 		}
 
 		internal GameDBContext DbContext { get => dbContext; }
-		internal Random RNG { get => rng; }
+		internal Random DbRNG { get => rng; }
 		#endregion
 
 		private int SaveChanges() {
@@ -261,10 +261,18 @@ namespace GAME_Server {
 			return GetPlayerWithUsername(player.Username).OwnedShips.Count();
 		}
 
-		public DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity) {
-			var query = BasicShipTemplateQuery.Where(shipTempl => shipTempl.ShipRarity == rarity);
+		/// <summary>
+		/// gets random ship of selected rarity and proper exp requirement
+		/// </summary>
+		/// <param name="rarity"></param>
+		/// <param name="expReq"></param>
+		/// <returns></returns>
+		public DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity, int expReq) {
+			/*var query = BasicShipTemplateQuery.Where(shipTempl => ( (shipTempl.ShipRarity == rarity) && (shipTempl.ExpUnlock <= expReq) ));
 			int shipsOfSelectedRarityCount = query.Count();
-			return query.ElementAt(RNG.Next(0, shipsOfSelectedRarityCount));
+			return query.ElementAt(DbRNG.Next(0, shipsOfSelectedRarityCount));*/
+			List<DbShipTemplate> availableShips = GetShipTemplatesWithRarityAndReqExp(rarity, expReq);
+			return availableShips.ElementAt(DbRNG.Next(0, availableShips.Count));
 		}
 
 		public List<DbLootBox> GetAllLootBoxes() {

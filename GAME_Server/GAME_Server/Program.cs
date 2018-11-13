@@ -317,15 +317,18 @@ namespace GAME_Server {
 		private TcpConnection client;
 		private Player user;
 		private IGameDataBase gameDataBase;
+		private GameRNG gameRNG;
 
 		internal UserThread(TcpConnection client) {
 			this.Client = client;
 			this.GameDataBase = Server.GetGameDBContext();
+			this.gameRNG = new GameRNG();
 		}
 
 		public TcpConnection Client { get => client; set => client = value; }
 		public Player User { get => user; set => user = value; }
-		public IGameDataBase GameDataBase { get => gameDataBase; set => gameDataBase = value; }		//use only this as DB in this thread
+		public IGameDataBase GameDataBase { get => gameDataBase; set => gameDataBase = value; }     //use only this as DB in this thread
+		public GameRNG GameRNG { get => gameRNG; set => gameRNG = value; }
 		#endregion
 
 		/// <summary>
@@ -339,7 +342,7 @@ namespace GAME_Server {
 					loginSuccess = LoginOrRegister();
 				}
 				if(loginSuccess) {
-					Client.Send(new GamePacket(OperationType.SUCCESS, new object()));
+					SendSuccess();
 					//set and send user data
 					this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 					this.User.Password = "";
@@ -405,7 +408,7 @@ namespace GAME_Server {
 		private void RegisterNewPlayer(Player newPlayerData) {
 			DbPlayer newPlayer = new DbPlayer(newPlayerData, Server.BaseModifiers.StartingMoney);	//new player with basic data and 0s
 			newPlayer.OwnedShips = ShipTemplatesToShips( GameDataBase.GetShipTemplatesWithRarityAndReqExp(Rarity.COMMON, 0), newPlayer );   //basic ships
-			newPlayer.OwnedShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(Rarity.VERY_RARE).GenerateNewShipOfThisTemplate(newPlayer));	//and add one VERY_RARE ship
+			newPlayer.OwnedShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(Rarity.VERY_RARE, 0).GenerateNewShipOfThisTemplate(newPlayer));	//and add one VERY_RARE ship
 			GameDataBase.AddPlayer(newPlayer);  //finally add player to db
 		}
 		#endregion
@@ -432,11 +435,36 @@ namespace GAME_Server {
 							DbLootBox lootbox = GameDataBase.GetLootBoxWithId(targetLootBox.Id);
 							thisUser = GetPlayerFromDb();
 							if (lootbox.Cost > User.Money) SendFailure(FailureReasons.NOT_ENOUGH_MONEY);
+							else if (Server.BaseModifiers.MaxShipsPerPlayer < (GameDataBase.GetPlayerShipCount(User) + lootbox.NumberOfShips)) SendFailure(FailureReasons.TOO_MANY_SHIPS);
 							else {
 								thisUser.Money -= lootbox.Cost;
 								User.Money -= lootbox.Cost;
-								//TODO add right ships
+
+								List<DbShip> randomShips = new List<DbShip>();
+								LootBox normalLootBox = lootbox.ToLootBox();
+								for (int i = 0; i < lootbox.NumberOfShips; i++) {    //repeat as many times as there are ships in lootbox
+									bool shipGenerated = false;
+									foreach (Rarity rarity in GameEnumUtils.GetValues<Rarity>()) {  //for each rarity
+										double chanceForRarity = normalLootBox.ChancesForRarities[rarity];
+										if (GameRNG.RollWithChance(chanceForRarity)) {   //if roll succesful
+											shipGenerated = true;
+											randomShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(rarity, thisUser.Experience).GenerateNewShipOfThisTemplate(thisUser));
+											break;
+										}
+									}
+									if (!shipGenerated) randomShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(Rarity.COMMON, thisUser.Experience).GenerateNewShipOfThisTemplate(thisUser)); //if no ship generated after the loop than add COMMON one
+								}
+								List<Ship> resultForPlayer = new List<Ship>();
+								foreach (DbShip ship in randomShips) {
+									GameDataBase.AddShip(ship); //add all new ships to DB
+									thisUser.OwnedShips.Add(ship);  //add ship to users ships
+									resultForPlayer.Add(ship.ToShip());
+								}
+
 								GameDataBase.UpdatePlayer(thisUser);
+								//finally send result to player - first success than list of bought ships
+								SendSuccess();
+								Client.Send(new GamePacket(OperationType.BOUGHT_SHIPS, resultForPlayer));
 							}
 							break;
 						case OperationType.SELL_SHIP:
@@ -449,6 +477,7 @@ namespace GAME_Server {
 								thisUser.Money += shipValue;
 								User.Money += shipValue;
 								GameDataBase.UpdatePlayer(thisUser);
+
 							} else {
 								SendFailure(FailureReasons.INVALID_ID);
 							}
@@ -476,6 +505,9 @@ namespace GAME_Server {
 							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory()).ToList();
 							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
 							break;
+						default:
+							Server.Log("Player " + User.Username + " - unsupported operation");
+							break;
 					}
 				}
 				catch (InvalidCastException) {
@@ -497,6 +529,10 @@ namespace GAME_Server {
 			string failMsg = "Operation Failed! at: " + callerLine + ". Reason: " + reason;
 			Server.Log(failMsg);
 			this.Client.Send(new GamePacket(OperationType.FAILURE, reason));
+		}
+
+		private void SendSuccess() {
+			this.Client.Send(new GamePacket(OperationType.SUCCESS, new object()));
 		}
 
 		private List<DbShip> ShipTemplatesToShips(List<DbShipTemplate> shipTemplates, DbPlayer player) {

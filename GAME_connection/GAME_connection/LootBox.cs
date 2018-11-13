@@ -11,19 +11,22 @@ namespace GAME_connection {
 		private int cost;
 		private string name;
 		private Dictionary<Rarity, double> chancesForRarities;
+		private int numberOfShips;
 
 		public LootBox() { }
 
-		public LootBox(int id, int cost, string name, Dictionary<Rarity,double> chancesForRarities) {
+		public LootBox(int id, int cost, string name, Dictionary<Rarity,double> chancesForRarities, int numberOfShips) {
 			this.Id = id;
 			this.Cost = cost;
 			this.Name = name;
 			this.ChancesForRarities = chancesForRarities;
+			this.NumberOfShips = numberOfShips;
 		}
 
 		public int Id { get => id; set => id = value; }
 		public int Cost { get => cost; set => cost = value; }
 		public string Name { get => name; set => name = value; }
 		public Dictionary<Rarity, double> ChancesForRarities { get => chancesForRarities; set => chancesForRarities = value; }
+		public int NumberOfShips { get => numberOfShips; set => numberOfShips = value; }
 	}
 }

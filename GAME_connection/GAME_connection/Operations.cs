@@ -65,12 +65,12 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.FAILURE, typeof(string));                    //reason for failure									- important for client
 			operationMapping.Add(OperationType.GET_LOOTBOXES, typeof(List<LootBox>));       //list of available lootboxes							- important for client
 			operationMapping.Add(OperationType.BUY, typeof(LootBox));                       //lootbox to buy										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.BOUGHT_SHIPS, typeof(List<Ship>));           //ships from lootbox									- important for client
+			operationMapping.Add(OperationType.BOUGHT_SHIPS, typeof(List<Ship>));           //ships from lootbox									- important for client, SUCCESS before this
 			operationMapping.Add(OperationType.SELL_SHIP, typeof(Ship));                    //ship to sell for money								- important for server, server respons with S/F
 
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F
-			//if important for client: client send this OperationType and server does not care for internal packet, server responds with the right internal packet
+			//if important for client: client send this OperationType and server does not care for internal packet, server with the right internal packet
 		}
 
 		public static Dictionary<OperationType, Type> OperationMapping => operationMapping;

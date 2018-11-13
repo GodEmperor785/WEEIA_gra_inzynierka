@@ -13,5 +13,6 @@ namespace GAME_Server {
 		public static readonly string CLIENT_DISCONNECTED = "Connection ended without proper disconnect";
 		public static readonly string NOT_ENOUGH_MONEY = "Not enough money";
 		public static readonly string INVALID_ID = "Invalid object data received";
+		public static readonly string TOO_MANY_SHIPS = "You have too many ships - can't buy new ones until you sell some";
 	}
 }

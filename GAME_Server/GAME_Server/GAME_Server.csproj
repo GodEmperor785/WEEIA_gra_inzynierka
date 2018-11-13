@@ -77,6 +77,7 @@
     <Compile Include="DbObjects.cs" />
     <Compile Include="FailureReasons.cs" />
     <Compile Include="GameDBContext.cs" />
+    <Compile Include="GameRNG.cs" />
     <Compile Include="IGameDataBase.cs" />
     <Compile Include="InMemoryGameDataBase.cs" />
     <Compile Include="MySqlDataBase.cs" />

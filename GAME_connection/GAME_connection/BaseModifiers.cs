@@ -84,6 +84,15 @@ namespace GAME_connection {
 					return "";
 			}
 		}
+
+		/// <summary>
+		/// returns list af all values of given enum. Use like: GameEnumUtils.GetValues<Rarity>()
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public static IEnumerable<T> GetValues<T>() {
+			return Enum.GetValues(typeof(T)).Cast<T>();
+		}
 	}
 	#endregion
 

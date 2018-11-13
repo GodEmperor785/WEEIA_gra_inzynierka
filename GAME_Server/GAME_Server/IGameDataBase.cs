@@ -59,7 +59,7 @@ namespace GAME_Server {
 
 		int GetPlayerShipCount(Player player);
 
-		DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity);
+		DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity, int expReq);
 
 		DbLootBox GetLootBoxWithId(int id);
 

@@ -323,10 +323,11 @@ namespace GAME_Server {
 		public double RareChance { get; set; }
 		public double VeryRareChance { get; set; }
 		public double LegendaryChance { get; set; }
+		public int NumberOfShips { get; set; }
 
 		public DbLootBox() { }
 
-		public DbLootBox(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance) {
+		public DbLootBox(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance, int numberOfShips) {
 			Id = id;
 			Cost = cost;
 			Name = name;
@@ -334,6 +335,7 @@ namespace GAME_Server {
 			RareChance = rareChance;
 			VeryRareChance = veryRareChance;
 			LegendaryChance = legendaryChance;
+			NumberOfShips = numberOfShips;
 		}
 
 		public LootBox ToLootBox() {
@@ -343,7 +345,7 @@ namespace GAME_Server {
 				{ Rarity.VERY_RARE, VeryRareChance },
 				{ Rarity.LEGENDARY, LegendaryChance }
 			};
-			return new LootBox(Id, Cost, Name, chancesForRarities);
+			return new LootBox(Id, Cost, Name, chancesForRarities, NumberOfShips);
 		}
 	}
 
