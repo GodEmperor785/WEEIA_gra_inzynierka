@@ -70,5 +70,15 @@ namespace GAME_Server {
 		bool RemoveShipWithId(int id, bool isAdmin, int playerId = 0);
 
 		List<DbGameHistory> GetPlayersGameHistory(int playerId);
+
+		void AddBaseModifiers(DbBaseModifiers mods);
+
+		List<DbPlayer> GetAllPlayers();
+
+		void AddLootBox(DbLootBox lootbox);
+
+		List<DbShipTemplate> GetAllShipTemplates();
+
+		void AddGameHistory(DbGameHistory entry);
 	}
 }

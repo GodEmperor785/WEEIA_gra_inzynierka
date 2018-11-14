@@ -327,8 +327,7 @@ namespace GAME_Server {
 
 		public DbLootBox() { }
 
-		public DbLootBox(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance, int numberOfShips) {
-			Id = id;
+		public DbLootBox(int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance, int numberOfShips) {
 			Cost = cost;
 			Name = name;
 			CommonChance = commonChance;
@@ -336,6 +335,11 @@ namespace GAME_Server {
 			VeryRareChance = veryRareChance;
 			LegendaryChance = legendaryChance;
 			NumberOfShips = numberOfShips;
+		}
+
+		public DbLootBox(int id, int cost, string name, double commonChance, double rareChance, double veryRareChance, double legendaryChance, int numberOfShips) :
+			this(cost, name, commonChance, rareChance, veryRareChance, legendaryChance, numberOfShips) {
+			Id = id;
 		}
 
 		public LootBox ToLootBox() {
@@ -382,6 +386,10 @@ namespace GAME_Server {
 		//starting money
 		public int StartingMoney { get; set; }
 
+		//exp gain values
+		public int ExpForVictory { get; set; }
+		public int ExpForLoss { get; set; }
+
 		public BaseModifiers ToBaseModifiers() {
 			Dictionary<WeaponType, double> weaponTypeRangeMultMap = new Dictionary<WeaponType, double>() {
 				{ WeaponType.KINETIC, KineticRange },
@@ -401,7 +409,7 @@ namespace GAME_Server {
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE), MissileShield },
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), MissileIF }
 			};
-			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney);
+			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney, ExpForVictory, ExpForLoss);
 		}
 	}
 

@@ -107,16 +107,22 @@ namespace GAME_connection {
 		private double baseShipStatsExpModifier;
 		private int maxShipsPerPlayer;
 		private int startingMoney;
+		private int expForVictory;
+		private int expForLoss;
+		private int expForDraw;
 
 		public BaseModifiers() { }
 
 		public BaseModifiers(Dictionary<WeaponType, double> weaponTypeRangeMultMap, Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap,
-				double baseShipStatsExpModifier, int maxShipsPerPlayer, int startingMoney) {
+				double baseShipStatsExpModifier, int maxShipsPerPlayer, int startingMoney, int expForVictory, int expForLoss) {
 			this.WeaponTypeRangeMultMap = weaponTypeRangeMultMap;
 			this.DefTypeToWepTypeMap = defTypeToWepTypeMap;
 			this.BaseShipStatsExpModifier = baseShipStatsExpModifier;
 			this.MaxShipsPerPlayer = maxShipsPerPlayer;
 			this.StartingMoney = startingMoney;
+			this.ExpForVictory = expForVictory;
+			this.ExpForLoss = expForLoss;
+			this.ExpForDraw = (expForVictory + expForLoss) / 2;
 		}
 
 		public Dictionary<WeaponType, double> WeaponTypeRangeMultMap { get => weaponTypeRangeMultMap; set => weaponTypeRangeMultMap = value; }
@@ -124,6 +130,9 @@ namespace GAME_connection {
 		public double BaseShipStatsExpModifier { get => baseShipStatsExpModifier; set => baseShipStatsExpModifier = value; }
 		public int MaxShipsPerPlayer { get => maxShipsPerPlayer; set => maxShipsPerPlayer = value; }
 		public int StartingMoney { get => startingMoney; set => startingMoney = value; }
+		public int ExpForVictory { get => expForVictory; set => expForVictory = value; }
+		public int ExpForLoss { get => expForLoss; set => expForLoss = value; }
+		public int ExpForDraw { get => expForDraw; set => expForDraw = value; }
 	}
 
 	/*

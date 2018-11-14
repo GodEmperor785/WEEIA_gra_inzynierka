@@ -112,12 +112,28 @@ namespace GAME_Server {
 		/// adds fleet to Db, does NOT validate the fleet, this should be done earlier (including <see cref="FleetNameIsUnique"/>, <see cref="FleetPointsInRange"/> and <see cref="FleetShipsExpRequirement"/>)
 		/// </summary>
 		/// <param name="fleet"></param>
-		public void AddFleet(Fleet fleet) {													//NOT TESTED
+		public void AddFleet(Fleet fleet) {                                                 //NOT TESTED
 			List<int> shipIds = fleet.Ships.Select(s => s.Id).ToList();
 			List<DbShip> shipsForFleet = this.GetShips(shipIds);
 			DbPlayer owner = this.GetPlayerWithUsername(fleet.Owner.Username);
 			DbFleet newFleet = new DbFleet(owner, shipsForFleet, fleet.Name);
 			DbContext.Fleets.Add(newFleet);
+			SaveChanges();
+		}
+
+		public void AddBaseModifiers(DbBaseModifiers mods) {
+			DbContext.BaseModifiers.Add(mods);
+			SaveChanges();
+		}
+
+		public void AddLootBox(DbLootBox lootbox) {
+			DbContext.LootBoxes.Add(lootbox);
+			SaveChanges();
+		}
+
+		public void AddGameHistory(DbGameHistory entry) {
+			DbContext.GameHistories.Add(entry);
+			SaveChanges();
 		}
 
 		#endregion
@@ -289,6 +305,14 @@ namespace GAME_Server {
 						where (history.Winner.Id == playerId || history.Loser.Id == playerId)
 						select history;
 			return query.ToList();
+		}
+
+		public List<DbPlayer> GetAllPlayers() {
+			return BasicPlayerQuery.ToList();
+		}
+
+		public List<DbShipTemplate> GetAllShipTemplates() {
+			return BasicShipTemplateQuery.ToList();
 		}
 
 		#endregion

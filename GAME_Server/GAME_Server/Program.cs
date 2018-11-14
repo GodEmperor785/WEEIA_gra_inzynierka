@@ -66,8 +66,8 @@ namespace GAME_Server {
 			InitilizeGameDataFromDB();
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
-			TcpListener listener = new TcpListener(ipAddress, port);
-			//TcpListener listener = new TcpListener(IPAddress.Any, port);
+			//TcpListener listener = new TcpListener(ipAddress, port);
+			TcpListener listener = new TcpListener(IPAddress.Any, port);
 			listener.Start();
 			Log("Server listening on: " + ip + ":" + port);
 
@@ -84,14 +84,215 @@ namespace GAME_Server {
 				t.Start(gameClient);
 			}
 		}
-
+		//====================================================================================================================================================================================
+		//===DB_TEST==========================================================================================================================================================================
+		//====================================================================================================================================================================================
 		/// <summary>
 		/// Reads basic game data from DB into memory. Does not read player and fleet data, these should be read by user threads
 		/// </summary>
 		private static void InitilizeGameDataFromDB() {
 			gameDataBase = GetGameDBContext();
 
+			Server.Log("WARNING: DEBUG - DB TEST PROGRAM WILL EXIT AFTER THE TEST", true);
+			Server.Log(">>> BaseModifiers first");
+			DbBaseModifiers mods = new DbBaseModifiers() {
+				Id = 1,
+				KineticRange = 4,
+				LaserRange = 3,
+				MissileRange = 1,
+				KineticPD = 2,
+				KineticShield = 5,
+				KineticIF = 1.2,
+				LaserPD = 0,
+				LaserShield = 0.5,
+				LaserIF = 2,
+				MissilePD = 8,
+				MissileShield = 1,
+				MissileIF = 1.2,
+				BaseShipStatsExpModifier = 0.01,
+				MaxShipsPerPlayer = 100,
+				StartingMoney = 1000,
+				ExpForVictory = 20,
+				ExpForLoss = 10
+			};
+			GameDataBase.AddBaseModifiers(mods);
+			Server.baseModifiers = GameDataBase.GetBaseModifiers();
+
+			Server.Log(">>> Some factions");
+			Faction empire = new Faction(1, "Empire");
+			Faction alliance = new Faction(1, "Alliance");
+			Faction union = new Faction(1, "Union");
+			GameDataBase.AddFaction(empire);
+			GameDataBase.AddFaction(alliance);
+			GameDataBase.AddFaction(union);
+			var factionList = GameDataBase.GetAllFactions();
+			empire = factionList.ElementAt(0);
+			alliance =  factionList.ElementAt(1);
+			union = factionList.ElementAt(2);
+			Server.Log("Factions in DB are:");
+			foreach (Faction f in factionList) Server.Log(f.Name);
+
+			Server.Log(">>> Some users");
 			string p1Name = "player1";
+			string p2Name = "player2";
+			DbPlayer p1 = new DbPlayer(p1Name, p1Name, BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, 300, 3, 2, BaseModifiers.StartingMoney);
+			DbPlayer p2 = new DbPlayer(p2Name, p2Name, BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, 300, 3, 1, BaseModifiers.StartingMoney);
+			GameDataBase.AddPlayer(p1);
+			GameDataBase.AddPlayer(p2);
+			var playersList = GameDataBase.GetAllPlayers();
+			Server.Log("Players in DB are:");
+			foreach (DbPlayer p in playersList) Server.Log(p.Username);
+
+			Server.Log(">>> Some lootboxes");
+			DbLootBox l1 = new DbLootBox(100, "basic lootbox", 0.5, 0.3, 0.15, 0.05, 2);
+			DbLootBox l2 = new DbLootBox(300, "better lootbox", 0.4, 0.4, 0.15, 0.05, 4);
+			DbLootBox l3 = new DbLootBox(1000, "supreme lootbox", 0.1, 0.3, 0.4, 0.2, 4);
+			GameDataBase.AddLootBox(l1);
+			GameDataBase.AddLootBox(l2);
+			GameDataBase.AddLootBox(l3);
+			var lootboxList = GameDataBase.GetAllLootBoxes();
+			Server.Log("Lootboxes in DB are:");
+			foreach (DbLootBox l in lootboxList) Server.Log(l.Name);
+
+			Server.Log(">>> Some weapons and defences");
+			DbWeapon w1 = new DbWeapon("kinetic 100mm", empire, 40, 6, WeaponType.KINETIC, 2, 0.4, 10);
+			DbWeapon w2 = new DbWeapon("kinetic 5mm", alliance, 2.5, 80, WeaponType.KINETIC, 2, 0.2, 2);
+			DbWeapon w3 = new DbWeapon("axial UV laser", alliance, 250, 1, WeaponType.LASER, 1, 0.85, 55);
+			DbWeapon w4 = new DbWeapon("IR laser turret", empire, 20, 4, WeaponType.LASER, 1, 0.7, 2);
+			DbWeapon w5 = new DbWeapon("imperial cruise missile", empire, 200, 1, WeaponType.MISSILE, 1, 0.99, 45);
+			DbWeapon w6 = new DbWeapon("alliance swarm missile", alliance, 20, 10, WeaponType.MISSILE, 1, 0.99, 5);
+			gameDataBase.AddWeapon(w1);
+			gameDataBase.AddWeapon(w2);
+			gameDataBase.AddWeapon(w3);
+			gameDataBase.AddWeapon(w4);
+			gameDataBase.AddWeapon(w5);
+			gameDataBase.AddWeapon(w6);
+			DbDefenceSystem d1 = new DbDefenceSystem("imperial PD", empire, 100, DefenceSystemType.POINT_DEFENCE, 2, 0, 4);
+			DbDefenceSystem d2 = new DbDefenceSystem("alliance PD", alliance, 80, DefenceSystemType.POINT_DEFENCE, 2.5, 0, 5);
+			DbDefenceSystem d3 = new DbDefenceSystem("imperial shield", empire, 60, DefenceSystemType.SHIELD, 4, 1, 1.2);
+			DbDefenceSystem d4 = new DbDefenceSystem("alliance shield", alliance, 80, DefenceSystemType.SHIELD, 3.5, 0.95, 1.2);
+			DbDefenceSystem d5 = new DbDefenceSystem("imperial IF", empire, 45, DefenceSystemType.INTEGRITY_FIELD, 3, 3, 3);
+			DbDefenceSystem d6 = new DbDefenceSystem("alliance IF", alliance, 40, DefenceSystemType.INTEGRITY_FIELD, 3, 4, 3);
+			gameDataBase.AddDefenceSystem(d1);
+			gameDataBase.AddDefenceSystem(d2);
+			gameDataBase.AddDefenceSystem(d3);
+			gameDataBase.AddDefenceSystem(d4);
+			gameDataBase.AddDefenceSystem(d5);
+			gameDataBase.AddDefenceSystem(d6);
+			var weps = gameDataBase.GetAllWeapons();
+			Server.Log("Weapons in DB are:");
+			foreach (var p in weps) Server.Log(p.Name);
+			var defs = gameDataBase.GetAllDefences();
+			Server.Log("Defences in DB are:");
+			foreach (var p in defs) Server.Log(p.Name);
+
+			Server.Log(">>> Some ship templates");
+			List<DbWeapon> al1wep = new List<DbWeapon> {
+				weps[1],
+				weps[2],
+				weps[5]
+			};
+			List<DbWeapon> al2wep = new List<DbWeapon> {
+				weps[1],
+				weps[5]
+			};
+			List<DbWeapon> imp1wep = new List<DbWeapon> {
+				weps[0],
+				weps[3],
+				weps[4]
+			};
+			List<DbWeapon> imp2wep = new List<DbWeapon> {
+				weps[0],
+				weps[3]
+			};
+			List<DbDefenceSystem> al1def = new List<DbDefenceSystem> {
+				defs[1],
+				defs[3],
+				defs[5]
+			};
+			List<DbDefenceSystem> al2def = new List<DbDefenceSystem> {
+				defs[1],
+				defs[5]
+			};
+			List<DbDefenceSystem> imp1def = new List<DbDefenceSystem> {
+				defs[0],
+				defs[2],
+				defs[4]
+			};
+			List<DbDefenceSystem> imp2def = new List<DbDefenceSystem> {
+				defs[0],
+				defs[4]
+			};
+			DbShipTemplate imp1 = new DbShipTemplate("Class Warrior Imperial Cruiser", empire, 90, 10, 500, 3, 75, imp1wep, imp1def, 0, Rarity.RARE);
+			DbShipTemplate imp2 = new DbShipTemplate("Class Dagger Imperial Destroyer", empire, 30, 30, 150, 1, 25, imp2wep, imp2def, 0, Rarity.COMMON);
+			DbShipTemplate al1 = new DbShipTemplate("Class Hammer Alliance Cruiser", alliance, 95, 10, 550, 3, 80, al1wep, al1def, 0, Rarity.RARE);
+			DbShipTemplate al2 = new DbShipTemplate("Class Ferret Alliance Destroyer", alliance, 30, 28, 175, 1, 28, al2wep, al2def, 0, Rarity.COMMON);
+			gameDataBase.AddShipTemplate(imp1);
+			gameDataBase.AddShipTemplate(imp2);
+			gameDataBase.AddShipTemplate(al1);
+			gameDataBase.AddShipTemplate(al2);
+			var shipTemplates = GameDataBase.GetAllShipTemplates();
+			Server.Log("Ship Templates in DB are:");
+			foreach (var p in shipTemplates) Server.Log(p.Name + " weapon count=" + p.Weapons.Count);
+
+			Server.Log(">>> Some ships for players");
+			DbShip s1p1 = shipTemplates[2].GenerateNewShipOfThisTemplate(p1);
+			DbShip s2p1 = shipTemplates[2].GenerateNewShipOfThisTemplate(p1);
+			DbShip s3p1 = shipTemplates[3].GenerateNewShipOfThisTemplate(p1);
+			DbShip s1p2 = shipTemplates[0].GenerateNewShipOfThisTemplate(p2);
+			DbShip s2p2 = shipTemplates[1].GenerateNewShipOfThisTemplate(p2);
+			DbShip s3p2 = shipTemplates[1].GenerateNewShipOfThisTemplate(p2);
+			GameDataBase.AddShip(s1p1);
+			GameDataBase.AddShip(s2p1);
+			GameDataBase.AddShip(s3p1);
+			GameDataBase.AddShip(s1p2);
+			GameDataBase.AddShip(s2p2);
+			GameDataBase.AddShip(s3p2);
+			var ships = GameDataBase.GetAllShips();
+			Server.Log("Ships in DB are:");
+			foreach (var p in ships) Server.Log("Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
+
+			Server.Log(">>> Some fleets for players");
+			List<DbShip> p1fleet = new List<DbShip> {
+				ships[0],
+				ships[1],
+				ships[2]
+			};
+			List<DbShip> p2fleet = new List<DbShip> {
+				ships[3],
+				ships[4],
+				ships[5]
+			};
+			DbFleet f1 = new DbFleet(p1, p1fleet, p1Name + "_Fleet");
+			DbFleet f2 = new DbFleet(p2, p2fleet, p2Name + "_Fleet");
+			GameDataBase.AddFleet(f1.ToFleet());
+			GameDataBase.AddFleet(f2.ToFleet());
+			var fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
+			var fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
+			Server.Log("Fleets in DB are:");
+			foreach (var p in fleetsP1) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+			foreach (var p in fleetsP2) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+
+			Server.Log(">>> Some game history");
+			DbGameHistory h1 = new DbGameHistory(p1, p2, fleetsP1.First(), fleetsP2.First(), false, new DateTime(2018, 10, 28, 11, 15, 58));
+			DbGameHistory h2 = new DbGameHistory(p1, p2, fleetsP1.First(), fleetsP2.First(), false, new DateTime(2018, 10, 29, 12, 25, 1));
+			DbGameHistory h3 = new DbGameHistory(p2, p1, fleetsP2.First(), fleetsP1.First(), false, new DateTime(2018, 11, 6, 18, 2, 30));
+			GameDataBase.AddGameHistory(h1);
+			GameDataBase.AddGameHistory(h2);
+			GameDataBase.AddGameHistory(h3);
+			var historiesP1 = GameDataBase.GetPlayersGameHistory(p1.Id);
+			var historiesP2 = GameDataBase.GetPlayersGameHistory(p2.Id);
+			Server.Log("Game Histories in DB are:");
+			foreach (var p in historiesP1) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+			foreach (var p in historiesP2) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+
+			//place for future testing
+
+			Server.Log("DEBUG: TEST END", true);
+			Console.ReadKey();
+
+			Environment.Exit(0);
+			/*string p1Name = "player1";
 			DbPlayer p1 = new DbPlayer(1, p1Name, "haslo1", 0, 100, 0, 0, 0);
 			DbPlayer p2 = new DbPlayer(2, "player2", "haslo2", 0, 100, 0, 0, 0);
 
@@ -187,14 +388,17 @@ namespace GAME_Server {
 			foreach (DbShip ship in ships2) Console.WriteLine(ship.ShipBaseStats.Name + " " + ship.Id + " " + ship.ShipBaseStats.Weapons[0].Name + " " + ship.ShipBaseStats.ShipRarity);
 			//UWAGA NA UZYWANIE LIST!!! DLA KAZDEGO NOWEGO OBIEKTU ROB NOWA LISTE BO INACZEJ DOSTAJE DALNA I WYWALA CALA JOIN TABLE!!! 
 			//REFERENCJE W TYCH LISTACH MOGA BYC TE SAME ALE INSTANCJE LIST MUSZA BYC ROZNE!!!
-
+			
 			Console.ReadKey();
 
-			Environment.Exit(0);
+			Environment.Exit(0);*/
 
 			/*baseModifiers = GameDataBase.GetBaseModifiers();
 			allFactions = GameDataBase.GetAllFactions();*/
 		}
+		//====================================================================================================================================================================================
+		//====================================================================================================================================================================================
+		//====================================================================================================================================================================================
 
 		/// <summary>
 		/// performs deep cloning of serializable object. If object is not serializable throws <see cref="ArgumentException"/>

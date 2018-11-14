@@ -24,6 +24,10 @@ select * from gamedatabase.ship_templates;
 
 select * from gamedatabase.lootboxes;
 
+select * from gamedatabase.fleets;
+
+select * from gamedatabase.game_history;
+
 SHOW PROCESSLIST;
 
 show status like '%onn%';
