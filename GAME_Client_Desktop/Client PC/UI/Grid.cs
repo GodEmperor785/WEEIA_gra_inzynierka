@@ -212,7 +212,7 @@ namespace Client_PC.UI
                 Vector2 pos = new Vector2();
                 if (Children.Count < ChildMaxAmount)
                 {
-                    pos = GetFirstFreeSpace();
+                    pos = GetMaxFreeSpace();
                 }
                 Child ch = new Child()
                 {
@@ -264,7 +264,7 @@ namespace Client_PC.UI
                     Vector2 pos = GetFirstFreeSpace();
                     int row = (int) pos.X;
                     int column = (int) pos.Y;
-                    /*
+                    
                     if (child.row <= row)
                     {
                         if (child.column < column)
@@ -275,19 +275,18 @@ namespace Client_PC.UI
                         else
                         {
                             Console.WriteLine("-----------------Swap-----------------");
-                            Console.WriteLine(child.row+"|"+child.column +"   >   "+(int)pos.X+"|"+(int)pos.Y);
-                            child.column = (int)pos.Y;
-                            child.row = (int)pos.X;
+                            Console.WriteLine(child.row+"|"+child.column +"   >   "+ column + "|"+ row);
+                            child.column = column;
+                            child.row = row;
                         }
                     }
                     else
                     {
-                        child.column = (int)pos.Y;
-                        child.row = (int)pos.X;
+                        child.column = column;
+                        child.row = row;
                     }
-                    */
-                    child.column = (int)pos.Y;
-                    child.row = (int)pos.X;
+                    
+                    
 
                 }
             }
@@ -312,21 +311,31 @@ namespace Client_PC.UI
             for (int i = 0; i < rows; i++)
             {
                 List<Child> thisRowChildren = Children.Where(p => p.row == i).ToList();
-                if (thisRowChildren.Count < columns)
+                if (thisRowChildren.Count > 0)
                 {
-                    for (int j = 0; j <= columns; j++)
+                    if (thisRowChildren.Count < columns )
                     {
-                        if (thisRowChildren.Where(p => p.column == j).ToList().Count < 1)
+                        for (int j = 0; j <= columns; j++)
                         {
-                            t.X = i;
-                            t.Y = j;
-                            found = true;
-                        }
+                            if (thisRowChildren.Where(p => p.column == j).ToList().Count < 1)
+                            {
+                                t.X = i;
+                                t.Y = j;
+                                found = true;
+                            }
 
-                        if (found)
-                            break;
+                            if (found)
+                                break;
+                        }
                     }
                 }
+                else
+                {
+                    t.X = i;
+                    t.Y = 0;
+                    found = true;
+                }
+                
 
                 if (found)
                     break;

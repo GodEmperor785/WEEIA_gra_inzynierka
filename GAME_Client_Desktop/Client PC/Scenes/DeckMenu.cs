@@ -197,13 +197,15 @@ namespace Client_PC.Scenes
             if (g == gridTopLeft)
             {
                 c.ChangeParent((Grid)c.Parent,gridCenter);
+                gridTopLeft.MoveChildren();
             }
             else if (g == gridCenter)
             {
                 c.ChangeParent((Grid)c.Parent,gridTopLeft);
+                gridCenter.MoveChildren();
             }
-            gridTopLeft.MoveChildren();
-            gridCenter.MoveChildren();
+            
+            
             //Console.WriteLine("-----------------GridTopLeft-----------------");
            // gridTopLeft.PrintChildren();
 
