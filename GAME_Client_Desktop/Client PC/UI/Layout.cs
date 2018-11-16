@@ -20,6 +20,11 @@ namespace Client_PC.UI
             public string name;
             public int columnWidth = 1;
             public Point origin;
+
+            public void print()
+            {
+                Console.WriteLine(row+"|"+column);
+            }
         }
 
         public Layout()

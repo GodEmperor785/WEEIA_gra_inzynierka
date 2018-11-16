@@ -37,7 +37,8 @@ namespace Client_PC.UI
         public Vector2 TextPosition { get; set; }
         public SpriteFont Font { get; set; }
         public bool TextWrappable { get; set; }
-
+        public delegate void ElementClicked(object sender);
+        public event ElementClicked clickEvent;
         public Card(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base(origin, width, height, device, gui)
         {
             ship = shipInc;
@@ -111,9 +112,15 @@ namespace Client_PC.UI
             Graphic armorText = (Graphic) overlay.GetChild("armorText");
             armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
         }
+
+        public void ChangeParent(Grid from, Grid to)
+        {
+            from.RemoveChild(this);
+            to.AddChild(this);
+        }
         public void OnClick()
         {
-            throw new NotImplementedException();
+            clickEvent(this);
         }
 
         public bool Equals(Card cd)
@@ -125,7 +132,7 @@ namespace Client_PC.UI
         }
         public Rectangle GetBoundary()
         {
-            throw new NotImplementedException();
+            return Boundary;
         }
     }
 }

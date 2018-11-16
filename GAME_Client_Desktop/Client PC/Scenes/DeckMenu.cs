@@ -33,7 +33,7 @@ namespace Client_PC.Scenes
             gridTopLeft = new Grid(5, 3, ColumnWidth, rowHeight);
             gridRight = new Grid();
             gridRightBottom = new Grid();
-            gridCenter = new Grid();
+            gridCenter = new Grid(5, 6, ColumnWidth, rowHeight);
             ;
             gridTopLeft.DrawBorder = true;
             gridRight.DrawBorder = true;
@@ -142,6 +142,11 @@ namespace Client_PC.Scenes
             gridTopLeft.ConstantRowsAndColumns = true;
             gridTopLeft.MaxChildren = true;
             gridTopLeft.ChildMaxAmount = 15;
+
+            gridCenter.ConstantRowsAndColumns = true;
+            gridCenter.MaxChildren = true;
+            gridCenter.ChildMaxAmount = 150;
+
             cardHeight = gridTopLeft.Height;
             Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[0]);
             Card dc1 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[1]);
@@ -151,6 +156,25 @@ namespace Client_PC.Scenes
             Card dc5 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[5]);
             Card dc6 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[6]);
             Card dc7 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[7]);
+
+            dc.clickEvent += CardClick;
+            dc1.clickEvent += CardClick;
+            dc2.clickEvent += CardClick;
+            dc3.clickEvent += CardClick;
+            dc4.clickEvent += CardClick;
+            dc5.clickEvent += CardClick;
+            dc6.clickEvent += CardClick;
+            dc7.clickEvent += CardClick;
+
+            Clickable.Add(dc);
+            Clickable.Add(dc1);
+            Clickable.Add(dc2);
+            Clickable.Add(dc3);
+            Clickable.Add(dc4);
+            Clickable.Add(dc5);
+            Clickable.Add(dc6);
+            Clickable.Add(dc7);
+
             gridTopLeft.AllVisible = false;
             gridTopLeft.VisibleRows = 1;
             gridTopLeft.AddChild(dc);
@@ -166,15 +190,36 @@ namespace Client_PC.Scenes
 
         }
 
+        private void CardClick(object sender)
+        {
+            Card c = (Card) sender;
+            Grid g = (Grid)c.Parent;
+            if (g == gridTopLeft)
+            {
+                c.ChangeParent((Grid)c.Parent,gridCenter);
+            }
+            else if (g == gridCenter)
+            {
+                c.ChangeParent((Grid)c.Parent,gridTopLeft);
+            }
+            gridTopLeft.MoveChildren();
+            gridCenter.MoveChildren();
+            //Console.WriteLine("-----------------GridTopLeft-----------------");
+           // gridTopLeft.PrintChildren();
+
+            Console.WriteLine("-----------------GridCenter-----------------");
+            gridCenter.PrintChildren();
+        }
+
         private void UpClick()
         {
-            Console.WriteLine(-1);
+           // Console.WriteLine(-1);
             gridTopLeft.ChangeRow(-1);
         }
 
         private void DownClick()
         {
-            Console.WriteLine(1);
+            //Console.WriteLine(1);
             gridTopLeft.ChangeRow(1);
         }
         

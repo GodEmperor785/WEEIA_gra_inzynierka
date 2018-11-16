@@ -92,11 +92,7 @@ namespace Client_PC.UI
         private List<float> RowsSize;
 
         #endregion
-
-
-
-
-
+        
         #region methods
         private float ColumnOffset(int numberOfColumn)
         {
@@ -216,7 +212,7 @@ namespace Client_PC.UI
                 Vector2 pos = new Vector2();
                 if (Children.Count < ChildMaxAmount)
                 {
-                    pos = GetFreeSpace();
+                    pos = GetFirstFreeSpace();
                 }
                 Child ch = new Child()
                 {
@@ -228,6 +224,11 @@ namespace Client_PC.UI
                 ch.id = Children.Count;
                 if (Children.Count < ChildMaxAmount)
                     Children.Add(ch);
+                if (element is Card)
+                {
+                    Card c = (Card) element;
+                    c.Parent = this;
+                }
                 Update();
                 UpdateChildren();
             }
@@ -248,14 +249,99 @@ namespace Client_PC.UI
             }
         }
 
-        private Vector2 GetFreeSpace()
+        public void PrintChildren()
+        {
+            Children.ForEach(p=> p.print());
+        }
+        public void MoveChildren()
+        {
+            //zmieniac dzieci od punktu zmiany
+            Children = Children.OrderBy(p=> p.row).ThenBy(p=> p.column).ToList();
+            //for (int i = 0; i < 5; i++)
+            {
+                foreach (var child in Children)
+                {
+                    Vector2 pos = GetFirstFreeSpace();
+                    int row = (int) pos.X;
+                    int column = (int) pos.Y;
+                    /*
+                    if (child.row <= row)
+                    {
+                        if (child.column < column)
+                        {
+                            //leave child be
+                            //it's before free space, no need to move it
+                        }
+                        else
+                        {
+                            Console.WriteLine("-----------------Swap-----------------");
+                            Console.WriteLine(child.row+"|"+child.column +"   >   "+(int)pos.X+"|"+(int)pos.Y);
+                            child.column = (int)pos.Y;
+                            child.row = (int)pos.X;
+                        }
+                    }
+                    else
+                    {
+                        child.column = (int)pos.Y;
+                        child.row = (int)pos.X;
+                    }
+                    */
+                    child.column = (int)pos.Y;
+                    child.row = (int)pos.X;
+
+                }
+            }
+            Children = Children.OrderBy(p => p.row).ThenBy(p => p.column).ToList();
+            Update();
+            UpdateChildren();
+        }
+        public void RemoveChild(GuiElement element)
+        {
+            List<Child> l = Children.Where(p => p.element == element).ToList();
+            l.ForEach(p=> Children.Remove(p));
+        }
+
+        private Vector2 GetFirstFreeSpace()
+        {
+            Vector2 t = new Vector2();
+            if (Children.Count == 0)
+                return Vector2.Zero;
+            int columns = ColumnsSize.Count;
+            int rows = RowsSize.Count;
+            bool found = false;
+            for (int i = 0; i < rows; i++)
+            {
+                List<Child> thisRowChildren = Children.Where(p => p.row == i).ToList();
+                if (thisRowChildren.Count < columns)
+                {
+                    for (int j = 0; j <= columns; j++)
+                    {
+                        if (thisRowChildren.Where(p => p.column == j).ToList().Count < 1)
+                        {
+                            t.X = i;
+                            t.Y = j;
+                            found = true;
+                        }
+
+                        if (found)
+                            break;
+                    }
+                }
+
+                if (found)
+                    break;
+            }
+
+            return t;
+        }
+        private Vector2 GetMaxFreeSpace()
         {
             Vector2 t = new Vector2();
             if(Children.Count == 0)
                 return Vector2.Zero;
             int row = Children.Max(p => p.row);
             int column = Children.Where(p=> p.row == row).Max(p => p.column);
-            if (column < 4)
+            if (column < ColumnsSize.Count - 1)
             {
                 t.X = row;
                 t.Y = column + 1;
