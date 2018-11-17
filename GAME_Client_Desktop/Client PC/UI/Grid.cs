@@ -257,6 +257,7 @@ namespace Client_PC.UI
         {
             //zmieniac dzieci od punktu zmiany
             Children = Children.OrderBy(p=> p.row).ThenBy(p=> p.column).ToList();
+            
             //for (int i = 0; i < 5; i++)
             {
                 foreach (var child in Children)
@@ -264,28 +265,37 @@ namespace Client_PC.UI
                     Vector2 pos = GetFirstFreeSpace();
                     int row = (int) pos.X;
                     int column = (int) pos.Y;
-                    
-                    if (child.row <= row)
+
+                    if (child.row != row)
                     {
-                        if (child.column < column)
-                        {
-                            //leave child be
-                            //it's before free space, no need to move it
-                        }
-                        else
+                        if (child.row > row)
                         {
                             Console.WriteLine("-----------------Swap-----------------");
-                            Console.WriteLine(child.row+"|"+child.column +"   >   "+ column + "|"+ row);
+                            Console.WriteLine(child.row + "|" + child.column + "   >   " + row + "|" + column);
                             child.column = column;
                             child.row = row;
                         }
                     }
                     else
                     {
+                        if (child.column > column)
+                        {
+                            Console.WriteLine("-----------------Swap-----------------");
+                            Console.WriteLine(child.row + "|" + child.column + "   >   " + row + "|" + column);
+                            child.column = column;
+                            child.row = row;
+                        }
+                    }
+
+                    /*
+                    else
+                    {
+                        Console.WriteLine("-----------------Swap-----------------");
+                        Console.WriteLine(child.row + "|" + child.column + "   >   " + row + "|" + column);
                         child.column = column;
                         child.row = row;
                     }
-                    
+                    */
                     
 
                 }

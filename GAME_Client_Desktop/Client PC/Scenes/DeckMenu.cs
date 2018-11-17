@@ -98,20 +98,39 @@ namespace Client_PC.Scenes
             {
                 Text = "down"
             };
-            
+
+            Button upCenter = new Button(new Point(gridCenter.Origin.X + (int)(gridCenter.Width / 2), gridCenter.Origin.Y + gridCenter.Height - 10 - 20), 60, 30, Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "up"
+            };
+            Button downCenter = new Button(new Point(gridCenter.Origin.X + (int)(gridCenter.Width / 2), gridCenter.Origin.Y + gridCenter.Height), 60, 30, Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "down"
+            };
+
             up.Update();
             down.Update();
+            upCenter.Update();
+            downCenter.Update();
 
             up.clickEvent += UpClick;
             down.clickEvent += DownClick;
+            upCenter.clickEvent += UpClickCenter;
+            downCenter.clickEvent += DownClickCenter;
 
             Clickable.Add(up);
             Clickable.Add(down);
+            Clickable.Add(upCenter);
+            Clickable.Add(downCenter);
 
             RelativeLayout rl = new RelativeLayout();
             rl.AddChild(up);
             rl.AddChild(down);
-            
+            rl.AddChild(upCenter);
+            rl.AddChild(downCenter);
+
             Clickable.Add(b4);
             b4.clickEvent += OnExit;
             gridRightBottom.AddChild(b,0,0);
@@ -223,6 +242,16 @@ namespace Client_PC.Scenes
         {
             //Console.WriteLine(1);
             gridTopLeft.ChangeRow(1);
+        }
+
+        private void UpClickCenter()
+        {
+            gridCenter.ChangeRow(-1);
+        }
+
+        private void DownClickCenter()
+        {
+            gridCenter.ChangeRow(1);
         }
         
         private void OnExit()
