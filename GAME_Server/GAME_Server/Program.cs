@@ -58,18 +58,22 @@ namespace GAME_Server {
 
 		//thread management specific fields and properties
 		private static List<Thread> userThreads = new List<Thread>();
+		private static List<UserThread> userThreadObjects = new List<UserThread>();
+		private static List<GameRoomThread> gameRoomThreads = new List<GameRoomThread>();
 
 		internal static bool continueAcceptingConnections = true;
 
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			InitilizeGameDataFromDB();
+			InitilizeGameDataFromDB(false, false);		//change to true to run ONLY DB test inserts, false to continue on debug DB
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
 			//TcpListener listener = new TcpListener(ipAddress, port);
 			TcpListener listener = new TcpListener(IPAddress.Any, port);
 			listener.Start();
 			Log("Server listening on: " + ip + ":" + port);
+			Thread cliThread = new Thread(new ThreadStart(ServerCLI));
+			cliThread.Start();
 
 			while (continueAcceptingConnections) {
 				Log("Server is waiting for client...");
@@ -77,11 +81,31 @@ namespace GAME_Server {
 				TcpConnection gameClient = new TcpConnection(client, false);
 				Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
-				Thread t = new Thread(new ParameterizedThreadStart(Test));
-				//UserThread userThread = new UserThread(gameClient);
-				//Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
+				//Thread t = new Thread(new ParameterizedThreadStart(Test));
+				UserThread userThread = new UserThread(gameClient);
+				Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
 				userThreads.Add(t);
-				t.Start(gameClient);
+				userThreadObjects.Add(userThread);
+				//t.Start(gameClient);
+				t.Start();
+			}
+		}
+
+		private static void ServerCLI() {
+			string cmd = Console.ReadLine();
+			switch(cmd) {
+				case "exit":
+					Console.WriteLine("exiting...");
+					continueAcceptingConnections = false;
+					foreach(UserThread t in userThreadObjects) {
+						t.ClientConnected = false;
+						t.EndThread();
+					}
+					Environment.Exit(1);
+					break;
+				default:
+					Console.WriteLine("ERROR: unknown command - " + cmd);
+					break;
 			}
 		}
 		//====================================================================================================================================================================================
@@ -90,208 +114,287 @@ namespace GAME_Server {
 		/// <summary>
 		/// Reads basic game data from DB into memory. Does not read player and fleet data, these should be read by user threads
 		/// </summary>
-		private static void InitilizeGameDataFromDB() {
+		private static void InitilizeGameDataFromDB(bool exitOnFinish, bool dropCreate) {
 			gameDataBase = GetGameDBContext();
+			if (dropCreate) {
+				Server.Log("WARNING: DEBUG - DB TEST PROGRAM WILL EXIT AFTER THE TEST", true);
+				Server.Log(">>> BaseModifiers first");
+				DbBaseModifiers mods = new DbBaseModifiers() {
+					Id = 1,
+					KineticRange = 4,
+					LaserRange = 3,
+					MissileRange = 1,
+					KineticPD = 2,
+					KineticShield = 5,
+					KineticIF = 1.2,
+					LaserPD = 0,
+					LaserShield = 0.5,
+					LaserIF = 2,
+					MissilePD = 8,
+					MissileShield = 1,
+					MissileIF = 1.2,
+					BaseShipStatsExpModifier = 0.01,
+					MaxShipsPerPlayer = 100,
+					StartingMoney = 1000,
+					ExpForVictory = 20,
+					ExpForLoss = 10,
+					FleetSizeExpModifier = 0.5,
+					BaseFleetMaxSize = 500,
+					MaxAbsoluteFleetSize = 5000,
+					MaxShipExp = 1000,
+					MaxShipsInLine = 5
+				};
+				GameDataBase.AddBaseModifiers(mods);
+				Server.baseModifiers = GameDataBase.GetBaseModifiers();
 
-			Server.Log("WARNING: DEBUG - DB TEST PROGRAM WILL EXIT AFTER THE TEST", true);
-			Server.Log(">>> BaseModifiers first");
-			DbBaseModifiers mods = new DbBaseModifiers() {
-				Id = 1,
-				KineticRange = 4,
-				LaserRange = 3,
-				MissileRange = 1,
-				KineticPD = 2,
-				KineticShield = 5,
-				KineticIF = 1.2,
-				LaserPD = 0,
-				LaserShield = 0.5,
-				LaserIF = 2,
-				MissilePD = 8,
-				MissileShield = 1,
-				MissileIF = 1.2,
-				BaseShipStatsExpModifier = 0.01,
-				MaxShipsPerPlayer = 100,
-				StartingMoney = 1000,
-				ExpForVictory = 20,
-				ExpForLoss = 10
-			};
-			GameDataBase.AddBaseModifiers(mods);
-			Server.baseModifiers = GameDataBase.GetBaseModifiers();
+				Server.Log(">>> Some factions");
+				Faction empire = new Faction(1, "Empire");
+				Faction alliance = new Faction(2, "Alliance");
+				Faction union = new Faction(3, "Union");
+				GameDataBase.AddFaction(empire);
+				GameDataBase.AddFaction(alliance);
+				GameDataBase.AddFaction(union);
+				var factionList = GameDataBase.GetAllFactions();
+				empire = factionList.ElementAt(0);
+				alliance = factionList.ElementAt(1);
+				union = factionList.ElementAt(2);
+				Server.Log("Factions in DB are:");
+				foreach (Faction f in factionList) Server.Log(f.Name);
 
-			Server.Log(">>> Some factions");
-			Faction empire = new Faction(1, "Empire");
-			Faction alliance = new Faction(1, "Alliance");
-			Faction union = new Faction(1, "Union");
-			GameDataBase.AddFaction(empire);
-			GameDataBase.AddFaction(alliance);
-			GameDataBase.AddFaction(union);
-			var factionList = GameDataBase.GetAllFactions();
-			empire = factionList.ElementAt(0);
-			alliance =  factionList.ElementAt(1);
-			union = factionList.ElementAt(2);
-			Server.Log("Factions in DB are:");
-			foreach (Faction f in factionList) Server.Log(f.Name);
+				Server.Log(">>> Some users");
+				string p1Name = "player1";
+				string p2Name = "player2";
+				DbPlayer p1 = new DbPlayer(p1Name, p1Name, BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, 300, 3, 2, BaseModifiers.StartingMoney);
+				DbPlayer p2 = new DbPlayer(p2Name, p2Name, BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, 300, 3, 1, BaseModifiers.StartingMoney);
+				GameDataBase.AddPlayer(p1);
+				GameDataBase.AddPlayer(p2);
+				var playersList = GameDataBase.GetAllPlayers();
+				Server.Log("Players in DB are:");
+				foreach (DbPlayer p in playersList) Server.Log(p.Username);
 
-			Server.Log(">>> Some users");
-			string p1Name = "player1";
-			string p2Name = "player2";
-			DbPlayer p1 = new DbPlayer(p1Name, p1Name, BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, 300, 3, 2, BaseModifiers.StartingMoney);
-			DbPlayer p2 = new DbPlayer(p2Name, p2Name, BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, 300, 3, 1, BaseModifiers.StartingMoney);
-			GameDataBase.AddPlayer(p1);
-			GameDataBase.AddPlayer(p2);
-			var playersList = GameDataBase.GetAllPlayers();
-			Server.Log("Players in DB are:");
-			foreach (DbPlayer p in playersList) Server.Log(p.Username);
+				Server.Log(">>> Some lootboxes");
+				DbLootBox l1 = new DbLootBox(100, "basic lootbox", 0.5, 0.3, 0.15, 0.05, 2);
+				DbLootBox l2 = new DbLootBox(300, "better lootbox", 0.4, 0.4, 0.15, 0.05, 4);
+				DbLootBox l3 = new DbLootBox(1000, "supreme lootbox", 0.1, 0.3, 0.4, 0.2, 4);
+				GameDataBase.AddLootBox(l1);
+				GameDataBase.AddLootBox(l2);
+				GameDataBase.AddLootBox(l3);
+				var lootboxList = GameDataBase.GetAllLootBoxes();
+				Server.Log("Lootboxes in DB are:");
+				foreach (DbLootBox l in lootboxList) Server.Log(l.Name);
 
-			Server.Log(">>> Some lootboxes");
-			DbLootBox l1 = new DbLootBox(100, "basic lootbox", 0.5, 0.3, 0.15, 0.05, 2);
-			DbLootBox l2 = new DbLootBox(300, "better lootbox", 0.4, 0.4, 0.15, 0.05, 4);
-			DbLootBox l3 = new DbLootBox(1000, "supreme lootbox", 0.1, 0.3, 0.4, 0.2, 4);
-			GameDataBase.AddLootBox(l1);
-			GameDataBase.AddLootBox(l2);
-			GameDataBase.AddLootBox(l3);
-			var lootboxList = GameDataBase.GetAllLootBoxes();
-			Server.Log("Lootboxes in DB are:");
-			foreach (DbLootBox l in lootboxList) Server.Log(l.Name);
+				Server.Log(">>> Some weapons and defences");
+				DbWeapon w1 = new DbWeapon("kinetic 100mm", empire, 40, 6, WeaponType.KINETIC, 2, 0.4, 10);
+				DbWeapon w2 = new DbWeapon("kinetic 5mm", alliance, 2.5, 80, WeaponType.KINETIC, 2, 0.2, 2);
+				DbWeapon w3 = new DbWeapon("axial UV laser", alliance, 250, 1, WeaponType.LASER, 1, 0.85, 55);
+				DbWeapon w4 = new DbWeapon("IR laser turret", empire, 20, 4, WeaponType.LASER, 1, 0.7, 2);
+				DbWeapon w5 = new DbWeapon("imperial cruise missile", empire, 200, 1, WeaponType.MISSILE, 1, 0.99, 45);
+				DbWeapon w6 = new DbWeapon("alliance swarm missile", alliance, 20, 10, WeaponType.MISSILE, 1, 0.99, 5);
+				gameDataBase.AddWeapon(w1);
+				gameDataBase.AddWeapon(w2);
+				gameDataBase.AddWeapon(w3);
+				gameDataBase.AddWeapon(w4);
+				gameDataBase.AddWeapon(w5);
+				gameDataBase.AddWeapon(w6);
+				DbDefenceSystem d1 = new DbDefenceSystem("imperial PD", empire, 100, DefenceSystemType.POINT_DEFENCE, 2, 0, 4);
+				DbDefenceSystem d2 = new DbDefenceSystem("alliance PD", alliance, 80, DefenceSystemType.POINT_DEFENCE, 2.5, 0, 5);
+				DbDefenceSystem d3 = new DbDefenceSystem("imperial shield", empire, 60, DefenceSystemType.SHIELD, 4, 1, 1.2);
+				DbDefenceSystem d4 = new DbDefenceSystem("alliance shield", alliance, 80, DefenceSystemType.SHIELD, 3.5, 0.95, 1.2);
+				DbDefenceSystem d5 = new DbDefenceSystem("imperial IF", empire, 45, DefenceSystemType.INTEGRITY_FIELD, 3, 3, 3);
+				DbDefenceSystem d6 = new DbDefenceSystem("alliance IF", alliance, 40, DefenceSystemType.INTEGRITY_FIELD, 3, 4, 3);
+				gameDataBase.AddDefenceSystem(d1);
+				gameDataBase.AddDefenceSystem(d2);
+				gameDataBase.AddDefenceSystem(d3);
+				gameDataBase.AddDefenceSystem(d4);
+				gameDataBase.AddDefenceSystem(d5);
+				gameDataBase.AddDefenceSystem(d6);
+				var weps = gameDataBase.GetAllWeapons();
+				Server.Log("Weapons in DB are:");
+				foreach (var p in weps) Server.Log(p.Name);
+				var defs = gameDataBase.GetAllDefences();
+				Server.Log("Defences in DB are:");
+				foreach (var p in defs) Server.Log(p.Name);
 
-			Server.Log(">>> Some weapons and defences");
-			DbWeapon w1 = new DbWeapon("kinetic 100mm", empire, 40, 6, WeaponType.KINETIC, 2, 0.4, 10);
-			DbWeapon w2 = new DbWeapon("kinetic 5mm", alliance, 2.5, 80, WeaponType.KINETIC, 2, 0.2, 2);
-			DbWeapon w3 = new DbWeapon("axial UV laser", alliance, 250, 1, WeaponType.LASER, 1, 0.85, 55);
-			DbWeapon w4 = new DbWeapon("IR laser turret", empire, 20, 4, WeaponType.LASER, 1, 0.7, 2);
-			DbWeapon w5 = new DbWeapon("imperial cruise missile", empire, 200, 1, WeaponType.MISSILE, 1, 0.99, 45);
-			DbWeapon w6 = new DbWeapon("alliance swarm missile", alliance, 20, 10, WeaponType.MISSILE, 1, 0.99, 5);
-			gameDataBase.AddWeapon(w1);
-			gameDataBase.AddWeapon(w2);
-			gameDataBase.AddWeapon(w3);
-			gameDataBase.AddWeapon(w4);
-			gameDataBase.AddWeapon(w5);
-			gameDataBase.AddWeapon(w6);
-			DbDefenceSystem d1 = new DbDefenceSystem("imperial PD", empire, 100, DefenceSystemType.POINT_DEFENCE, 2, 0, 4);
-			DbDefenceSystem d2 = new DbDefenceSystem("alliance PD", alliance, 80, DefenceSystemType.POINT_DEFENCE, 2.5, 0, 5);
-			DbDefenceSystem d3 = new DbDefenceSystem("imperial shield", empire, 60, DefenceSystemType.SHIELD, 4, 1, 1.2);
-			DbDefenceSystem d4 = new DbDefenceSystem("alliance shield", alliance, 80, DefenceSystemType.SHIELD, 3.5, 0.95, 1.2);
-			DbDefenceSystem d5 = new DbDefenceSystem("imperial IF", empire, 45, DefenceSystemType.INTEGRITY_FIELD, 3, 3, 3);
-			DbDefenceSystem d6 = new DbDefenceSystem("alliance IF", alliance, 40, DefenceSystemType.INTEGRITY_FIELD, 3, 4, 3);
-			gameDataBase.AddDefenceSystem(d1);
-			gameDataBase.AddDefenceSystem(d2);
-			gameDataBase.AddDefenceSystem(d3);
-			gameDataBase.AddDefenceSystem(d4);
-			gameDataBase.AddDefenceSystem(d5);
-			gameDataBase.AddDefenceSystem(d6);
-			var weps = gameDataBase.GetAllWeapons();
-			Server.Log("Weapons in DB are:");
-			foreach (var p in weps) Server.Log(p.Name);
-			var defs = gameDataBase.GetAllDefences();
-			Server.Log("Defences in DB are:");
-			foreach (var p in defs) Server.Log(p.Name);
+				Server.Log(">>> Some ship templates");
+				List<DbWeapon> al1wep = new List<DbWeapon> {
+					weps[1],
+					weps[2],
+					weps[5]
+				};
+				List<DbWeapon> al2wep = new List<DbWeapon> {
+					weps[1],
+					weps[5]
+				};
+				List<DbWeapon> imp1wep = new List<DbWeapon> {
+					weps[0],
+					weps[3],
+					weps[4]
+				};
+				List<DbWeapon> imp2wep = new List<DbWeapon> {
+					weps[0],
+					weps[3]
+				};
+				List<DbDefenceSystem> al1def = new List<DbDefenceSystem> {
+					defs[1],
+					defs[3],
+					defs[5]
+				};
+				List<DbDefenceSystem> al2def = new List<DbDefenceSystem> {
+					defs[1],
+					defs[5]
+				};
+				List<DbDefenceSystem> imp1def = new List<DbDefenceSystem> {
+					defs[0],
+					defs[2],
+					defs[4]
+				};
+				List<DbDefenceSystem> imp2def = new List<DbDefenceSystem> {
+					defs[0],
+					defs[4]
+				};
+				DbShipTemplate imp1 = new DbShipTemplate("Class Warrior Imperial Cruiser", empire, 90, 10, 500, 3, 75, imp1wep, imp1def, 0, Rarity.RARE);
+				DbShipTemplate imp2 = new DbShipTemplate("Class Dagger Imperial Destroyer", empire, 30, 30, 150, 1, 25, imp2wep, imp2def, 0, Rarity.COMMON);
+				DbShipTemplate al1 = new DbShipTemplate("Class Hammer Alliance Cruiser", alliance, 95, 10, 550, 3, 80, al1wep, al1def, 0, Rarity.RARE);
+				DbShipTemplate al2 = new DbShipTemplate("Class Ferret Alliance Destroyer", alliance, 30, 28, 175, 1, 28, al2wep, al2def, 0, Rarity.COMMON);
+				gameDataBase.AddShipTemplate(imp1);
+				gameDataBase.AddShipTemplate(imp2);
+				gameDataBase.AddShipTemplate(al1);
+				gameDataBase.AddShipTemplate(al2);
+				var shipTemplates = GameDataBase.GetAllShipTemplates();
+				Server.Log("Ship Templates in DB are:");
+				foreach (var p in shipTemplates) Server.Log(p.Name + " weapon count=" + p.Weapons.Count);
 
-			Server.Log(">>> Some ship templates");
-			List<DbWeapon> al1wep = new List<DbWeapon> {
-				weps[1],
-				weps[2],
-				weps[5]
-			};
-			List<DbWeapon> al2wep = new List<DbWeapon> {
-				weps[1],
-				weps[5]
-			};
-			List<DbWeapon> imp1wep = new List<DbWeapon> {
-				weps[0],
-				weps[3],
-				weps[4]
-			};
-			List<DbWeapon> imp2wep = new List<DbWeapon> {
-				weps[0],
-				weps[3]
-			};
-			List<DbDefenceSystem> al1def = new List<DbDefenceSystem> {
-				defs[1],
-				defs[3],
-				defs[5]
-			};
-			List<DbDefenceSystem> al2def = new List<DbDefenceSystem> {
-				defs[1],
-				defs[5]
-			};
-			List<DbDefenceSystem> imp1def = new List<DbDefenceSystem> {
-				defs[0],
-				defs[2],
-				defs[4]
-			};
-			List<DbDefenceSystem> imp2def = new List<DbDefenceSystem> {
-				defs[0],
-				defs[4]
-			};
-			DbShipTemplate imp1 = new DbShipTemplate("Class Warrior Imperial Cruiser", empire, 90, 10, 500, 3, 75, imp1wep, imp1def, 0, Rarity.RARE);
-			DbShipTemplate imp2 = new DbShipTemplate("Class Dagger Imperial Destroyer", empire, 30, 30, 150, 1, 25, imp2wep, imp2def, 0, Rarity.COMMON);
-			DbShipTemplate al1 = new DbShipTemplate("Class Hammer Alliance Cruiser", alliance, 95, 10, 550, 3, 80, al1wep, al1def, 0, Rarity.RARE);
-			DbShipTemplate al2 = new DbShipTemplate("Class Ferret Alliance Destroyer", alliance, 30, 28, 175, 1, 28, al2wep, al2def, 0, Rarity.COMMON);
-			gameDataBase.AddShipTemplate(imp1);
-			gameDataBase.AddShipTemplate(imp2);
-			gameDataBase.AddShipTemplate(al1);
-			gameDataBase.AddShipTemplate(al2);
-			var shipTemplates = GameDataBase.GetAllShipTemplates();
-			Server.Log("Ship Templates in DB are:");
-			foreach (var p in shipTemplates) Server.Log(p.Name + " weapon count=" + p.Weapons.Count);
+				Server.Log(">>> Some ships for players");
+				DbShip s1p1 = shipTemplates[2].GenerateNewShipOfThisTemplate(p1);
+				DbShip s2p1 = shipTemplates[2].GenerateNewShipOfThisTemplate(p1);
+				DbShip s3p1 = shipTemplates[3].GenerateNewShipOfThisTemplate(p1);
+				DbShip s1p2 = shipTemplates[0].GenerateNewShipOfThisTemplate(p2);
+				DbShip s2p2 = shipTemplates[1].GenerateNewShipOfThisTemplate(p2);
+				DbShip s3p2 = shipTemplates[1].GenerateNewShipOfThisTemplate(p2);
+				GameDataBase.AddShip(s1p1);
+				GameDataBase.AddShip(s2p1);
+				GameDataBase.AddShip(s3p1);
+				GameDataBase.AddShip(s1p2);
+				GameDataBase.AddShip(s2p2);
+				GameDataBase.AddShip(s3p2);
+				var ships = GameDataBase.GetAllShips();
+				Server.Log("Ships in DB are:");
+				foreach (var p in ships) Server.Log("Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
 
-			Server.Log(">>> Some ships for players");
-			DbShip s1p1 = shipTemplates[2].GenerateNewShipOfThisTemplate(p1);
-			DbShip s2p1 = shipTemplates[2].GenerateNewShipOfThisTemplate(p1);
-			DbShip s3p1 = shipTemplates[3].GenerateNewShipOfThisTemplate(p1);
-			DbShip s1p2 = shipTemplates[0].GenerateNewShipOfThisTemplate(p2);
-			DbShip s2p2 = shipTemplates[1].GenerateNewShipOfThisTemplate(p2);
-			DbShip s3p2 = shipTemplates[1].GenerateNewShipOfThisTemplate(p2);
-			GameDataBase.AddShip(s1p1);
-			GameDataBase.AddShip(s2p1);
-			GameDataBase.AddShip(s3p1);
-			GameDataBase.AddShip(s1p2);
-			GameDataBase.AddShip(s2p2);
-			GameDataBase.AddShip(s3p2);
-			var ships = GameDataBase.GetAllShips();
-			Server.Log("Ships in DB are:");
-			foreach (var p in ships) Server.Log("Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
+				Server.Log(">>> Some fleets for players");
+				List<DbShip> p1fleet = new List<DbShip> {
+					ships[0],
+					ships[1],
+					ships[2]
+				};
+				List<DbShip> p2fleet = new List<DbShip> {
+					ships[3],
+					ships[4],
+					ships[5]
+				};
+				DbFleet f1 = new DbFleet(p1, p1fleet, p1Name + "_Fleet");
+				DbFleet f2 = new DbFleet(p2, p2fleet, p2Name + "_Fleet");
+				GameDataBase.AddFleet(f1.ToFleet());
+				GameDataBase.AddFleet(f2.ToFleet());
+				var fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
+				var fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
+				Server.Log("Fleets in DB are:");
+				foreach (var p in fleetsP1) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				foreach (var p in fleetsP2) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
 
-			Server.Log(">>> Some fleets for players");
-			List<DbShip> p1fleet = new List<DbShip> {
-				ships[0],
-				ships[1],
-				ships[2]
-			};
-			List<DbShip> p2fleet = new List<DbShip> {
-				ships[3],
-				ships[4],
-				ships[5]
-			};
-			DbFleet f1 = new DbFleet(p1, p1fleet, p1Name + "_Fleet");
-			DbFleet f2 = new DbFleet(p2, p2fleet, p2Name + "_Fleet");
-			GameDataBase.AddFleet(f1.ToFleet());
-			GameDataBase.AddFleet(f2.ToFleet());
-			var fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
-			var fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
-			Server.Log("Fleets in DB are:");
-			foreach (var p in fleetsP1) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
-			foreach (var p in fleetsP2) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				Server.Log(">>> Some game history");
+				DbGameHistory h1 = new DbGameHistory(p1, p2, fleetsP1.First(), fleetsP2.First(), false, new DateTime(2018, 10, 28, 11, 15, 58));
+				DbGameHistory h2 = new DbGameHistory(p1, p2, fleetsP1.First(), fleetsP2.First(), false, new DateTime(2018, 10, 29, 12, 25, 1));
+				DbGameHistory h3 = new DbGameHistory(p2, p1, fleetsP2.First(), fleetsP1.First(), false, new DateTime(2018, 11, 6, 18, 2, 30));
+				GameDataBase.AddGameHistory(h1);
+				GameDataBase.AddGameHistory(h2);
+				GameDataBase.AddGameHistory(h3);
+				var historiesP1 = GameDataBase.GetPlayersGameHistory(p1.Id);
+				var historiesP2 = GameDataBase.GetPlayersGameHistory(p2.Id);
+				Server.Log("Game Histories in DB are:");
+				foreach (var p in historiesP1) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+				foreach (var p in historiesP2) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
 
-			Server.Log(">>> Some game history");
-			DbGameHistory h1 = new DbGameHistory(p1, p2, fleetsP1.First(), fleetsP2.First(), false, new DateTime(2018, 10, 28, 11, 15, 58));
-			DbGameHistory h2 = new DbGameHistory(p1, p2, fleetsP1.First(), fleetsP2.First(), false, new DateTime(2018, 10, 29, 12, 25, 1));
-			DbGameHistory h3 = new DbGameHistory(p2, p1, fleetsP2.First(), fleetsP1.First(), false, new DateTime(2018, 11, 6, 18, 2, 30));
-			GameDataBase.AddGameHistory(h1);
-			GameDataBase.AddGameHistory(h2);
-			GameDataBase.AddGameHistory(h3);
-			var historiesP1 = GameDataBase.GetPlayersGameHistory(p1.Id);
-			var historiesP2 = GameDataBase.GetPlayersGameHistory(p2.Id);
-			Server.Log("Game Histories in DB are:");
-			foreach (var p in historiesP1) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
-			foreach (var p in historiesP2) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+				Server.Log(">>> Additional ship templates and weapons for application testing - so the DB is more or less complete");
+				Server.Log(">>> first more weapons and defences");
+				DbWeapon w7 = new DbWeapon("kinetic 100mm x4", empire, 40, 6 * 4, WeaponType.KINETIC, 2, 0.4, 10);
+				DbWeapon w8 = new DbWeapon("axial HE UV femtosecond laser", empire, 2000, 1, WeaponType.LASER, 1, 0.9, 100);
+				DbWeapon w9 = new DbWeapon("neutron warhead missiles x8", alliance, 50, 8, WeaponType.MISSILE, 1, 0.99, 900);
+				DbWeapon w10 = new DbWeapon("Marauder cruise missile launchers x10", alliance, 210, 10, WeaponType.MISSILE, 1, 0.999, 70);
+				gameDataBase.AddWeapon(w7);
+				gameDataBase.AddWeapon(w8);
+				gameDataBase.AddWeapon(w9);
+				gameDataBase.AddWeapon(w10);
+				DbDefenceSystem d7 = new DbDefenceSystem("Imperial Smart IF", empire, 60, DefenceSystemType.INTEGRITY_FIELD, 6, 6, 6);
+				DbDefenceSystem d8 = new DbDefenceSystem("alliance High Power IF", alliance, 110, DefenceSystemType.INTEGRITY_FIELD, 3, 3, 3);
+				DbDefenceSystem d9 = new DbDefenceSystem("imperial heavy shield", empire, 250, DefenceSystemType.SHIELD, 4, 1, 1.2);
+				DbDefenceSystem d10 = new DbDefenceSystem("alliance multicore shield", alliance, 100, DefenceSystemType.SHIELD, 8, 1.2, 6);
+				DbDefenceSystem d11 = new DbDefenceSystem("imperial mass PD", empire, 180, DefenceSystemType.POINT_DEFENCE, 4, 0, 10);
+				DbDefenceSystem d12 = new DbDefenceSystem("alliance high precision laser PD", alliance, 250, DefenceSystemType.POINT_DEFENCE, 2.5, 0, 6);
+				gameDataBase.AddDefenceSystem(d7);
+				gameDataBase.AddDefenceSystem(d8);
+				gameDataBase.AddDefenceSystem(d9);
+				gameDataBase.AddDefenceSystem(d10);
+				gameDataBase.AddDefenceSystem(d11);
+				gameDataBase.AddDefenceSystem(d12);
+				weps = gameDataBase.GetAllWeapons();
+				Server.Log("Weapons in DB are:");
+				foreach (var p in weps) Server.Log(p.Name);
+				defs = gameDataBase.GetAllDefences();
+				Server.Log("Defences in DB are:");
+				foreach (var p in defs) Server.Log(p.Name);
 
-			//place for future testing
+				Server.Log(">>> Now some rare templates");
+				List<DbWeapon> impRareWep = new List<DbWeapon> {
+					weps[3],
+					weps[4],
+					weps[6],
+					weps[7]
+				};
+				List<DbWeapon> AlRareWep = new List<DbWeapon> {
+					weps[1],
+					weps[5],
+					weps[8],
+					weps[9]
+				};
+				List<DbDefenceSystem> ImpRareDef = new List<DbDefenceSystem> {
+					defs[6],
+					defs[8],
+					defs[10]
+				};
+				List<DbDefenceSystem> AlRareDef = new List<DbDefenceSystem> {
+					defs[7],
+					defs[9],
+					defs[11]
+				};
+				DbShipTemplate impRare = new DbShipTemplate("Class Master Imperial Battleship", empire, 300, 3, 2500, 8, 220, impRareWep, ImpRareDef, 0, Rarity.LEGENDARY);
+				DbShipTemplate alRare = new DbShipTemplate("Class Apocalypse Alliance Missile Ship", alliance, 250, 4, 1200, 6.5, 140, AlRareWep, AlRareDef, 0, Rarity.VERY_RARE);
+				gameDataBase.AddShipTemplate(impRare);
+				gameDataBase.AddShipTemplate(alRare);
+				shipTemplates = GameDataBase.GetAllShipTemplates();
+				Server.Log("Ship Templates in DB are:");
+				foreach (var p in shipTemplates) Server.Log(p.Name + " weapon count=" + p.Weapons.Count);
 
-			Server.Log("DEBUG: TEST END", true);
-			Console.ReadKey();
+				//place for future testing
 
-			Environment.Exit(0);
+				Server.Log("DEBUG: TEST END", true);
+				if (exitOnFinish) {
+					Server.Log("DEBUG: exiting application and closing connections", true);
+					Console.ReadKey();
+					GameDataBase.Dispose();
+					Environment.Exit(0);
+				}
+			}
+			else {  //get only base modifiers
+				Server.baseModifiers = GameDataBase.GetBaseModifiers();
+				Player pl = new Player(1, "", "", 0, 0, 0, 0, 0);
+				var x = gameDataBase.GetAllFleetsOfPlayer(pl);
+				foreach (var p in x) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				var x2 = gameDataBase.GetPlayersGameHistory(1);
+				foreach (var p in x2) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+			}
+
+
 			/*string p1Name = "player1";
 			DbPlayer p1 = new DbPlayer(1, p1Name, "haslo1", 0, 100, 0, 0, 0);
 			DbPlayer p2 = new DbPlayer(2, "player2", "haslo2", 0, 100, 0, 0, 0);
@@ -430,12 +533,13 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// To ne used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc.
+		/// To ne used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. Appends date at the beginning of message
 		/// </summary>
 		/// <param name="message"></param>
 		internal static void Log(string message) {
+			string msg = DateTime.Now + ": " + message;
 			lock (logLock) {
-				Console.WriteLine(message);
+				Console.WriteLine(msg);
 			}
 		}
 
@@ -444,11 +548,9 @@ namespace GAME_Server {
 		/// </summary>
 		internal static void Log(string message, bool isCritical, [CallerLineNumber] int callerLine = 0) {
 			string msg = "";
-			if (isCritical) msg += "CRITICAL: ";
-			msg = message + " at line: " + callerLine;
-			lock (logLock) {
-				Console.WriteLine(msg);
-			}
+			if (isCritical) msg += " >>> CRITICAL: ";
+			msg += message + " at line: " + callerLine;
+			Log(msg);
 		}
 
 		/// <summary>
@@ -522,6 +624,8 @@ namespace GAME_Server {
 		private Player user;
 		private IGameDataBase gameDataBase;
 		private GameRNG gameRNG;
+		private bool clientConnected;
+		private object loopLock = new object();
 
 		internal UserThread(TcpConnection client) {
 			this.Client = client;
@@ -533,12 +637,27 @@ namespace GAME_Server {
 		public Player User { get => user; set => user = value; }
 		public IGameDataBase GameDataBase { get => gameDataBase; set => gameDataBase = value; }     //use only this as DB in this thread
 		public GameRNG GameRNG { get => gameRNG; set => gameRNG = value; }
+		internal bool ClientConnected {
+			get {
+				bool clientConnectedLocal;
+				lock (loopLock) {
+					clientConnectedLocal = clientConnected;
+				}
+				return clientConnectedLocal;
+			}
+			set {
+				lock(loopLock) {
+					clientConnected = value;
+				}
+			}
+		}
 		#endregion
 
 		/// <summary>
 		/// main function of <see cref="UserThread"/>
 		/// </summary>
 		internal void RunUserThread() {
+			Server.Log("User connected at: " + Client.RemoteIpAddress + ":" + Client.RemotePortNumber);
 			try {
 				//first do login or register
 				bool loginSuccess = false;
@@ -569,39 +688,44 @@ namespace GAME_Server {
 			GamePacket packet = Client.GetReceivedPacket();
 			Player playerObject;
 			//cast to proper type
-			try {
-				playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
-			} catch(InvalidCastException) {
-				SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
+			if (packet.OperationType == OperationType.LOGIN || packet.OperationType == OperationType.REGISTER) {
+				try {
+					playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
+				} catch (InvalidCastException) {
+					SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
+					return false;
+				}
+				//if type ok do login or register
+				if (packet.OperationType == OperationType.LOGIN) {
+					Server.Log("MMMMM  " + playerObject.Username + " " + playerObject.Password);
+					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
+						this.User = playerObject;
+						Server.Log("Succesfully logged in player: " + playerObject.Username);
+						return true;
+					}
+					else {
+						SendFailure(FailureReasons.INCORRECT_LOGIN + playerObject.Username);
+						return false;
+					}
+				}
+				else if (packet.OperationType == OperationType.REGISTER) {
+					if ((!GameDataBase.PlayerExists(playerObject)) && GameDataBase.PlayerNameIsUnique(playerObject)) {
+						RegisterNewPlayer(playerObject);
+						Server.Log("Succesfully registered player: " + playerObject.Username);
+						this.User = playerObject;
+						return true;
+					}
+					else {
+						SendFailure(FailureReasons.USERNAME_ALREADY_EXISTS + playerObject.Username);
+						return false;
+					}
+				}
 				return false;
 			}
-			//if type ok do login or register
-			if(packet.OperationType == OperationType.LOGIN) {
-				if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
-					this.User = playerObject;
-					Server.Log("Succesfully logged in player " + playerObject.Username);
-					return true;
-				}
-				else {
-					SendFailure(FailureReasons.INCORRECT_LOGIN + playerObject.Username);
-					return false;
-				}
-			}
-			else if(packet.OperationType == OperationType.REGISTER) {
-				if ((!GameDataBase.PlayerExists(playerObject)) && GameDataBase.PlayerNameIsUnique(playerObject)) {
-					RegisterNewPlayer(playerObject);
-					Server.Log("Succesfully registered player " + playerObject.Username);
-					this.User = playerObject;
-					return true;
-				}
-				else {
-					SendFailure(FailureReasons.USERNAME_ALREADY_EXISTS + playerObject.Username);
-					return false;
-				}
-			}
 			else if(packet.OperationType == OperationType.DISCONNECT) {
-				Server.Log("User disconnected before succesful login!");
-				throw new ConnectionEndedException("User disconnected before succesful login!");
+				string msg = "User disconnected before succesful login!";
+				Server.Log(msg);
+				throw new ConnectionEndedException(msg);
 			}
 			else {
 				SendFailure(FailureReasons.INVALID_PACKET_TYPE);
@@ -617,17 +741,30 @@ namespace GAME_Server {
 		}
 		#endregion
 
+		public List<DbShip> GetPlayersShips(Player player, GameDBContext c) {
+			var query2 = from s in c.Ships
+						 where s.Owner.Id == 1
+						 select s;
+			var w = query2.ToList();
+			var xx = w[0];
+			var xxx = xx.ShipBaseStats.Name;
+			var query = c.Ships.Where(ship => ship.Owner.Id == player.Id);
+			return query.ToList();
+		}
+
+
 		#region main logic
 		private void UserProcessing() {
 			bool clientConnected = true;
 			DbPlayer thisUser;
+			string validationResult;
 			mainLoop: while (clientConnected) {
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				try {
 					gameSwitch: switch (gamePacket.OperationType) {
-						//shop
+						//====================================================== SHOP =====================================================================================================
 						case OperationType.GET_LOOTBOXES:       //dont care about internal packet
-							Server.Log("Player " + User.Username + " wants to view lootboxes");
+							Server.Log(User.Username + ": wants to view lootboxes");
 							List<DbLootBox> dbLootBoxes = GameDataBase.GetAllLootBoxes();
 							List<LootBox> lootBoxes = dbLootBoxes.Select(x => x.ToLootBox()).ToList();
 							Client.Send(new GamePacket(OperationType.GET_LOOTBOXES, lootBoxes));
@@ -635,28 +772,20 @@ namespace GAME_Server {
 						case OperationType.BUY:
 							LootBox targetLootBox;
 							targetLootBox = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
-							Server.Log("Player " + User.Username + " wants to buy lootbox " + targetLootBox.Name);
+							Server.Log(User.Username + ": wants to buy lootbox " + targetLootBox.Name);
 							DbLootBox lootbox = GameDataBase.GetLootBoxWithId(targetLootBox.Id);
 							thisUser = GetPlayerFromDb();
 							if (lootbox.Cost > User.Money) SendFailure(FailureReasons.NOT_ENOUGH_MONEY);
 							else if (Server.BaseModifiers.MaxShipsPerPlayer < (GameDataBase.GetPlayerShipCount(User) + lootbox.NumberOfShips)) SendFailure(FailureReasons.TOO_MANY_SHIPS);
-							else {
+							else {		// all checks successful
 								thisUser.Money -= lootbox.Cost;
 								User.Money -= lootbox.Cost;
 
 								List<DbShip> randomShips = new List<DbShip>();
 								LootBox normalLootBox = lootbox.ToLootBox();
 								for (int i = 0; i < lootbox.NumberOfShips; i++) {    //repeat as many times as there are ships in lootbox
-									bool shipGenerated = false;
-									foreach (Rarity rarity in GameEnumUtils.GetValues<Rarity>()) {  //for each rarity
-										double chanceForRarity = normalLootBox.ChancesForRarities[rarity];
-										if (GameRNG.RollWithChance(chanceForRarity)) {   //if roll succesful
-											shipGenerated = true;
-											randomShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(rarity, thisUser.Experience).GenerateNewShipOfThisTemplate(thisUser));
-											break;
-										}
-									}
-									if (!shipGenerated) randomShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(Rarity.COMMON, thisUser.Experience).GenerateNewShipOfThisTemplate(thisUser)); //if no ship generated after the loop than add COMMON one
+									Rarity drawnRarity =  GameRNG.GetRandomRarityWithChances(normalLootBox.ChancesForRarities);
+									randomShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(drawnRarity, thisUser.Experience).GenerateNewShipOfThisTemplate(thisUser));
 								}
 								List<Ship> resultForPlayer = new List<Ship>();
 								foreach (DbShip ship in randomShips) {
@@ -673,11 +802,11 @@ namespace GAME_Server {
 							break;
 						case OperationType.SELL_SHIP:
 							Ship shipToSell = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
-							Server.Log("Player " + User.Username + " wants to sell ship with id " + shipToSell.Id + " for " + shipToSell.Cost);
+							Server.Log(User.Username + ": wants to sell ship with id " + shipToSell.Id + " for " + shipToSell.Cost);
 							DbShip dbShipToSell = GameDataBase.GetShipWithId(shipToSell.Id);
 							int shipValue = dbShipToSell.ShipBaseStats.Cost;
 							thisUser = GetPlayerFromDb();
-							if(gameDataBase.RemoveShipWithId(dbShipToSell.Id, false, thisUser.Id)) {
+							if(GameDataBase.RemoveShipWithId(dbShipToSell.Id, false, thisUser.Id)) {
 								thisUser.Money += shipValue;
 								User.Money += shipValue;
 								GameDataBase.UpdatePlayer(thisUser);
@@ -686,41 +815,76 @@ namespace GAME_Server {
 								SendFailure(FailureReasons.INVALID_ID);
 							}
 							break;
-						//TODO fleets menu
-						case OperationType.VIEW_FLEETS:
-
+						//====================================================== FLEETS MENU =====================================================================================================
+						case OperationType.VIEW_FLEETS:         //dont care about internal packet
+							Server.Log(User.Username + ": wants to view his fleets");
+							List<DbFleet> userDbFleets = GameDataBase.GetAllFleetsOfPlayer(User);
+							List<Fleet> userFleets = userDbFleets.Select(x => x.ToFleet()).ToList();
+							Client.Send(new GamePacket(OperationType.VIEW_FLEETS, userFleets));
 							break;
-						case OperationType.VIEW_ALL_PLAYER_SHIPS:
-
+						case OperationType.VIEW_ALL_PLAYER_SHIPS:       //dont care about internal packet
+							Server.Log(User.Username + ": wants to view his ships");
+							List<DbShip> userDbShips = GameDataBase.GetPlayersShips(User);
+							//List<DbShip> userDbShips = GetPlayersShips(User, ((MySqlDataBase)Server.GameDataBase).DbContext);
+							List<Ship> userShips = userDbShips.Select(x => x.ToShip()).ToList();
+							Client.Send(new GamePacket(OperationType.VIEW_ALL_PLAYER_SHIPS, userShips));
 							break;
 						case OperationType.ADD_FLEET:
-
+							Fleet fleetToAdd = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(User.Username + ": wants to add a new fleet");
+							validationResult = GameValidator.ValidateFleet(User, fleetToAdd, GameDataBase);
+							if(validationResult == GameValidator.OK) {  //fleet is ok
+								GameDataBase.AddFleet(fleetToAdd);
+							}
+							else {
+								SendFailure(validationResult);
+							}
 							break;
 						case OperationType.UPDATE_FLEET:
-
+							Fleet fleetToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(User.Username + ": wants to modify fleet with id " + fleetToUpdate.Id);
+							validationResult = GameValidator.ValidateFleet(User, fleetToUpdate, GameDataBase);
+							if (validationResult == GameValidator.OK) {  //fleet is ok
+								GameDataBase.UpdateFleet(GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, false));
+							}
+							else {
+								SendFailure(validationResult);
+							}
 							break;
 						case OperationType.DELETE_FLEET:
-
+							Fleet fleetToDelete = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(User.Username + ": wants to delete fleet with id " + fleetToDelete.Id);
+							if (GameDataBase.RemoveFleetWithId(fleetToDelete.Id, false, User.Id)) SendSuccess();
+							else SendFailure(FailureReasons.INVALID_ID);
 							break;
-						//player stats
+						//====================================================== PLAYER STATS =====================================================================================================
 						case OperationType.GET_PLAYER_STATS:
-							Server.Log("Player " + User.Username + " wants to view game history");
+							Server.Log(User.Username + " wants to view game history");
 							List<DbGameHistory> dbGameHistory = GameDataBase.GetPlayersGameHistory(User.Id);
 							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory()).ToList();
 							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
 							break;
+						//====================================================== PLAYER STATS =====================================================================================================
+						case OperationType.DISCONNECT:
+							Server.Log(User.Username + ": wants to disconnect");
+							clientConnected = false;
+							break;
 						default:
-							Server.Log("Player " + User.Username + " - unsupported operation");
+							Server.Log(User.Username + ": unsupported operation");
 							break;
 					}
 				}
 				catch (InvalidCastException) {
 					SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
 				}
-				catch (NullReferenceException) {
+				catch (NullReferenceException ex) {			//null indicates that some object does not exist in DB and most likely that someone is manually passing fake object with fake IDs
+					Server.Log("NULL caught - someone(" + User.Username + ") is sending wrong id values - possible hacker!!! Exception message: " + ex.Message + " From:" + ex.Source, true);
 					SendFailure(FailureReasons.INVALID_ID);
 				}
 			}
+			//finally, after the loop end thread
+			Server.Log(User.Username + ": Thread Ending");
+			this.EndThread();
 		}
 		#endregion
 
@@ -752,7 +916,8 @@ namespace GAME_Server {
 		/// <summary>
 		/// does necessary resource cleanup: disconnects from DB and disconnects TcpConnection
 		/// </summary>
-		private void EndThread() {
+		internal void EndThread() {
+			Server.Log(User.Username + " ending connections");
 			this.GameDataBase.Dispose();
 			this.Client.Disconnect();
 		}

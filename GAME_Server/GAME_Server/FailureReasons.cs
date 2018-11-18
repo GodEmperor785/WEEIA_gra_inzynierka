@@ -12,7 +12,13 @@ namespace GAME_Server {
 		public static readonly string USERNAME_ALREADY_EXISTS = "Username already exists: ";
 		public static readonly string CLIENT_DISCONNECTED = "Connection ended without proper disconnect";
 		public static readonly string NOT_ENOUGH_MONEY = "Not enough money";
-		public static readonly string INVALID_ID = "Invalid object data received";
+		public static readonly string INVALID_ID = "Invalid object data received - invalid id";
 		public static readonly string TOO_MANY_SHIPS = "You have too many ships - can't buy new ones until you sell some";
+		public static readonly string FLEET_NAME_NOT_UNIQUE = "Fleet name not unique";
+		public static readonly string FLEET_SHIP_COUNT_LIMIT = "Too many ships in fleet";
+		public static readonly string FLEET_SIZE_LIMIT = "Cost of ships in fleet too big";
+		public static readonly string DUPLICATES_NOT_ALLOWED = "no duplicates in lists are allowed";
+		public static readonly string ZERO_SHIPS_IN_FLEET = "fleet must contain at least one ship";
+		public static readonly string FACTION_MUST_BE_SAME = "All elements must belong to the same faction";
 	}
 }

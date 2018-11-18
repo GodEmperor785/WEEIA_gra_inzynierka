@@ -19,5 +19,15 @@ namespace GAME_connection {
 
 		public string Name { get => name; set => name = value; }
 		public int Id { get => id; set => id = value; }
+
+		public override bool Equals(object obj) {
+			Faction castObj = obj as Faction;
+			if (castObj == null) return false;
+			return Id == castObj.Id;
+		}
+
+		public override string ToString() {
+			return Name;
+		}
 	}
 }

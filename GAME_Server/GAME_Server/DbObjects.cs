@@ -377,8 +377,13 @@ namespace GAME_Server {
 		public double MissileShield { get; set; }
 		public double MissileIF { get; set; }
 
-		//baseShipStatsExpModifier
+		//exp and fleet size modifiers
 		public double BaseShipStatsExpModifier { get; set; }
+		public double FleetSizeExpModifier { get; set; }
+		public int BaseFleetMaxSize { get; set; }
+		public int MaxAbsoluteFleetSize { get; set; }
+		public int MaxShipExp { get; set; }
+		public int MaxShipsInLine { get; set; }
 
 		//maxShipsPerPlayer
 		public int MaxShipsPerPlayer { get; set; }
@@ -389,6 +394,9 @@ namespace GAME_Server {
 		//exp gain values
 		public int ExpForVictory { get; set; }
 		public int ExpForLoss { get; set; }
+
+
+
 
 		public BaseModifiers ToBaseModifiers() {
 			Dictionary<WeaponType, double> weaponTypeRangeMultMap = new Dictionary<WeaponType, double>() {
@@ -409,7 +417,8 @@ namespace GAME_Server {
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE), MissileShield },
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), MissileIF }
 			};
-			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney, ExpForVictory, ExpForLoss);
+			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney, ExpForVictory, ExpForLoss, 
+				FleetSizeExpModifier, MaxAbsoluteFleetSize, MaxShipExp, BaseFleetMaxSize, MaxShipsInLine);
 		}
 	}
 
