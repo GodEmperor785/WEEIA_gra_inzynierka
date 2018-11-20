@@ -80,5 +80,15 @@ namespace GAME_Server {
 		List<DbShipTemplate> GetAllShipTemplates();
 
 		void AddGameHistory(DbGameHistory entry);
+
+		List<DbShip> GetPlayersShips(Player player);
+
+		bool RemoveFleetWithId(int id, bool isAdmin, int playerId = 0);
+
+		void UpdateFleet(DbFleet newData);
+
+		DbFleet ConvertFleetToDbFleet(Fleet fleet, bool isNew);
+
+		int GetPlayerFleetCount(Player player);
 	}
 }

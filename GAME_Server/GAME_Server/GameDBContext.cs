@@ -27,10 +27,10 @@ namespace GAME_Server {
 		//public DbSet<DbFleetSizeExpMapping> FleetSizeExpMappings { get; set; }
 
 		public GameDBContext() : base("GameContext") {
-			Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());
+			//Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());				//recreate always
 			//Database.SetInitializer<GameDBContext>(new DropCreateDatabaseIfModelChanges<GameDBContext>());
 			//Database.SetInitializer<GameDBContext>(new CreateDatabaseIfNotExists<GameDBContext>());
-			//Database.SetInitializer<SchoolDBContext>(null);
+			Database.SetInitializer<GameDBContext>(null);														//use existing database
 
 			//uncomment this to enable SQL logging to console
 			//Database.Log = (string message) => { Console.WriteLine(message); };

@@ -49,7 +49,7 @@ namespace GAME_connection {
 			operationMapping = new Dictionary<OperationType, Type>();
 			operationMapping.Add(OperationType.CONNECTION_TEST, typeof(object));			//nothing - never used									- null
 			operationMapping.Add(OperationType.VIEW_FLEETS, typeof(List<Fleet>));           //list of players fleets								- important for client
-			operationMapping.Add(OperationType.DELETE_FLEET, typeof(Fleet));                //list of player owned ships							- important for clientF
+			operationMapping.Add(OperationType.VIEW_ALL_PLAYER_SHIPS, typeof(Fleet));       //list of player owned ships							- important for clientF
 			operationMapping.Add(OperationType.UPDATE_FLEET, typeof(Fleet));                //updated fleet object		maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.ADD_FLEET, typeof(Fleet));                   //new fleet object			maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DELETE_FLEET, typeof(Fleet));                //fleet to delete		maybe only fleet name or id?	- important for server, server respons with S/F

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.Entity;
 using GAME_connection;
 
 namespace GAME_Server {
@@ -14,37 +15,77 @@ namespace GAME_Server {
 		#region basic queries
 		private IEnumerable<DbShipTemplate> BasicShipTemplateQuery { 
 			get {
-				return from shipTemplates in DbContext.ShipTemplates select shipTemplates;
+				//return from shipTemplates in DbContext.ShipTemplates select shipTemplates;
+				return DbContext.ShipTemplates.Include(x => x.Faction).Include(x => x.Weapons).Include(x => x.Weapons.Select(d => d.Faction))
+					.Include(x => x.Defences).Include(x => x.Defences.Select(d => d.Faction));
 			}
 		}
 
 		private IEnumerable<DbShip> BasicShipQuery {
 			get {
-				return from ships in DbContext.Ships select ships;
+				//return from ships in DbContext.Ships select ships;
+				return DbContext.Ships.Include(x => x.Owner).Include(x => x.ShipBaseStats.Faction).Include(x => x.ShipBaseStats).Include(x => x.ShipBaseStats.Weapons)
+					.Include(x => x.ShipBaseStats.Weapons.Select(w => w.Faction)).Include(x => x.ShipBaseStats.Defences).Include(x => x.ShipBaseStats.Defences.Select(d => d.Faction));
 			}
 		}
 
 		private IEnumerable<DbPlayer> BasicPlayerQuery {
 			get {
-				return from players in DbContext.Players select players;
+				//return from players in DbContext.Players select players;
+				return DbContext.Players.Include(x => x.OwnedShips);
 			}
 		}
 
-		private IEnumerable<DbFleet> BasicFleetQuery {
+		private IEnumerable<DbFleet> BasicFleetQueryPt1 {
 			get {
-				return from fleets in DbContext.Fleets select fleets;
+				var q = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
+				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction));
+				return q;
 			}
 		}
+
+		private IEnumerable<DbFleet> BasicFleetQueryPt2 {
+			get {
+				var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
+				return q2;
+			}
+		}
+
+		private IEnumerable<DbFleet> BasicFleetQueryPt3 {
+			get {
+				var q3 = DbContext.Fleets.Include(xxx => xxx.Ships.Select(sss => sss.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));
+				return q3;
+			}
+		}
+
+		/*private IEnumerable<DbFleet> BasicFleetQuery {
+			get {*/
+				//return from fleets in DbContext.Fleets select fleets;
+				/*return DbContext.Fleets.Include(x => x.Owner).Include(x => x.Ships.Select(s => s.Owner)).Include(x => x.Ships.Select(s => s.ShipBaseStats)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction))
+					.Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)))
+					.Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));*/
+				/*var q = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
+				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction));
+				var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
+				var q3 = DbContext.Fleets.Include(xxx => xxx.Ships.Select(sss => sss.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));
+				var basic = q.ToList();
+				var weps = q2.ToList();
+				var defs = q3.ToList();
+				return q;
+			}
+		}*/
 
 		private IEnumerable<DbWeapon> BasicWeaponQuery {
 			get {
-				return from weapons in DbContext.Weapons select weapons;
+				//return from weapons in DbContext.Weapons select weapons;
+				return DbContext.Weapons.Include(x => x.Faction);
 			}
 		}
 
 		private IEnumerable<DbDefenceSystem> BasicDefenceSystemQuery {
 			get {
-				return from defences in DbContext.DefenceSystems select defences;
+				//return from defences in DbContext.DefenceSystems select defences;
+				return DbContext.DefenceSystems.Include(x => x.Faction);
 			}
 		}
 
@@ -53,11 +94,41 @@ namespace GAME_Server {
 				return from lootboxes in DbContext.LootBoxes select lootboxes;
 			}
 		}
+
+		private IEnumerable<DbGameHistory> BasicHistoryQuery(int playerId) {
+			var q = DbContext.GameHistories.Include(x => x.Winner).Include(x => x.WinnerFleet).Include(x => x.WinnerFleet.Owner).Include(x => x.WinnerFleet.Ships)
+				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Faction))
+				.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Faction));
+			var q2 = DbContext.GameHistories.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
+			var q22 = DbContext.GameHistories.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)));
+			var q3 = DbContext.GameHistories.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
+			var q32 = DbContext.GameHistories.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)));
+			q = q.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
+			q2 = q2.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
+			q3 = q3.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
+			q22 = q22.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
+			q32 = q32.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
+			var basic = q.ToList();
+			var winner = q2.ToList();
+			var winner2 = q22.ToList();
+			var loser = q3.ToList();
+			var loser2 = q32.ToList();
+			return basic;
+			/*return DbContext.GameHistories.Include(x => x.Winner).Include(x => x.WinnerFleet).Include(x => x.WinnerFleet.Owner).Include(x => x.WinnerFleet.Ships)
+				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Faction))
+				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)))
+				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)))
+				.Include(x => x.Loser).Include(x => x.LoserFleet).Include(x => x.LoserFleet.Owner).Include(x => x.LoserFleet.Ships)
+				.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Faction))
+				.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)))
+				.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)));*/
+		}
 		#endregion
 
 		internal MySqlDataBase() {
 			dbContext = new GameDBContext();
 			rng = new Random();
+			//dbContext.Configuration.LazyLoadingEnabled = false;
 		}
 
 		internal GameDBContext DbContext { get => dbContext; }
@@ -109,15 +180,24 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// adds fleet to Db, does NOT validate the fleet, this should be done earlier (including <see cref="FleetNameIsUnique"/>, <see cref="FleetPointsInRange"/> and <see cref="FleetShipsExpRequirement"/>)
+		/// converts <see cref="Fleet"/> from user to server's internal <see cref="DbFleet"/>
 		/// </summary>
 		/// <param name="fleet"></param>
-		public void AddFleet(Fleet fleet) {                                                 //NOT TESTED
+		/// <returns></returns>
+		public DbFleet ConvertFleetToDbFleet(Fleet fleet, bool isNew) {
 			List<int> shipIds = fleet.Ships.Select(s => s.Id).ToList();
 			List<DbShip> shipsForFleet = this.GetShips(shipIds);
 			DbPlayer owner = this.GetPlayerWithUsername(fleet.Owner.Username);
-			DbFleet newFleet = new DbFleet(owner, shipsForFleet, fleet.Name);
-			DbContext.Fleets.Add(newFleet);
+			if (isNew) return new DbFleet(fleet.Id, owner, shipsForFleet, fleet.Name);
+			else return new DbFleet(owner, shipsForFleet, fleet.Name);
+		}
+
+		/// <summary>
+		/// adds fleet to Db, does NOT validate the fleet, this should be done earlier (including <see cref="FleetNameIsUnique"/>)
+		/// </summary>
+		/// <param name="fleet"></param>
+		public void AddFleet(Fleet fleet) {                                                 //NOT TESTED
+			DbContext.Fleets.Add(ConvertFleetToDbFleet(fleet, true));
 			SaveChanges();
 		}
 
@@ -146,16 +226,21 @@ namespace GAME_Server {
 		}
 
 		public List<DbFleet> GetAllFleetsOfPlayer(Player player) {
-			/*var query = from fleets in DbContext.Fleets
-						where fleets.Owner.Id == player.Id
-						select fleets;*/
-			var query = BasicFleetQuery.Where(fleet => fleet.Owner.Id == player.Id);
-			return query.ToList();
+			/*var q = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
+				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction));
+			var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
+			var q3 = DbContext.Fleets.Include(xxx => xxx.Ships.Select(sss => sss.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));
+			var basic = q.ToList();
+			var weps = q2.ToList();
+			var defs = q3.ToList();
+			return q.ToList();*/
+			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id).ToList();
+			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id).ToList();
+			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id).ToList();
+			return q1;
 		}
 
 		public List<DbShip> GetAllShips() {
-			/*var query = from dbShips in DbContext.Ships
-						select dbShips;*/
 			return BasicShipQuery.ToList();
 		}
 
@@ -170,11 +255,12 @@ namespace GAME_Server {
 		}
 
 		public DbFleet GetFleetWithId(int id) {
-			/*var query = from fleets in DbContext.Fleets
-						where fleets.Id == id
-						select fleets;*/
-			var query = BasicFleetQuery.Where(fleet => fleet.Id == id);
-			return query.FirstOrDefault();
+			var q1 = BasicFleetQueryPt1.Where(x => x.Id == id).FirstOrDefault();
+			var q2 = BasicFleetQueryPt2.Where(x => x.Id == id).FirstOrDefault();
+			var q3 = BasicFleetQueryPt3.Where(x => x.Id == id).FirstOrDefault();
+			return q1;
+			//var query = BasicFleetQuery.Where(fleet => fleet.Id == id);
+			//return query.FirstOrDefault();
 		}
 
 		/// <summary>
@@ -183,38 +269,25 @@ namespace GAME_Server {
 		/// <param name="username"></param>
 		/// <returns></returns>
 		public DbPlayer GetPlayerWithUsername(string username) {
-			/*var query = from players in DbContext.Players
-						where players.Username == username
-						select players;*/
 			var query = BasicPlayerQuery.Where(player => player.Username == username);
 			return query.FirstOrDefault();	//player username is unique
 		}
 
 		public DbShip GetShipWithId(int id) {
-			/*var query = from ships in DbContext.Ships
-						where ships.Id == id
-						select ships;*/
 			var query = BasicShipQuery.Where(ship => ship.Id == id);
 			return query.FirstOrDefault();
 		}
 
 		public DbShipTemplate GetShipTemplateWithId(int id) {
-			/*var query = from shipTemplates in DbContext.ShipTemplates
-						where shipTemplates.Id == id
-						select shipTemplates;*/
 			var query = BasicShipTemplateQuery.Where(shipTempl => shipTempl.Id == id);
 			return query.FirstOrDefault();
 		}
 
 		public List<DbWeapon> GetAllWeapons() {
-			/*var query = from weapons in DbContext.Weapons
-						select weapons;*/
 			return BasicWeaponQuery.ToList();
 		}
 
 		public List<DbDefenceSystem> GetAllDefences() {
-			/*var query = from defences in DbContext.DefenceSystems
-						select defences;*/
 			return BasicDefenceSystemQuery.ToList();
 		}
 
@@ -224,9 +297,6 @@ namespace GAME_Server {
 		/// <param name="weps"></param>
 		/// <returns></returns>
 		public List<DbWeapon> GetDbWeapons(List<int> weps) {
-			/*var query = from weapons in DbContext.Weapons
-						where weps.Contains(weapons.Id)
-						select weapons;*/
 			var query = BasicWeaponQuery.Where(weapons => weps.Contains(weapons.Id));
 			return query.ToList();
 		}
@@ -237,9 +307,6 @@ namespace GAME_Server {
 		/// <param name="defs"></param>
 		/// <returns></returns>
 		public List<DbDefenceSystem> GetDbDefenceSystems(List<int> defs) {
-			/*var query = from defences in DbContext.DefenceSystems
-						where defs.Contains(defences.Id)
-						select defences;*/
 			var query = BasicDefenceSystemQuery.Where(defences => defs.Contains(defences.Id));
 			return query.ToList();
 		}
@@ -250,9 +317,6 @@ namespace GAME_Server {
 		/// <param name="shipIds"></param>
 		/// <returns></returns>
 		public List<DbShip> GetShips(List<int> shipIds) {
-			/*var query = from ships in DbContext.Ships
-						where shipIds.Contains(ships.Id)
-						select ships;*/
 			var query = BasicShipQuery.Where(ships => shipIds.Contains(ships.Id));
 			return query.ToList();
 		}
@@ -263,9 +327,6 @@ namespace GAME_Server {
 		/// <param name="exp"></param>
 		/// <returns></returns>
 		public List<DbShipTemplate> GetShipsAvailableForExp(int exp) {
-			/*var query = from ships in DbContext.ShipTemplates
-						where ships.ExpUnlock <= exp
-						select ships;*/
 			var query = BasicShipTemplateQuery.Where(shipTempl => shipTempl.ExpUnlock <= exp);
 			return query.ToList();
 		}
@@ -276,7 +337,7 @@ namespace GAME_Server {
 		}
 
 		public int GetPlayerShipCount(Player player) {
-			return GetPlayerWithUsername(player.Username).OwnedShips.Count();
+			return GetPlayersShips(player).Count;
 		}
 
 		/// <summary>
@@ -303,9 +364,7 @@ namespace GAME_Server {
 		}
 
 		public List<DbGameHistory> GetPlayersGameHistory(int playerId) {
-			var query = from history in DbContext.GameHistories
-						where (history.Winner.Id == playerId || history.Loser.Id == playerId)
-						select history;
+			var query = BasicHistoryQuery(playerId);
 			return query.ToList();
 		}
 
@@ -315,6 +374,15 @@ namespace GAME_Server {
 
 		public List<DbShipTemplate> GetAllShipTemplates() {
 			return BasicShipTemplateQuery.ToList();
+		}
+
+		public List<DbShip> GetPlayersShips(Player player) {
+			var query = BasicShipQuery.Where(ship => ship.Owner.Id == player.Id);
+			return query.ToList();
+		}
+
+		public int GetPlayerFleetCount(Player player) {
+			return GetAllFleetsOfPlayer(player).Count;
 		}
 
 		#endregion
@@ -352,6 +420,14 @@ namespace GAME_Server {
 			//userToUpdate.OwnedShips = newData.OwnedShips;
 			SaveChanges();
 		}
+
+		public void UpdateFleet(DbFleet newData) {
+			var fleetToUpdate = GetFleetWithId(newData.Id);
+			fleetToUpdate.Name = newData.Name;
+			fleetToUpdate.Ships = newData.Ships;
+			//fleetToUpdate.Owner = newData.Owner;
+			SaveChanges();
+		}
 		#endregion
 
 		#region DELETE
@@ -387,11 +463,27 @@ namespace GAME_Server {
 			SaveChanges();
 			return true;
 		}
+
+		/// <summary>
+		/// for admin call RemoveFleetWithId(fleetId, true), player cant remove fleets he does not own
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="isAdmin"></param>
+		/// <param name="playerId"></param>
+		/// <returns></returns>
+		public bool RemoveFleetWithId(int id, bool isAdmin, int playerId = 0) {
+			var fleetToDelete = GetFleetWithId(id);
+			if (!isAdmin && fleetToDelete.Owner.Id != playerId) return false; //user cant delete fleet he does not own!
+
+			DbContext.Fleets.Remove(fleetToDelete);
+			SaveChanges();
+			return true;
+		}
 		#endregion
 
 		#region Checks
 		public bool PlayerExists(Player player) {
-			return DbContext.Players.Any(dbPlayer => dbPlayer.Id == player.Id);
+			return DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username);
 		}
 
 		public bool PlayerNameIsUnique(Player player) {
@@ -412,12 +504,12 @@ namespace GAME_Server {
 			else return true;
 		}
 
-		public bool FleetPointsInRange(Fleet fleet, Player player) {
+		public bool FleetPointsInRange(DbFleet fleet, Player player) {
 			// TODO
 			return true;
 		}
 
-		public bool FleetShipsExpRequirement(Fleet fleet, Player player) {
+		public bool FleetShipsExpRequirement(DbFleet fleet, Player player) {
 			// TODO
 			return true;
 		}

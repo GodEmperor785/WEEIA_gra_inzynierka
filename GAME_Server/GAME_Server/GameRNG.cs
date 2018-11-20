@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GAME_connection;
 
 namespace GAME_Server {
 	public class GameRNG {
@@ -24,5 +25,17 @@ namespace GAME_Server {
 			if (roll <= chance) return true;
 			else return false;
 		}
+
+		public Rarity GetRandomRarityWithChances(Dictionary<Rarity, double> chances) {
+			foreach (Rarity rarity in GameEnumUtils.GetValues<Rarity>()) {  //for each rarity
+				double chanceForRarity = chances[rarity];
+				if (RollWithChance(chanceForRarity)) {   //if roll succesful
+					return rarity;
+				}
+			}
+			//if not returned yet than return COMMON
+			return Rarity.COMMON;
+		}
+
 	}
 }
