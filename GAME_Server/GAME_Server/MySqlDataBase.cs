@@ -163,7 +163,9 @@ namespace GAME_Server {
 			var query = from baseMods in DbContext.BaseModifiers
 						where baseMods.Id == 1
 						select baseMods;
-			var baseModifiers = query.FirstOrDefault();
+          
+
+            var baseModifiers = query.FirstOrDefault();
 			return baseModifiers.ToBaseModifiers();
 		}
 

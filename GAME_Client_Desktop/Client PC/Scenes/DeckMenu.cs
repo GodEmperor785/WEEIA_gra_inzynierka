@@ -17,21 +17,30 @@ namespace Client_PC.Scenes
         private Grid gridRight;
         private Grid gridRightBottom;
         private Grid gridCenter;
-
+        private List<Deck> Decks;
         private double CardGridHeightMulti = 0.15;
         private double CardGridWidthMulti = 0.75;
-        private double RightGridHeightMulti = 0.75;
+        private double RightGridHeightMulti = 0.6;
         private int cardWidth = 100;
         private int cardHeight = 150;
+        private InputBox DeckInputBox;
+        private List<Card> ShipsInTop;
+        private List<Card> ShipsInBot;
         public override void Initialize(ContentManager Content)
         {
+            ShipsInTop = new List<Card>();
+            ShipsInBot = new List<Card>();
             layout = new RelativeLayout();
             Gui = new GUI(Content);
+            Decks = new List<Deck>();
+            int gridRightColumnWidth =
+                (int) ((int) Game1.self.graphics.PreferredBackBufferWidth *(1- CardGridWidthMulti)) - 30;
+            int gridRightRowHeight = 60;
 
             int ColumnWidth = (int) ((int) Game1.self.graphics.PreferredBackBufferWidth * CardGridWidthMulti * 0.2);
             int rowHeight = (int) ((int) Game1.self.graphics.PreferredBackBufferHeight * CardGridHeightMulti);
             gridTopLeft = new Grid(5, 3, ColumnWidth, rowHeight);
-            gridRight = new Grid();
+            gridRight = new Grid(1, 8,gridRightColumnWidth,gridRightRowHeight);
             gridRightBottom = new Grid();
             gridCenter = new Grid(5, 6, ColumnWidth, rowHeight);
             ;
@@ -67,49 +76,54 @@ namespace Client_PC.Scenes
                                     (int)(Game1.self.graphics.PreferredBackBufferHeight * RightGridHeightMulti + 20));
             gridCenter.Origin = new Point(10, (int)(Game1.self.graphics.PreferredBackBufferHeight - gridCenter.Height - 10));
 
-            Button b = new Button(new Point(0, 0), (int) (gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2),
-                (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+            Button b = new Button(new Point(0, 0), (int) (gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Add"
             };
-            Button b2 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2), (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+            Button b2 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Save"
             };
-            Button b3 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2), (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+            Button b3 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Remove"
             };
-            Button b4 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset / 2), (int)(gridRightBottom.Height * 0.5 - gridCenter.rowOffset / 2), Game1.self.GraphicsDevice,
+            Button b4 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
             };
-            Button up = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width / 2), gridTopLeft.Origin.Y + gridTopLeft.Height - 10 - 20), 60, 30, Game1.self.GraphicsDevice,
+
+
+            Button up = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width) - 60, gridTopLeft.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
             Gui, Gui.mediumFont, true)
             {
                 Text = "up"
             };
-            Button down = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width / 2), gridTopLeft.Origin.Y + gridTopLeft.Height ), 60, 30, Game1.self.GraphicsDevice,
+            Button down = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width) - 60, gridTopLeft.Origin.Y + 30), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "down"
             };
 
-            Button upCenter = new Button(new Point(gridCenter.Origin.X + (int)(gridCenter.Width / 2), gridCenter.Origin.Y + gridCenter.Height - 10 - 20), 60, 30, Game1.self.GraphicsDevice,
+
+
+            Button upCenter = new Button(new Point(gridCenter.Origin.X + (int)(gridCenter.Width) - 60, gridCenter.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "up"
             };
-            Button downCenter = new Button(new Point(gridCenter.Origin.X + (int)(gridCenter.Width / 2), gridCenter.Origin.Y + gridCenter.Height), 60, 30, Game1.self.GraphicsDevice,
+            Button downCenter = new Button(new Point(gridCenter.Origin.X + (int)(gridCenter.Width) - 60, gridCenter.Origin.Y + 30), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "down"
             };
 
+            DeckInputBox = new InputBox(new Point(), gridRightBottom.Width,(int) (gridRightBottom.Height * 0.25), Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
+            DeckInputBox.TextLimit = 30;
             up.Update();
             down.Update();
             upCenter.Update();
@@ -132,14 +146,17 @@ namespace Client_PC.Scenes
             rl.AddChild(downCenter);
 
             Clickable.Add(b4);
+            Clickable.Add(DeckInputBox);
             b4.clickEvent += OnExit;
-            gridRightBottom.AddChild(b,0,0);
-            gridRightBottom.AddChild(b2, 0, 1);
-            gridRightBottom.AddChild(b3, 1, 0);
-            gridRightBottom.AddChild(b4, 1, 1);
-
-
-
+            b.clickEvent += OnAdd;
+            Clickable.Add(b);
+            gridRightBottom.AddChild(DeckInputBox,0,0,3);
+            gridRightBottom.AddChild(b,1,1);
+            gridRightBottom.AddChild(b2, 1, 2);
+            gridRightBottom.AddChild(b3, 2, 1);
+            gridRightBottom.AddChild(b4, 2, 2);
+            gridRightBottom.ResizeChildren();
+            DeckInputBox.Update();
 
 
 
@@ -158,6 +175,24 @@ namespace Client_PC.Scenes
                 ships.Add(ship);
             }
 
+            List<Ship> Deck1Ships = ships.GetRange(1, 10);
+            Deck BasicDeck = new Deck(new Point(), 20, (int)(gridRight.Height * 0.1),
+                Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, "Basic" );
+            Deck1Ships.ForEach(p=> BasicDeck.AddShip(p));
+            BasicDeck.clickEvent += DeckClick;
+            gridRight.AddChild(BasicDeck);
+            Clickable.Add(BasicDeck);
+            gridRight.ResizeChildren();
+
+            
+            
+            gridTopLeft.AllVisible = false;
+            gridTopLeft.VisibleRows = 1;
+
+            gridCenter.AllVisible = false;
+            gridCenter.VisibleRows = 5;
+
+
             gridTopLeft.ConstantRowsAndColumns = true;
             gridTopLeft.MaxChildren = true;
             gridTopLeft.ChildMaxAmount = 15;
@@ -166,7 +201,15 @@ namespace Client_PC.Scenes
             gridCenter.MaxChildren = true;
             gridCenter.ChildMaxAmount = 150;
 
+            gridRight.ConstantRowsAndColumns = true;
+            gridRight.MaxChildren = true;
+            gridRight.ChildMaxAmount = 8;
+            
             cardHeight = gridTopLeft.Height;
+
+            FillBotShips(ships);
+            FillBotGrid();
+            /*
             Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[0]);
             Card dc1 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[1]);
             Card dc2 = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ships[2]);
@@ -194,8 +237,6 @@ namespace Client_PC.Scenes
             Clickable.Add(dc6);
             Clickable.Add(dc7);
 
-            gridTopLeft.AllVisible = false;
-            gridTopLeft.VisibleRows = 1;
             gridTopLeft.AddChild(dc);
             gridTopLeft.AddChild(dc1);
             gridTopLeft.AddChild(dc2);
@@ -204,11 +245,24 @@ namespace Client_PC.Scenes
             gridTopLeft.AddChild(dc5);
             gridTopLeft.AddChild(dc6);
             gridTopLeft.AddChild(dc7);
+            */
+            gridTopLeft.AllVisible = false;
+            gridTopLeft.VisibleRows = 1;
 
-            gridTopLeft.Update();
+            gridCenter.AllVisible = false;
+            gridCenter.VisibleRows = 5;
+
+            gridCenter.UpdateP();
+            gridTopLeft.UpdateP();
 
         }
 
+        public void Clear()
+        {
+            ClearTopGrid();
+            ShipsInTop.Clear();
+            Console.WriteLine(ShipsInBot.Count);
+        }
         private void CardClick(object sender)
         {
             Card c = (Card) sender;
@@ -216,11 +270,15 @@ namespace Client_PC.Scenes
             if (g == gridTopLeft)
             {
                 c.ChangeParent((Grid)c.Parent,gridCenter);
+                ShipsInBot.Add(c);
+                ShipsInTop.Remove(c);
                 gridTopLeft.MoveChildren();
             }
             else if (g == gridCenter)
             {
                 c.ChangeParent((Grid)c.Parent,gridTopLeft);
+                ShipsInTop.Add(c);
+                ShipsInBot.Remove(c);
                 gridCenter.MoveChildren();
             }
             
@@ -228,8 +286,7 @@ namespace Client_PC.Scenes
             //Console.WriteLine("-----------------GridTopLeft-----------------");
            // gridTopLeft.PrintChildren();
 
-            Console.WriteLine("-----------------GridCenter-----------------");
-            gridCenter.PrintChildren();
+            Console.WriteLine(Clickable.Count());
         }
 
         private void UpClick()
@@ -244,6 +301,7 @@ namespace Client_PC.Scenes
             gridTopLeft.ChangeRow(1);
         }
 
+        
         private void UpClickCenter()
         {
             gridCenter.ChangeRow(-1);
@@ -253,7 +311,93 @@ namespace Client_PC.Scenes
         {
             gridCenter.ChangeRow(1);
         }
-        
+
+        private void DeckClick(object sender)
+        {
+            Deck d = (Deck) sender;
+            ClearTopGrid();
+            FillTopShips(d.GetShips());
+            FillTopGrid();
+
+        }
+        private void OnAdd()
+        {
+            if (DeckInputBox.Text.Length > 0 && gridRight.CanHaveMoreChildren())
+            {
+                Deck newDeck = new Deck(new Point(), 20, (int) (gridRight.Height * 0.1),
+                    Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, DeckInputBox.Text);
+                gridRight.AddChild(newDeck);
+                DeckInputBox.Text = "";
+                Clickable.Add(newDeck);
+                gridRight.ResizeChildren();
+            }
+            
+        }
+
+        private void ClearTopGrid()
+        {
+            foreach (var card in ShipsInTop)
+            {
+                Clickable.Remove(card);
+                gridTopLeft.RemoveChild(card);
+            }
+        }
+
+        private void ClearBotGrid()
+        {
+            foreach (var card in ShipsInBot)
+            {
+                Clickable.Remove(card);
+                gridCenter.RemoveChild(card);
+            }
+        }
+        private void FillTopGrid()
+        {
+           
+            foreach (var card in ShipsInTop)
+            {
+                gridTopLeft.AddChild(card);
+            }
+        }
+        private void FillBotGrid()
+        {
+            
+            foreach (var card in ShipsInBot)
+            {
+                gridCenter.AddChild(card, true);
+            }
+        }
+        private void FillTopShips(List<Ship> ships)
+        {
+            foreach (var ship in ships)
+            {
+                Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
+                Clickable.Add(dc);
+                dc.clickEvent += CardClick;
+                ShipsInTop.Add(dc);
+
+            }
+        }
+        private void FillBotShips(List<Ship> ships)
+        {
+            foreach (var ship in ships)
+            {
+                Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
+                Clickable.Add(dc);
+                dc.clickEvent += CardClick;
+                ShipsInBot.Add(dc);
+
+            }
+        }
+        private void OnSave()
+        {
+
+        }
+
+        private void OnRemove()
+        {
+
+        }
         private void OnExit()
         {
             Game1.self.state = Game1.State.MainMenu;
@@ -261,7 +405,8 @@ namespace Client_PC.Scenes
 
         public override void UpdateGrid()
         {
-
+            gridRightBottom.UpdateP();
+            gridRight.UpdateP();
         }
         public void Draw(GameTime gameTime)
         {

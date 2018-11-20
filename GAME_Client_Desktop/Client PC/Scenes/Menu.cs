@@ -33,9 +33,8 @@ namespace Client_PC.Scenes
             Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
             UpdateGrid();
             if(lastState != mouseState.LeftButton)
-            
-             CheckClickables(mouseState);
-            
+                CheckClickables(mouseState);
+            CheckTooltips(mouseState);
 
             lastState = mouseState.LeftButton;
             UpdateGrid();
@@ -47,8 +46,6 @@ namespace Client_PC.Scenes
             int y = mouseState.Y;
             Point xy = new Point(x, y);
             IClickable button = GetClickable(xy);
-            if (button == null)
-                UpdateTooltips(button, xy);
             if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
             {
                 UpdateFields();
@@ -66,6 +63,14 @@ namespace Client_PC.Scenes
             }
         }
 
+        private void CheckTooltips(MouseState mouseState)
+        {
+            int x = mouseState.X;
+            int y = mouseState.Y;
+            Point xy = new Point(x, y);
+            IClickable button = GetClickable(xy);
+            UpdateTooltips(button, xy);
+        }
         public virtual void Initialize(ContentManager Content)
         {
 

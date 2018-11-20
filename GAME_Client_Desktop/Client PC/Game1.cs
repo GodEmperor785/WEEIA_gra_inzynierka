@@ -195,6 +195,10 @@ namespace Client_PC
             base.Update(gameTime);
         }
 
+        public void ReinitializeDeck()
+        {
+            deckMenu.Clear();
+        }
         private void WallpaperChange()
         {
             Random rndRandom = new Random();

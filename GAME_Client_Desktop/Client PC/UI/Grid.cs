@@ -249,6 +249,51 @@ namespace Client_PC.UI
             }
         }
 
+        public void AddChild(GuiElement element, bool tooltip)
+        {
+            if (MaxChildren)
+            {
+                Vector2 pos = new Vector2();
+                if (Children.Count < ChildMaxAmount)
+                {
+                    pos = GetMaxFreeSpace();
+                }
+                Child ch = new Child()
+                {
+                    element = element,
+                    column = (int)pos.Y,
+                    row = (int)pos.X
+                };
+
+                ch.id = Children.Count;
+                if (Children.Count < ChildMaxAmount)
+                    Children.Add(ch);
+                if (element is Card)
+                {
+                    Card c = (Card)element;
+                    c.Parent = this;
+                }
+                Update();
+                UpdateChildren();
+            }
+            else
+            {
+                Child ch = new Child()
+                {
+                    element = element,
+                    column = 0
+                };
+
+                ch.id = Children.Count;
+                ch.row = Rows;
+
+                Children.Add(ch);
+                Update();
+                UpdateChildren();
+            }
+
+            
+        }
         public void PrintChildren()
         {
             Children.ForEach(p=> p.print());
@@ -270,8 +315,6 @@ namespace Client_PC.UI
                     {
                         if (child.row > row)
                         {
-                            Console.WriteLine("-----------------Swap-----------------");
-                            Console.WriteLine(child.row + "|" + child.column + "   >   " + row + "|" + column);
                             child.column = column;
                             child.row = row;
                         }
@@ -280,24 +323,10 @@ namespace Client_PC.UI
                     {
                         if (child.column > column)
                         {
-                            Console.WriteLine("-----------------Swap-----------------");
-                            Console.WriteLine(child.row + "|" + child.column + "   >   " + row + "|" + column);
                             child.column = column;
                             child.row = row;
                         }
                     }
-
-                    /*
-                    else
-                    {
-                        Console.WriteLine("-----------------Swap-----------------");
-                        Console.WriteLine(child.row + "|" + child.column + "   >   " + row + "|" + column);
-                        child.column = column;
-                        child.row = row;
-                    }
-                    */
-                    
-
                 }
             }
             Children = Children.OrderBy(p => p.row).ThenBy(p => p.column).ToList();
@@ -308,6 +337,11 @@ namespace Client_PC.UI
         {
             List<Child> l = Children.Where(p => p.element == element).ToList();
             l.ForEach(p=> Children.Remove(p));
+        }
+
+        public void RemoveChildren()
+        {
+            Children = new List<Child>();
         }
 
         private Vector2 GetFirstFreeSpace()
@@ -378,9 +412,31 @@ namespace Client_PC.UI
         public void ChangeRow(int i)
         {
             int newRow = ShowedRow + i;
-            if (newRow >= 0 && newRow < RowsSize.Count)
+            if (newRow >= 0 && newRow < RowsSize.Count && newRow + VisibleRows <= RowsSize.Count)
             {
                 ShowedRow = newRow;
+                if(i > 0)
+                    MoveRowUp();
+                else
+                    MoveRowDown();
+                UpdateChildren();
+
+            }
+        }
+
+        private void MoveRowUp()
+        {
+            foreach (var child in Children)
+            {
+                child.row-=1;
+            }
+        }
+
+        private void MoveRowDown()
+        {
+            foreach (var child in Children)
+            {
+                child.row+=1;
             }
         }
         public void UpdateP()
@@ -474,7 +530,8 @@ namespace Client_PC.UI
                     child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),this.Origin.Y + (int)RowOffset(child.row));
                 else
                 {
-                    child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column), this.Origin.Y + (int)RowOffset(0));
+                    if(child.row < VisibleRows)
+                        child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column), this.Origin.Y + (int)RowOffset(child.row));
                 }
                 if (child.element is Grid)
                 {
@@ -520,6 +577,17 @@ namespace Client_PC.UI
 
             UpdateChildren();
         }
+
+        public bool CanHaveMoreChildren()
+        {
+            if (MaxChildren && Children.Count < ChildMaxAmount)
+                return true;
+            else
+            {
+                return false;
+            }
+
+        }
         public void ResizeChildren(int width,int height)
         {
             foreach (var child in Children)
@@ -560,7 +628,7 @@ namespace Client_PC.UI
             }
             else
             {
-                List<Child> childrenToShow = Children.Where(p => p.row >= ShowedRow && p.row < ShowedRow + VisibleRows).ToList();
+                List<Child> childrenToShow = Children.Where(p => p.row >= 0 && p.row < VisibleRows).ToList();
                 foreach (var child in childrenToShow)
                 {
                     if (child.name != null && child.name.Equals("gridW"))

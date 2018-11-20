@@ -110,8 +110,6 @@ namespace Client_PC.Scenes
             {
                 Game1.self.tooltipToDraw = null;
             }
-
-
             if (button != null)
             {
                 if (button.Tooltip != null)
