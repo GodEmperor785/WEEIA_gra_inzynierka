@@ -28,10 +28,12 @@ namespace Client_PC.Scenes
         private List<Card> ShipsInTop;
         private List<Card> ShipsInBot;
         private List<Ship> ships;
+        private List<Deck> decks;
         public override void Initialize(ContentManager Content)
         {
             ShipsInTop = new List<Card>();
             ShipsInBot = new List<Card>();
+            decks = new List<Deck>();
             layout = new RelativeLayout();
             Gui = new GUI(Content);
             Decks = new List<Deck>();
@@ -152,8 +154,10 @@ namespace Client_PC.Scenes
             b4.clickEvent += OnExit;
             b.clickEvent += OnAdd;
             b2.clickEvent += OnSave;
+            b3.clickEvent += OnRemove;
             Clickable.Add(b2);
             Clickable.Add(b);
+            Clickable.Add(b3);
             gridRightBottom.AddChild(DeckInputBox,0,0,3);
             gridRightBottom.AddChild(b,1,1);
             gridRightBottom.AddChild(b2, 1, 2);
@@ -363,6 +367,8 @@ namespace Client_PC.Scenes
             {
                 Deck newDeck = new Deck(new Point(), 20, (int)(gridRight.Height * 0.1),
                     Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, DeckInputBox.Text);
+                decks.Add(newDeck);
+                newDeck.clickEvent += DeckClick;
                 gridRight.AddChild(newDeck);
                 DeckInputBox.Text = "";
                 Clickable.Add(newDeck);
@@ -370,20 +376,50 @@ namespace Client_PC.Scenes
             }
 
         }
+
+        private void RefreshRightGrid()
+        {
+            gridRight.RemoveChildren();
+            decks.ForEach(p=> gridRight.AddChild(p));
+            gridRight.ResizeChildren();
+        }
+
+        private void RefreshTopGrid()
+        {
+
+        }
+
+        private void RefreshBotGrid()
+        {
+
+        }
         private void OnSave()
         {
-            if (DeckInputBox.Text.Length > 0)
+            if (ChosenDeck != null)
             {
-                ChosenDeck.Text = DeckInputBox.Text;
+
+                if (DeckInputBox.Text.Length > 0)
+                {
+                    ChosenDeck.Text = DeckInputBox.Text;
+                }
+
+                List<Ship> newShips = new List<Ship>();
+                ShipsInTop.ForEach(p => newShips.Add(p.GetShip()));
+                ChosenDeck.SetShips(newShips);
             }
-            List<Ship> newShips = new List<Ship>();
-            ShipsInTop.ForEach(p=> newShips.Add(p.GetShip()));
-            ChosenDeck.SetShips(newShips);
         }
 
         private void OnRemove()
         {
-
+            decks.Remove(ChosenDeck);
+            Clickable.Remove(ChosenDeck);
+            RefreshRightGrid();
+            ClearTopGrid();
+            ShipsInTop.Clear();
+            ClearBotGrid();
+            ShipsInBot.Clear();
+            FillBotShips(ships);
+            FillBotGrid();
         }
         private void OnExit()
         {
