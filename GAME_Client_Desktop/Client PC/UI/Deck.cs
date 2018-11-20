@@ -37,6 +37,10 @@ namespace Client_PC.UI
             clickEvent(this);
         }
 
+        public void SetShips(List<Ship> newShips)
+        {
+            ships = newShips;
+        }
         public List<Ship> GetShips()
         {
             return ships;

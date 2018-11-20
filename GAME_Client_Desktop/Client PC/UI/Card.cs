@@ -123,6 +123,10 @@ namespace Client_PC.UI
             clickEvent(this);
         }
 
+        public Ship GetShip()
+        {
+            return ship;
+        }
         public bool Equals(Card cd)
         {
             if (this.ship.Id == cd.ship.Id)
