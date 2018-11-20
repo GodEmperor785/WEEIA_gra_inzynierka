@@ -14,6 +14,7 @@ namespace GAME_Server {
 		public static readonly string NOT_ENOUGH_MONEY = "Not enough money";
 		public static readonly string INVALID_ID = "Invalid object data received - invalid id";
 		public static readonly string TOO_MANY_SHIPS = "You have too many ships - can't buy new ones until you sell some";
+		public static readonly string TOO_MANY_FLEETS = "You have too many fleets";
 		public static readonly string FLEET_NAME_NOT_UNIQUE = "Fleet name not unique";
 		public static readonly string FLEET_SHIP_COUNT_LIMIT = "Too many ships in fleet";
 		public static readonly string FLEET_SIZE_LIMIT = "Cost of ships in fleet too big";

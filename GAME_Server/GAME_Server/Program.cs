@@ -52,6 +52,8 @@ namespace GAME_Server {
 
 		//aplikacja admina nie powinna dzialac podczas dzialania serwera gry - serwer powinien byc wylaczany na czas potrzebny adminowi do zmian!
 
+		//port forwarding na porcie 10001 dziala jesli pinguje adres lokalny interfejsu zewnetrznego routera 10.3.102.132, ale nie jak publiczne ip 31.183.186.210, moze trzeba cos na modemie
+
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
 		public static List<Faction> AllFactions { get => allFactions; }
 		public static BaseModifiers BaseModifiers { get => baseModifiers; }

@@ -384,6 +384,7 @@ namespace GAME_Server {
 		public int MaxAbsoluteFleetSize { get; set; }
 		public int MaxShipExp { get; set; }
 		public int MaxShipsInLine { get; set; }
+		public int MaxFleetsPerPlayer { get; set; }
 
 		//maxShipsPerPlayer
 		public int MaxShipsPerPlayer { get; set; }
@@ -418,7 +419,7 @@ namespace GAME_Server {
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), MissileIF }
 			};
 			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney, ExpForVictory, ExpForLoss, 
-				FleetSizeExpModifier, MaxAbsoluteFleetSize, MaxShipExp, BaseFleetMaxSize, MaxShipsInLine);
+				FleetSizeExpModifier, MaxAbsoluteFleetSize, MaxShipExp, BaseFleetMaxSize, MaxShipsInLine, MaxFleetsPerPlayer);
 		}
 	}
 

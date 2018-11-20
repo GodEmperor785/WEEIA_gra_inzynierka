@@ -19,6 +19,7 @@ namespace GAME_Server {
 		/// <param name="database"></param>
 		/// <returns></returns>
 		internal static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database) {
+			if (database.GetPlayerFleetCount(player) >= Server.BaseModifiers.MaxFleetsPerPlayer) return FailureReasons.TOO_MANY_FLEETS;
 			if (!database.FleetNameIsUnique(player, fleet.Name)) return FailureReasons.FLEET_NAME_NOT_UNIQUE;
 			int fleetSize = 0;
 			List<int> shipsIds = new List<int>();

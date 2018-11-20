@@ -88,5 +88,7 @@ namespace GAME_Server {
 		void UpdateFleet(DbFleet newData);
 
 		DbFleet ConvertFleetToDbFleet(Fleet fleet, bool isNew);
+
+		int GetPlayerFleetCount(Player player);
 	}
 }

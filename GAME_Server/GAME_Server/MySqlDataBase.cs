@@ -379,6 +379,10 @@ namespace GAME_Server {
 			return query.ToList();
 		}
 
+		public int GetPlayerFleetCount(Player player) {
+			return GetAllFleetsOfPlayer(player).Count;
+		}
+
 		#endregion
 
 		#region UPDATE

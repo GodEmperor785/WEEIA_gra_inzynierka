@@ -115,12 +115,13 @@ namespace GAME_connection {
 		private int maxAbsoluteFleetSize;
 		private int maxShipExp;
 		private int maxShipsInLine;
+		private int maxFleetsPerPlayer;
 
 		public BaseModifiers() { }
 
 		public BaseModifiers(Dictionary<WeaponType, double> weaponTypeRangeMultMap, Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap,
 				double baseShipStatsExpModifier, int maxShipsPerPlayer, int startingMoney, int expForVictory, int expForLoss, double fleetSizeExpModifier, int maxAbsoluteFleetSize,
-				int maxShipExp, int baseFleetMaxSize, int maxShipsInLine) {
+				int maxShipExp, int baseFleetMaxSize, int maxShipsInLine, int maxFleetsPerPlayer) {
 			this.WeaponTypeRangeMultMap = weaponTypeRangeMultMap;
 			this.DefTypeToWepTypeMap = defTypeToWepTypeMap;
 			this.BaseShipStatsExpModifier = baseShipStatsExpModifier;
@@ -134,6 +135,7 @@ namespace GAME_connection {
 			this.MaxShipExp = maxShipExp;
 			this.BaseFleetMaxSize = baseFleetMaxSize;
 			this.MaxShipsInLine = maxShipsInLine;
+			this.MaxFleetsPerPlayer = maxFleetsPerPlayer;
 		}
 
 		public Dictionary<WeaponType, double> WeaponTypeRangeMultMap { get => weaponTypeRangeMultMap; set => weaponTypeRangeMultMap = value; }
@@ -149,6 +151,7 @@ namespace GAME_connection {
 		public int MaxShipExp { get => maxShipExp; set => maxShipExp = value; }
 		public int BaseFleetMaxSize { get => baseFleetMaxSize; set => baseFleetMaxSize = value; }
 		public int MaxShipsInLine { get => maxShipsInLine; set => maxShipsInLine = value; }
+		public int MaxFleetsPerPlayer { get => maxFleetsPerPlayer; set => maxFleetsPerPlayer = value; }
 
 		public int GetPlayersMaxFleetSize(Player player) {
 			int calculatedMaxFleetSize = (int)(BaseFleetMaxSize + (FleetSizeExpModifier * player.Experience));
