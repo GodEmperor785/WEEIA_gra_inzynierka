@@ -18,9 +18,18 @@ namespace GAME_Server {
 		/// <param name="fleet"></param>
 		/// <param name="database"></param>
 		/// <returns></returns>
-		internal static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database) {
-			if (database.GetPlayerFleetCount(player) >= Server.BaseModifiers.MaxFleetsPerPlayer) return FailureReasons.TOO_MANY_FLEETS;
-			if (!database.FleetNameIsUnique(player, fleet.Name)) return FailureReasons.FLEET_NAME_NOT_UNIQUE;
+		internal static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database, bool isNew) {
+			if (isNew) {	//if fleet is added, not modified check if player can have one more fleet
+				if (database.GetPlayerFleetCount(player) >= Server.BaseModifiers.MaxFleetsPerPlayer) return FailureReasons.TOO_MANY_FLEETS;
+				if (!database.FleetNameIsUnique(player, fleet.Name)) return FailureReasons.FLEET_NAME_NOT_UNIQUE;
+			}
+			else {  //if update
+				DbFleet oldFleet = database.GetFleetWithId(fleet.Id);
+				if(oldFleet.Owner.Id != player.Id) return FailureReasons.INVALID_ID;        //modified fleet must belong to player
+				if(oldFleet.Name != fleet.Name) {		
+					if (!database.FleetNameIsUnique(player, fleet.Name)) return FailureReasons.FLEET_NAME_NOT_UNIQUE;
+				}
+			}
 			int fleetSize = 0;
 			List<int> shipsIds = new List<int>();
 			if (fleet.Ships.Count > (Server.BaseModifiers.MaxShipsInLine * 3)) return FailureReasons.FLEET_SHIP_COUNT_LIMIT;    //too many ships in fleet
@@ -32,7 +41,7 @@ namespace GAME_Server {
 				DbShip dbShip = database.GetShipWithId(fleetShip.Id);
 				if (dbShip == null) throw new NullReferenceException("Ship does not exist!");		//invalid ship id!
 				fleetSize += dbShip.ShipBaseStats.Cost;
-				if (dbShip.ShipBaseStats.Faction.Equals(fleetFaction)) return FailureReasons.FACTION_MUST_BE_SAME;		//all ships must belong to the same faction
+				if (!dbShip.ShipBaseStats.Faction.Equals(fleetFaction)) return FailureReasons.FACTION_MUST_BE_SAME;		//all ships must belong to the same faction
 				if (dbShip.Owner.Id != player.Id) return FailureReasons.INVALID_ID;		//ship must belong to player
 			}
 			if (fleetSize > Server.BaseModifiers.GetPlayersMaxFleetSize(player)) return FailureReasons.FLEET_SIZE_LIMIT;	//fleet size must be in allowed range

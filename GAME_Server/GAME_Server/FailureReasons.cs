@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GAME_Server {
 	public static class FailureReasons {
-		public static readonly string INVALID_INTERNAL_PACKET = "Invalid type of internal packet";
+		public static readonly string INVALID_PACKET = "Invalid type of received packet";
 		public static readonly string INVALID_PACKET_TYPE = "Invalid packet OperationType received";
 		public static readonly string INCORRECT_LOGIN = "Incorrect login data for username: ";
 		public static readonly string USERNAME_ALREADY_EXISTS = "Username already exists: ";

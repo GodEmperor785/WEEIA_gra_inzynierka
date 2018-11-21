@@ -27,6 +27,7 @@ namespace GAME_connection {
 		DISCONNECT,
 		PLAYER_DATA,
 		GET_PLAYER_STATS,
+		BASE_MODIFIERS,
 
 		//shop
 		GET_LOOTBOXES,
@@ -58,7 +59,8 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.LOGIN, typeof(Player));                      //player object with password and username set			- important for server, server respons with S/F
 			operationMapping.Add(OperationType.REGISTER, typeof(Player));                   //player object with password and username set			- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DISCONNECT, typeof(object));                 //nothing - never used									- importnant for server, no server response
-			operationMapping.Add(OperationType.PLAYER_DATA, typeof(Player));                 //player object with exp and maxFleetPoints set		- important for client
+			operationMapping.Add(OperationType.PLAYER_DATA, typeof(Player));                //player object with exp and maxFleetPoints set			- important for client
+			operationMapping.Add(OperationType.BASE_MODIFIERS, typeof(BaseModifiers));      //base modifiers for client								- important for client
 			operationMapping.Add(OperationType.GET_PLAYER_STATS, typeof(List<GameHistory>)); //list of game history entries for given player		- important for client
 			operationMapping.Add(OperationType.MAKE_MOVE, typeof(string));                  //TODO <---------------------------------------------	- 
 			operationMapping.Add(OperationType.SUCCESS, typeof(object));                    //nothing - never used									- null
@@ -70,7 +72,15 @@ namespace GAME_connection {
 
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F
-			//if important for client: client send this OperationType and server does not care for internal packet, server with the right internal packet
+			//if important for client: client sends this OperationType and server does not care for internal packet, server responds with the right internal packet and same OperationType as client
+
+			//initial order of packets:
+			//1. client sends LOGIN or REGISTER
+			//2. server responds with S/F
+			//3. if SUCCESS continue, if FAILURE repeat
+			//4. server sends PLAYER_DATA to client
+			//5. server sends BASE_MODIFIERS to client
+			//6. normal menu operations, client sends request and server responds accordingly, requests to get something usually have no S/F conformation, modification requests have S/F response
 		}
 
 		public static Dictionary<OperationType, Type> OperationMapping => operationMapping;

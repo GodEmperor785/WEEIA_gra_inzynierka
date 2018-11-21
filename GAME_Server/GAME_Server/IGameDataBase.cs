@@ -47,7 +47,7 @@ namespace GAME_Server {
 
 		bool ValidateUser(Player player);
 
-		void AddFleet(Fleet fleet);
+		void AddFleet(Fleet fleet, Player owner);
 
 		void AddShipTemplate(DbShipTemplate shipTemplate);
 
@@ -87,7 +87,7 @@ namespace GAME_Server {
 
 		void UpdateFleet(DbFleet newData);
 
-		DbFleet ConvertFleetToDbFleet(Fleet fleet, bool isNew);
+		DbFleet ConvertFleetToDbFleet(Fleet fleet, Player player, bool isNew);
 
 		int GetPlayerFleetCount(Player player);
 	}

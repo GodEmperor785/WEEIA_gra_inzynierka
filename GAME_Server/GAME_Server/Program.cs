@@ -15,6 +15,8 @@ using System.Runtime.CompilerServices;
 
 namespace GAME_Server {
 	internal class Server {
+		public static readonly int EXIT_STATUS_MANUAL_SHUTDOWN = 1;
+
 		private static int port = TcpConnection.DEFAULT_PORT;
 		private static string ip = "25.34.213.187";
 
@@ -67,7 +69,7 @@ namespace GAME_Server {
 
 		static void Main(string[] args) {
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			InitilizeGameDataFromDB(false, false);		//change to true to run ONLY DB test inserts, false to continue on debug DB
+			InitilizeGameDataFromDB(false, true);		//change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
 			IPAddress ipAddress = IPAddress.Parse(ip);
 			//TcpListener listener = new TcpListener(ipAddress, port);
@@ -103,7 +105,7 @@ namespace GAME_Server {
 						t.ClientConnected = false;
 						t.EndThread();
 					}
-					Environment.Exit(1);
+					Environment.Exit(EXIT_STATUS_MANUAL_SHUTDOWN);
 					break;
 				default:
 					Console.WriteLine("ERROR: unknown command - " + cmd);
@@ -136,7 +138,7 @@ namespace GAME_Server {
 					MissileShield = 1,
 					MissileIF = 1.2,
 					BaseShipStatsExpModifier = 0.01,
-					MaxShipsPerPlayer = 100,
+					MaxShipsPerPlayer = 150,
 					StartingMoney = 1000,
 					ExpForVictory = 20,
 					ExpForLoss = 10,
@@ -144,7 +146,8 @@ namespace GAME_Server {
 					BaseFleetMaxSize = 500,
 					MaxAbsoluteFleetSize = 5000,
 					MaxShipExp = 1000,
-					MaxShipsInLine = 5
+					MaxShipsInLine = 5,
+					MaxFleetsPerPlayer = 8
 				};
 				GameDataBase.AddBaseModifiers(mods);
 				Server.baseModifiers = GameDataBase.GetBaseModifiers();
@@ -296,8 +299,8 @@ namespace GAME_Server {
 				};
 				DbFleet f1 = new DbFleet(p1, p1fleet, p1Name + "_Fleet");
 				DbFleet f2 = new DbFleet(p2, p2fleet, p2Name + "_Fleet");
-				GameDataBase.AddFleet(f1.ToFleet());
-				GameDataBase.AddFleet(f2.ToFleet());
+				GameDataBase.AddFleet(f1.ToFleet(), p1.ToPlayer());
+				GameDataBase.AddFleet(f2.ToFleet(), p2.ToPlayer());
 				var fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
 				var fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
 				Server.Log("Fleets in DB are:");
@@ -672,6 +675,7 @@ namespace GAME_Server {
 					this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 					this.User.Password = "";
 					Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
+					Client.Send(new GamePacket(OperationType.BASE_MODIFIERS, Server.BaseModifiers));
 
 					UserProcessing();	//main logic
 				}
@@ -694,12 +698,11 @@ namespace GAME_Server {
 				try {
 					playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
 				} catch (InvalidCastException) {
-					SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
+					SendFailure(FailureReasons.INVALID_PACKET);
 					return false;
 				}
 				//if type ok do login or register
 				if (packet.OperationType == OperationType.LOGIN) {
-					Server.Log("MMMMM  " + playerObject.Username + " " + playerObject.Password);
 					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
 						this.User = playerObject;
 						Server.Log("Succesfully logged in player: " + playerObject.Username);
@@ -765,13 +768,13 @@ namespace GAME_Server {
 				try {
 					gameSwitch: switch (gamePacket.OperationType) {
 						//====================================================== SHOP =====================================================================================================
-						case OperationType.GET_LOOTBOXES:       //dont care about internal packet
+						case OperationType.GET_LOOTBOXES:       //dont care about internal packet		//OK
 							Server.Log(User.Username + ": wants to view lootboxes");
 							List<DbLootBox> dbLootBoxes = GameDataBase.GetAllLootBoxes();
 							List<LootBox> lootBoxes = dbLootBoxes.Select(x => x.ToLootBox()).ToList();
 							Client.Send(new GamePacket(OperationType.GET_LOOTBOXES, lootBoxes));
 							break;
-						case OperationType.BUY:
+						case OperationType.BUY:                     //OK
 							LootBox targetLootBox;
 							targetLootBox = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + ": wants to buy lootbox " + targetLootBox.Name);
@@ -802,7 +805,7 @@ namespace GAME_Server {
 								Client.Send(new GamePacket(OperationType.BOUGHT_SHIPS, resultForPlayer));
 							}
 							break;
-						case OperationType.SELL_SHIP:
+						case OperationType.SELL_SHIP:                   //OK
 							Ship shipToSell = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + ": wants to sell ship with id " + shipToSell.Id + " for " + shipToSell.Cost);
 							DbShip dbShipToSell = GameDataBase.GetShipWithId(shipToSell.Id);
@@ -812,13 +815,13 @@ namespace GAME_Server {
 								thisUser.Money += shipValue;
 								User.Money += shipValue;
 								GameDataBase.UpdatePlayer(thisUser);
-
+								SendSuccess();
 							} else {
 								SendFailure(FailureReasons.INVALID_ID);
 							}
 							break;
 						//====================================================== FLEETS MENU =====================================================================================================
-						case OperationType.VIEW_FLEETS:         //dont care about internal packet
+						case OperationType.VIEW_FLEETS:         //dont care about internal packet		//OK
 							Server.Log(User.Username + ": wants to view his fleets");
 							List<DbFleet> userDbFleets = GameDataBase.GetAllFleetsOfPlayer(User);
 							List<Fleet> userFleets = userDbFleets.Select(x => x.ToFleet()).ToList();
@@ -831,29 +834,32 @@ namespace GAME_Server {
 							List<Ship> userShips = userDbShips.Select(x => x.ToShip()).ToList();
 							Client.Send(new GamePacket(OperationType.VIEW_ALL_PLAYER_SHIPS, userShips));
 							break;
-						case OperationType.ADD_FLEET:
+						case OperationType.ADD_FLEET:           //OK
 							Fleet fleetToAdd = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(fleetToAdd.Name);
 							Server.Log(User.Username + ": wants to add a new fleet");
-							validationResult = GameValidator.ValidateFleet(User, fleetToAdd, GameDataBase);
-							if(validationResult == GameValidator.OK) {  //fleet is ok
-								GameDataBase.AddFleet(fleetToAdd);
+							validationResult = GameValidator.ValidateFleet(User, fleetToAdd, GameDataBase, true);
+							if (validationResult == GameValidator.OK) {  //fleet is ok
+								GameDataBase.AddFleet(fleetToAdd, User);
+								SendSuccess();
 							}
 							else {
 								SendFailure(validationResult);
 							}
 							break;
-						case OperationType.UPDATE_FLEET:
+						case OperationType.UPDATE_FLEET:		//OK
 							Fleet fleetToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + ": wants to modify fleet with id " + fleetToUpdate.Id);
-							validationResult = GameValidator.ValidateFleet(User, fleetToUpdate, GameDataBase);
+							validationResult = GameValidator.ValidateFleet(User, fleetToUpdate, GameDataBase, false);
 							if (validationResult == GameValidator.OK) {  //fleet is ok
-								GameDataBase.UpdateFleet(GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, false));
+								GameDataBase.UpdateFleet(GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, User, false));
+								SendSuccess();
 							}
 							else {
 								SendFailure(validationResult);
 							}
 							break;
-						case OperationType.DELETE_FLEET:
+						case OperationType.DELETE_FLEET:		//OK
 							Fleet fleetToDelete = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + ": wants to delete fleet with id " + fleetToDelete.Id);
 							if (GameDataBase.RemoveFleetWithId(fleetToDelete.Id, false, User.Id)) SendSuccess();
@@ -867,7 +873,7 @@ namespace GAME_Server {
 							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
 							break;
 						//====================================================== PLAYER STATS =====================================================================================================
-						case OperationType.DISCONNECT:
+						case OperationType.DISCONNECT:          //OK
 							Server.Log(User.Username + ": wants to disconnect");
 							clientConnected = false;
 							break;
@@ -877,10 +883,11 @@ namespace GAME_Server {
 					}
 				}
 				catch (InvalidCastException) {
-					SendFailure(FailureReasons.INVALID_INTERNAL_PACKET);
+					SendFailure(FailureReasons.INVALID_PACKET);
 				}
 				catch (NullReferenceException ex) {			//null indicates that some object does not exist in DB and most likely that someone is manually passing fake object with fake IDs
-					Server.Log("NULL caught - someone(" + User.Username + ") is sending wrong id values - possible hacker!!! Exception message: " + ex.Message + " From:" + ex.Source, true);
+					Server.Log("NULL caught - " + User.Username + "is sending wrong id values - Exception message: " + ex.Message + " From:" + ex.Source, true);
+					Server.Log(ex.StackTrace);
 					SendFailure(FailureReasons.INVALID_ID);
 				}
 			}

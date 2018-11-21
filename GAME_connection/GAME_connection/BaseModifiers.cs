@@ -86,7 +86,7 @@ namespace GAME_connection {
 		}
 
 		/// <summary>
-		/// returns list af all values of given enum. Use like: GameEnumUtils.GetValues<Rarity>()
+		/// returns list af all values of given enum. Use like: GameEnumUtils.GetValues&lt;Rarity&gt;()
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>

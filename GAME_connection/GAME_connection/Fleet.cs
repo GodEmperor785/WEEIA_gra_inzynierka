@@ -14,10 +14,13 @@ namespace GAME_connection {
 
 		public Fleet() {}
 
-		public Fleet(int id, string name, Player owner, List<Ship> ships) {
+		public Fleet(string name, Player owner, List<Ship> ships) {
 			this.Owner = owner;
 			this.Ships = ships;
 			this.Name = name;
+		}
+
+		public Fleet(int id, string name, Player owner, List<Ship> ships) : this(name, owner, ships) {
 			this.Id = id;
 		}
 
