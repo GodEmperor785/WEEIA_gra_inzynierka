@@ -130,6 +130,7 @@ namespace Client_PC.Scenes
 
         public override IClickable GetClickable(Point xy)
         {
+            var z = Clickable.Where(p => p.Active).Where(p => p.GetBoundary().Contains(xy));
             return Clickable.Where(p => p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
         }
         public override void UpdateFields()
@@ -146,6 +147,7 @@ namespace Client_PC.Scenes
                 if (d.ShowChildren)
                 {
                     button.OnClick();
+                    d.Active = false;
                 }
                 else
                 {
@@ -153,14 +155,15 @@ namespace Client_PC.Scenes
                     d.Update();
                     dropClicked = true;
                     button.Active = false;
+                    d.Active = true;
                 }
             }
             else if (button.Parent is Dropdown)
             {
                 dropClicked = true;
                 Dropdown d = (Dropdown)button.Parent;
-                d.Active = true;
                 button.OnClick();
+               // d.Active = true;
             }
             else
             {

@@ -50,10 +50,12 @@ namespace Client_PC.UI
             if (ShowChildren)
             {
                 grid.Active = true;
+                this.Active = false;
                 Height = grid.Height;
             }
             else
             {
+                this.Active = true;
                 grid.Active = false;
                 Height = OriginalHeight;
             }
@@ -84,6 +86,7 @@ namespace Client_PC.UI
             IdSelected = n;
             Debug.WriteLine("BUtton id:\t"+ n);
             ShowChildren = false;
+            //this.Active = true;
         }
 
 
@@ -108,9 +111,11 @@ namespace Client_PC.UI
             if (ShowChildren)
             {
                 grid.Draw(spriteBatch);
+                
             }
             else
             {
+                
                 spriteBatch.Begin();
                 spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary,
                     Color.White);
