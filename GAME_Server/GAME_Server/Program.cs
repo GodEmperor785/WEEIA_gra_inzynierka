@@ -143,7 +143,7 @@ namespace GAME_Server {
 					ExpForVictory = 20,
 					ExpForLoss = 10,
 					FleetSizeExpModifier = 0.5,
-					BaseFleetMaxSize = 500,
+					BaseFleetMaxSize = 1000,
 					MaxAbsoluteFleetSize = 5000,
 					MaxShipExp = 1000,
 					MaxShipsInLine = 5,

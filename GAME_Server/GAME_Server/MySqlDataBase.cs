@@ -226,7 +226,7 @@ namespace GAME_Server {
 		}
 
 		public List<DbFleet> GetAllFleetsOfPlayer(Player player) {
-			var q1 = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
+			/*var q1 = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
 				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction)).Where(x => x.Owner.Id == player.Id);
 			var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)))
 				.Where(x => x.Owner.Id == player.Id);
@@ -235,11 +235,11 @@ namespace GAME_Server {
 			var basic = q1.ToList();
 			var weps = q2.ToList();
 			var defs = q3.ToList();
-			return basic;
-			/*var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id).ToList();
+			return basic;*/
+			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id).ToList();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id).ToList();
 			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id).ToList();
-			return q1;*/
+			return q1;
 		}
 
 		public List<DbShip> GetAllShips() {
