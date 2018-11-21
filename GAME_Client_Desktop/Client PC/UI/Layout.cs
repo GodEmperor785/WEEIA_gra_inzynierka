@@ -40,7 +40,10 @@ namespace Client_PC.UI
         }
         public GuiElement GetChild(int id)
         {
-            return Children.SingleOrDefault(p => p.element.Id == id).element;
+            if (Children.SingleOrDefault(p => p.element.Id == id) == null)
+                return null;
+            else
+                return Children.SingleOrDefault(p => p.element.Id == id).element;
         }
         public override void Draw(SpriteBatch spriteBatch)
         {

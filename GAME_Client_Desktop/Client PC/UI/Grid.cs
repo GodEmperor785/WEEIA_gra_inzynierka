@@ -156,6 +156,7 @@ namespace Client_PC.UI
                 row = row
             };
             ch.id = Children.Count;
+            element.Parent = this;
             Children.Add(ch);
             Update();
             UpdateChildren();
@@ -172,6 +173,7 @@ namespace Client_PC.UI
             };
             ch.id = Children.Count;
             Children.Add(ch);
+            element.Parent = this;
             Update();
             UpdateChildren();
         }
@@ -186,6 +188,7 @@ namespace Client_PC.UI
             ch.name = name;
             ch.id = Children.Count;
             Children.Add(ch);
+            element.Parent = this;
             Update();
             UpdateChildren();
         }
@@ -201,6 +204,7 @@ namespace Client_PC.UI
             
             ch.id = Children.Count;
             ch.row = Rows;
+            element.Parent = this;
             Children.Add(ch);
             Update();
             UpdateChildren();
@@ -223,7 +227,11 @@ namespace Client_PC.UI
 
                 ch.id = Children.Count;
                 if (Children.Count < ChildMaxAmount)
+                {
                     Children.Add(ch);
+                    element.Parent = this;
+                }
+
                 if (element is Card)
                 {
                     Card c = (Card) element;
@@ -248,7 +256,6 @@ namespace Client_PC.UI
                 UpdateChildren();
             }
         }
-
         public void AddChild(GuiElement element, bool tooltip)
         {
             if (MaxChildren)
@@ -267,7 +274,11 @@ namespace Client_PC.UI
 
                 ch.id = Children.Count;
                 if (Children.Count < ChildMaxAmount)
+                {
                     Children.Add(ch);
+                    element.Parent = this;
+                }
+
                 if (element is Card)
                 {
                     Card c = (Card)element;
@@ -294,6 +305,7 @@ namespace Client_PC.UI
 
             
         }
+
         public void PrintChildren()
         {
             Children.ForEach(p=> p.print());
@@ -338,7 +350,6 @@ namespace Client_PC.UI
             List<Child> l = Children.Where(p => p.element == element).ToList();
             l.ForEach(p=> Children.Remove(p));
         }
-
         public void RemoveChildren()
         {
             Children = new List<Child>();

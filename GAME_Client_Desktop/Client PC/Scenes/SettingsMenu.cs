@@ -74,6 +74,7 @@ namespace Client_PC.Scenes
             grid.ResizeChildren();
             drop.ResizeChildren();
             int z = 243123;
+            SetClickables(true);
         }
 
         public void SetMenus(List<Menu> menuList)
@@ -102,6 +103,7 @@ namespace Client_PC.Scenes
                     conf.Resolution = Constants.fullhd;
                 }
             }
+            Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, width, height);
             Game1.self.graphics.PreferredBackBufferHeight = height;
             Game1.self.graphics.PreferredBackBufferWidth = width;
             Game1.self.graphics.ApplyChanges();
@@ -109,7 +111,7 @@ namespace Client_PC.Scenes
             {
                 p.Reinitialize(Game1.self.Content);
             });
-            Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
+            
 
             TextWriter writer = new StreamWriter("Config");
             XmlSerializer xml = new XmlSerializer(typeof(Config));

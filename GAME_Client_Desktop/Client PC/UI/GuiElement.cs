@@ -23,7 +23,8 @@ namespace Client_PC.UI
         public Texture2D Texture { get; set; }
         public int Id { get; set; }
         public virtual void Draw(SpriteBatch sp) { }
-        
+        public bool DrawBackground { get; set; }
+        public object Parent { get; set; }
         public GuiElement()
         {
         }
@@ -39,6 +40,8 @@ namespace Client_PC.UI
             {
                 Texture = Texture2D.FromStream(Game1.self.GraphicsDevice, st);
             }
+
+            DrawBackground = true;
         }
 
         public GuiElement(int width, int height, GraphicsDevice device, GUI gui)
@@ -47,6 +50,7 @@ namespace Client_PC.UI
             Height = height;
             Device = device;
             Gui = gui;
+            DrawBackground = true;
         }
 
         protected virtual String parseText(String text, SpriteFont Font)

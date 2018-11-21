@@ -40,6 +40,11 @@ namespace Client_PC.UI
             Font = font;
             TextWrappable = wrapable;
         }
+        public Label(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
+        {
+            Font = font;
+            TextWrappable = wrapable;
+        }
         /*
         public override void Update()
         {
@@ -62,7 +67,8 @@ namespace Client_PC.UI
         {
             this.Update();
             spriteBatch.Begin();
-            spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
+            if(DrawBackground)
+                spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
             if(text != null)
                 spriteBatch.DrawString(Font, parseText(Text,Font), TextPosition, Color.Black);
             spriteBatch.End();

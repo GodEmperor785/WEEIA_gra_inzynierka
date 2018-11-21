@@ -58,6 +58,7 @@ namespace Client_PC.Scenes
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
             grid.ResizeChildren();
+            SetClickables(true);
         }
 
         public void Play()
@@ -84,6 +85,7 @@ namespace Client_PC.Scenes
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
+            SetClickables(true);
         }
         public void Draw(GameTime gameTime)
         {

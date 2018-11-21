@@ -430,6 +430,7 @@ namespace Client_PC.Scenes
         {
             gridRightBottom.UpdateP();
             gridRight.UpdateP();
+            SetClickables(true);
         }
         public void Draw(GameTime gameTime)
         {

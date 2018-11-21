@@ -15,7 +15,9 @@ namespace Client_PC.Scenes
     class LoginMenu : Menu
     {
         private Grid grid;
-
+        private Popup popup;
+        private InputBox inputLogin;
+        private InputBox inputPassword;
 
         public override void Initialize(ContentManager Content)
         {
@@ -28,9 +30,9 @@ namespace Client_PC.Scenes
             {
                 Text = "Password"
             };
-            InputBox inputLogin = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
+            inputLogin = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
             inputLogin.TextLimit = 30;
-            InputBox inputPassword = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            inputPassword = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             inputPassword.TextLimit = 30;
             Button loginButton = new Button(new Point(0,0),105,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
@@ -44,6 +46,27 @@ namespace Client_PC.Scenes
             {
                 Text = "Exit"
             };
+
+            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferHeight * 0.25), (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.25)),100,400,Game1.self.GraphicsDevice,Gui);
+            Grid popupGrid = new Grid();
+            Label lbl1 = new Label(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Incorrect login or password"
+            };
+            Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Exit"
+            };
+            lbl1.DrawBackground = false;
+            b1.DrawBackground = false;
+            popup.grid = popupGrid;
+            popupGrid.AddChild(lbl1,0,0);
+            popupGrid.AddChild(b1, 1, 0);
+            b1.clickEvent += onPopupExit;
+            Clickable.Add(b1);
+            popup.SetToGrid();
+
+
             Clickable.Add(inputLogin);
             Clickable.Add(inputPassword);
             Clickable.Add(loginButton);
@@ -65,6 +88,26 @@ namespace Client_PC.Scenes
             exitButton.clickEvent += ExitClick;
             registerButton.clickEvent += RegisterClick;
             grid.ResizeChildren();
+            SetClickables(true);
+        }
+
+        public void onPopupExit()
+        {
+            popup.SetActive(false);
+            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            {
+                clickable.Active = true;
+            }
+        }
+
+        protected override void SetClickables(bool active)
+        {
+            foreach (var clickable in Clickable)
+            {
+                clickable.Active = active;
+                if (clickable.Parent == popup.grid)
+                    clickable.Active = !active;
+            }
         }
 
         public void RefResh()
@@ -75,11 +118,16 @@ namespace Client_PC.Scenes
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
+            SetClickables(!popup.Active);
         }
         public void Draw(GameTime gameTime)
         {
            
             grid.Draw(Game1.self.spriteBatch);
+            if (popup.Active)
+            {
+                popup.Draw(Game1.self.spriteBatch);
+            }
         }
         public void ExitClick()
         {
@@ -87,8 +135,18 @@ namespace Client_PC.Scenes
         }
 
         public void LoginClick()
-        { 
-            Game1.self.state = Game1.State.MainMenu;
+        {
+            if (inputLogin.Text == "1" && inputPassword.Text == "1")
+            {
+                Game1.self.state = Game1.State.MainMenu;
+            }
+            else
+            {
+                popup.SetActive(true);
+                inputLogin.Text = "";
+                inputPassword.Text = "";
+                SetClickables(false);
+            }
         }
 
         public void RegisterClick()

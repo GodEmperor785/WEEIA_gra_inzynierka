@@ -40,6 +40,10 @@ namespace Client_PC.Scenes
             UpdateGrid();
         }
 
+        protected virtual void SetClickables(bool active)
+        {
+            Clickable.ForEach(p=> p.Active = active);
+        }
         private void CheckClickables(MouseState mouseState)
         {
             int x = mouseState.X;
@@ -77,6 +81,7 @@ namespace Client_PC.Scenes
         }
         public void Reinitialize(ContentManager Content)
         {
+            Clickable.Clear();
             Initialize(Content);
         }
         public virtual void UpdateGrid()
@@ -91,7 +96,7 @@ namespace Client_PC.Scenes
         public virtual IClickable GetClickable(Point xy)
         {
             
-            IClickable click = Clickable.FirstOrDefault(p => p.GetBoundary().Contains(xy));
+            IClickable click = Clickable.Where(p=> p.Active).FirstOrDefault(p => p.GetBoundary().Contains(xy));
            
             return click;
         }

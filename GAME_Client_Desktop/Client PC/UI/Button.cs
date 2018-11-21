@@ -40,12 +40,18 @@ namespace Client_PC.UI
         public event ElementClicked clickEvent;
         public SpriteFont Font { get; set; }
         public bool Active { get; set; }
-        public object Parent { get; set; }
+        
         public bool ActiveChangeable { get; set; }
         public bool TextWrappable { get; set; }
         public Tooltip Tooltip { get; set; }
         public event ElementClickedInt clickEventInt;
         public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin,width,height,device,gui)
+        {
+            Font = font;
+            ActiveChangeable = true;
+            TextWrappable = wrapable;
+        }
+        public Button(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
         {
             Font = font;
             ActiveChangeable = true;
@@ -60,7 +66,8 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
-            spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
+            if(DrawBackground)
+                spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
             if (!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
             spriteBatch.End();
