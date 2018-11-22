@@ -441,6 +441,7 @@ namespace Client_PC.UI
             {
                 child.row-=1;
             }
+            UpdateChildren();
         }
 
         private void MoveRowDown()
@@ -449,6 +450,7 @@ namespace Client_PC.UI
             {
                 child.row+=1;
             }
+            UpdateChildren();
         }
         public void UpdateP()
         {
@@ -541,8 +543,26 @@ namespace Client_PC.UI
                     child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),this.Origin.Y + (int)RowOffset(child.row));
                 else
                 {
-                    if(child.row < VisibleRows)
-                        child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column), this.Origin.Y + (int)RowOffset(child.row));
+                    if (child.row < VisibleRows && child.row >= 0)
+                    {
+                        child.element.Origin = new Point(this.Origin.X + (int) ColumnOffset(child.column),
+                            this.Origin.Y + (int) RowOffset(child.row));
+                        if (child.element is IClickable)
+                        {
+                            IClickable c = (IClickable) child.element;
+                            c.Active = true;
+                        }
+                    }
+                    else
+                    {
+                        child.element.Origin = new Point(this.Origin.X + (int)ColumnOffset(child.column),
+                            this.Origin.Y + (int)RowOffset(child.row));
+                        if (child.element is IClickable)
+                        {
+                            IClickable c = (IClickable)child.element;
+                            c.Active = false;
+                        }
+                    }
                 }
                 if (child.element is Grid)
                 {
@@ -639,6 +659,7 @@ namespace Client_PC.UI
             }
             else
             {
+                UpdateActive(false);
                 List<Child> childrenToShow = Children.Where(p => p.row >= 0 && p.row < VisibleRows).ToList();
                 foreach (var child in childrenToShow)
                 {
@@ -647,6 +668,11 @@ namespace Client_PC.UI
                         int z = 0;
                     }
                     child.element.Draw(spriteBatch);
+                    if (child.element is IClickable)
+                    {
+                        IClickable c = (IClickable) child.element;
+                        c.Active = true;
+                    }
                 }
             }
         }

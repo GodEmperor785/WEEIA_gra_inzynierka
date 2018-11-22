@@ -233,7 +233,7 @@ namespace Client_PC.Scenes
         {
             ClearTopGrid();
             ShipsInTop.Clear();
-            Console.WriteLine(ShipsInBot.Count);
+            //Console.WriteLine(ShipsInBot.Count);
             ChosenDeck = null;
             ClearBotGrid();
             ShipsInBot.Clear();
@@ -264,9 +264,13 @@ namespace Client_PC.Scenes
             //Console.WriteLine("-----------------GridTopLeft-----------------");
            // gridTopLeft.PrintChildren();
 
-            Console.WriteLine(Clickable.Count());
+           // Console.WriteLine(Clickable.Count());
         }
 
+        private void RefreshClickables()
+        {
+
+        }
         private void UpClick()
         {
            // Console.WriteLine(-1);

@@ -42,7 +42,12 @@ namespace Client_PC.Scenes
 
         protected virtual void SetClickables(bool active)
         {
-            Clickable.ForEach(p=> p.Active = active);
+            foreach (var clickable in Clickable)
+            {
+                if (!(clickable is Card))
+                    clickable.Active = active;
+            }
+
         }
         private void CheckClickables(MouseState mouseState)
         {

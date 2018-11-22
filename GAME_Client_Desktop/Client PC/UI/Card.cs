@@ -117,12 +117,18 @@ namespace Client_PC.UI
 
         public void ChangeParent(Grid from, Grid to)
         {
-            from.RemoveChild(this);
-            to.AddChild(this);
+            if (to.CanHaveMoreChildren())
+            {
+                from.RemoveChild(this);
+                to.AddChild(this);
+                this.Active = false;
+                Console.WriteLine(1);
+            }
         }
         public void OnClick()
         {
-            clickEvent(this);
+            if(Active)
+                clickEvent(this);
         }
 
         public Ship GetShip()
