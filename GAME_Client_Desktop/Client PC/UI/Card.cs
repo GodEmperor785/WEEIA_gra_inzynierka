@@ -93,9 +93,9 @@ namespace Client_PC.UI
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
+            //spriteBatch.Begin();
             spriteBatch.Draw(Texture, Boundary, Color.White);
-            spriteBatch.End();
+            //spriteBatch.End();
             overlay.Draw(spriteBatch);
         }
         public override void Update()

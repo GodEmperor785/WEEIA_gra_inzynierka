@@ -59,11 +59,11 @@ namespace Client_PC.UI
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
+            //spriteBatch.Begin();
             spriteBatch.Draw(Texture, Boundary, Color.White);
             if(!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
-            spriteBatch.End();
+            //spriteBatch.End();
         }
     }
 }

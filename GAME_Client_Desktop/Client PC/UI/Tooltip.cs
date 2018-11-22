@@ -60,6 +60,8 @@ namespace Client_PC.UI
                 }
 
                 parseText(text, Font);
+                if (NeedNewTexture)
+                    Texture = Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black);
             }
         }
         protected override String parseText(String text, SpriteFont Font)
@@ -103,11 +105,11 @@ namespace Client_PC.UI
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
-            spriteBatch.Draw(Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black), Boundary, Color.Beige);
+            //spriteBatch.Begin();
+            spriteBatch.Draw(Texture, Boundary, Color.Beige);
             if (!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, parseText(text,Font), textPosition, Color.Black);
-            spriteBatch.End();
+           // spriteBatch.End();
         }
     }
 }

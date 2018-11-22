@@ -59,6 +59,9 @@ namespace Client_PC.UI
                 grid.Active = false;
                 Height = OriginalHeight;
             }
+
+            if (NeedNewTexture)
+                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
         }
 
         public void ResizeChildren()
@@ -116,9 +119,8 @@ namespace Client_PC.UI
             else
             {
                 
-                spriteBatch.Begin();
-                spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary,
-                    Color.White);
+                //spriteBatch.Begin();
+                spriteBatch.Draw(Texture, Boundary, Color.White);
                 if (IdSelected != -1)
                 {
                     GuiElement el = grid.GetChild(IdSelected);
@@ -132,7 +134,7 @@ namespace Client_PC.UI
                     }
                     
                 }
-                spriteBatch.End();
+                //spriteBatch.End();
             }
         }
 

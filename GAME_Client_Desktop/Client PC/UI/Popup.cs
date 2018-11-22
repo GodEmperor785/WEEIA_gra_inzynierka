@@ -45,9 +45,9 @@ namespace Client_PC.UI
 
         public override void Draw(SpriteBatch sp)
         {
-            sp.Begin();
+            //sp.Begin();
             sp.Draw(Background, Origin.ToVector2(), Color.White);
-            sp.End();
+            //sp.End();
             
             grid.Draw(sp);
         }

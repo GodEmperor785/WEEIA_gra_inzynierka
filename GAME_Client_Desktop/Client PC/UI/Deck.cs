@@ -86,7 +86,7 @@ namespace Client_PC.UI
 
         public override void Draw(SpriteBatch sp)
         {
-            sp.Begin();
+            //sp.Begin();
             if (Game1.self.FocusedElement == this)
             {
                 sp.Draw(Texture, Boundary, Color.White);
@@ -97,7 +97,7 @@ namespace Client_PC.UI
             }
             if (!String.IsNullOrEmpty(Text))
                 sp.DrawString(Font, Text, TextPosition, Color.Black);
-            sp.End();
+            //sp.End();
         }
     }
 }

@@ -303,7 +303,7 @@ namespace Client_PC
             Game1.self.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             //Darker.CurrentTechnique.Passes[0].Apply();
             Game1.self.spriteBatch.Draw(Game1.self.Wallpaper, new Vector2(0, 0), Color.White);
-            Game1.self.spriteBatch.End();
+            
             switch (state)
             {
                 case State.MainMenu:
@@ -331,6 +331,7 @@ namespace Client_PC
                 tooltipToDraw.Draw(spriteBatch);
             }
             base.Draw(gameTime);
+            Game1.self.spriteBatch.End();
         }
     }
 }

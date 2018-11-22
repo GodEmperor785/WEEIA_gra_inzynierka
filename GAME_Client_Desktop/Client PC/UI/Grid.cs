@@ -621,9 +621,9 @@ namespace Client_PC.UI
                 if (Background == null)
                     Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.Black,
                         BorderSize, 0);
-                spriteBatch.Begin();
+                //spriteBatch.Begin();
                 spriteBatch.Draw(Background, Boundary, Color.White);
-                spriteBatch.End();
+                //spriteBatch.End();
             }
 
             if (AllVisible)

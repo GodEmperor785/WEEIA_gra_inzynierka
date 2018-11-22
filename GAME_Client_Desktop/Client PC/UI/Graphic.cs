@@ -19,12 +19,12 @@ namespace Client_PC.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
+           // spriteBatch.Begin();
             if(Texture != null)
                 spriteBatch.Draw(Texture, Position, scale: Scale);
             if (Text != null)
                 spriteBatch.DrawString(Font, Text, Position, Color.Black);
-            spriteBatch.End();
+            //spriteBatch.End();
         }
     }
 }

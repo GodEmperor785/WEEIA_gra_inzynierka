@@ -67,12 +67,12 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             this.Update();
-            spriteBatch.Begin();
+           // spriteBatch.Begin();
             if(DrawBackground)
                 spriteBatch.Draw(Texture, Boundary, Color.White);
             if(text != null)
                 spriteBatch.DrawString(Font, parseText(Text,Font), TextPosition, Color.Black);
-            spriteBatch.End();
+            //spriteBatch.End();
         }
 
         public override void Update()
