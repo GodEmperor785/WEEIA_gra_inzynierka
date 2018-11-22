@@ -53,7 +53,9 @@
     <Compile Include="LootBox.cs" />
     <Compile Include="Operations.cs" />
     <Compile Include="Player.cs" />
+    <Compile Include="PublicKeys.cs" />
     <Compile Include="Ship.cs" />
+    <Compile Include="SslUtils.cs" />
     <Compile Include="TcpConnection.cs" />
     <Compile Include="GamePacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

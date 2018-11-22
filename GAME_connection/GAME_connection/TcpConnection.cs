@@ -10,6 +10,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Security.Principal;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using System.Security.Authentication;
 
 namespace GAME_connection {
 	/// <summary>
@@ -25,10 +29,13 @@ namespace GAME_connection {
 		private static readonly int connectionTestIntervalMilis = 5000;
 
 		private TcpClient tcpClient;
-		private NetworkStream netStream;
+		//private NetworkStream netStream;
+		private Stream netStream;
 		private IFormatter serializer;
 		private string remoteIpAddress;
 		private int remotePortNumber;
+		private X509Certificate serverCertificateObject;
+		private string serverCertificatePublicKey;
 
 		private readonly object sendLock = new object();
 		private readonly object receiveLock = new object();
@@ -49,34 +56,113 @@ namespace GAME_connection {
 		private bool connectionEnded;
 		private bool alreadyDisconnected;
 
+		public delegate void Logger(string message);
+		private bool debug;
+		internal Logger tcpConnectionLogger;
+
 		#region Constructor
 		/// <summary>
 		/// Creates all necessary variables and threads for game connection, requires connected <see cref="System.Net.Sockets.TcpClient"/>.
 		/// </summary>
 		/// <param name="client">connected <see cref="System.Net.Sockets.TcpClient"/></param>
 		/// <param name="isClient">true if used on the client side - clients send  <see cref="OperationType.CONNECTION_TEST"/> packets to server</param>
-		public TcpConnection(TcpClient client, bool isClient) {
+		/// <param name="logger">method to log messages in this object</param>
+		/// <param name="printDebugInfo">prints debug info to console if <see langword="true"/></param>
+		/// <param name="useSSL">if <see langword="true"/> uses <see cref="SslStream"/> instead of bare <see cref="NetworkStream"/>, defaults to <see langword="false"/></param>
+		/// <param name="sslCertificatePath"> specifies path to .cer file containing servers certificate</param>
+		public TcpConnection(TcpClient client, bool isClient, Logger logger, bool printDebugInfo = true, bool useSSL = false, string sslCertificatePath = null) {
 			this.TcpClient = client;
-			this.NetStream = client.GetStream();
+			try {
+				tcpConnectionLogger = logger;
+				debug = printDebugInfo;
+				if (useSSL) {
+					if (!isClient && !SslUtils.IsAdministrator()) throw new NotAdministratorException("You need to run server application as local administartor if you want to use SSL!");
+					if (!isClient) {
+						serverCertificateObject = SslUtils.LoadServerCertificate(sslCertificatePath, printDebugInfo, logger);
+						SslStream sslStream = new SslStream(client.GetStream(), false);
+						sslStream.AuthenticateAsServer(serverCertificateObject);
+						this.NetStream = sslStream;
+					}
+					else {
+						PublicKeys.SetUsedPublicKey(PublicKeys.SERVER_CERTIFICATE_PUBLIC_KEY_STRING_HAMACHI);   //modify this in order to change location of server application
+						serverCertificatePublicKey = PublicKeys.USED_PUBLIC_KEY;
+						SslStream sslStream = new SslStream(client.GetStream(), false, new RemoteCertificateValidationCallback(SslUtils.ValidateServerCertificateNoImport), null);
+						sslStream.AuthenticateAsClient(PublicKeys.PublicKeysToServerName[PublicKeys.USED_PUBLIC_KEY]);
+						this.NetStream = sslStream;
+					}
+				}
+				else {
+					this.NetStream = client.GetStream();
+				}
 
-			IPEndPoint ipData = client.Client.RemoteEndPoint as IPEndPoint;
-			this.RemoteIpAddress = ipData.Address.ToString();
-			this.RemotePortNumber = ipData.Port;
-			this.serializer = new BinaryFormatter();
-			this.messageReceivedEvent = new AutoResetEvent(false);
-			this.connectionEndedEvent = new AutoResetEvent(false);
+				IPEndPoint ipData = client.Client.RemoteEndPoint as IPEndPoint;
+				this.RemoteIpAddress = ipData.Address.ToString();
+				this.RemotePortNumber = ipData.Port;
+				this.serializer = new BinaryFormatter();
+				this.messageReceivedEvent = new AutoResetEvent(false);
+				this.connectionEndedEvent = new AutoResetEvent(false);
 
-			alreadyDisconnected = false;
-			keepReceiving = true;
-			RemotePlannedDisconnect = false;
-			receiver = new Thread(new ThreadStart(DoReceiving));
-			receiver.Start();
+				alreadyDisconnected = false;
+				keepReceiving = true;
+				RemotePlannedDisconnect = false;
+				receiver = new Thread(new ThreadStart(DoReceiving));
+				receiver.Start();
 
-			if(isClient) {
-				keepTestingConnection = true;
-				connectionTester = new Thread(new ThreadStart(DoTestConnection));
-				connectionTester.Start();
+				if (isClient) {
+					keepTestingConnection = true;
+					connectionTester = new Thread(new ThreadStart(DoTestConnection));
+					connectionTester.Start();
+				}
+			} catch(AuthenticationException) {
+				client.Close();
+				throw;
 			}
+		}
+		#endregion
+
+		#region Creator methods
+		private static void Log(string message) {
+			Console.WriteLine(message);
+		}
+
+		public static TcpConnection CreateDefaultTcpConnectionForClient(TcpClient client) {
+			return new TcpConnection(client, true, Log);
+		}
+		
+		public static TcpConnection CreateDefaultTcpConnectionForServer(TcpClient client) {
+			return new TcpConnection(client, false, Log);
+		}
+
+		public static TcpConnection CreateDefaultTcpConnectionForClientNoDebug(TcpClient client) {
+			return new TcpConnection(client, true, Log, printDebugInfo: false);
+		}
+
+		public static TcpConnection CreateDefaultTcpConnectionForServerNoDebug(TcpClient client) {
+			return new TcpConnection(client, false, Log, printDebugInfo: false);
+		}
+
+		public static TcpConnection CreateCustomLoggerTcpConnectionForClient(TcpClient client, Logger logger) {
+			return new TcpConnection(client, true, logger);
+		}
+
+		public static TcpConnection CreateCustomLoggerTcpConnectionForServer(TcpClient client,  Logger logger) {
+			return new TcpConnection(client, false, logger);
+		}
+
+		public static TcpConnection CreateCustomLoggerTcpConnectionForClientNoDebug(TcpClient client, Logger logger) {
+			return new TcpConnection(client, true, logger, printDebugInfo: false);
+		}
+
+		public static TcpConnection CreateCustomLoggerTcpConnectionForServerNoDebug(TcpClient client, Logger logger) {
+			return new TcpConnection(client, false, logger, printDebugInfo: false);
+		}
+
+		public static TcpConnection CreateSslTcpConnectionForClient(TcpClient client, Logger logger, bool printDebug) {
+			return new TcpConnection(client, true, logger, printDebugInfo: printDebug, useSSL: true);
+		}
+
+		public static TcpConnection CreateSslTcpConnectionForServer(TcpClient client, Logger logger, bool printDebug, string certificatePath) {
+			return new TcpConnection(client, false, logger, printDebugInfo: printDebug, useSSL: true, sslCertificatePath: certificatePath);
 		}
 		#endregion
 
@@ -92,11 +178,11 @@ namespace GAME_connection {
 					serializer.Serialize(netStream, packet);
 				}
 			} catch (IOException ex) {
-				Console.WriteLine("Connection ended");
+				if(debug) tcpConnectionLogger("Connection ended");
 				//Console.WriteLine(ex.StackTrace);
 				connectionEnded = true;
 			} catch (SerializationException ex2) {
-				Console.WriteLine("Connection ended");
+				if (debug) tcpConnectionLogger("Connection ended");
 				//Console.WriteLine(ex2.StackTrace);
 				connectionEnded = true;
 			}
@@ -165,12 +251,12 @@ namespace GAME_connection {
 					}
 					if (receivedPacket.OperationType == OperationType.DISCONNECT) KeepReceiving = false;        //stop receiving if disconnect
 				} catch(IOException ex) {
-					Console.WriteLine("Connection ended");
+					if (debug) tcpConnectionLogger("Connection ended");
 					//Console.WriteLine(ex.StackTrace);
 					connectionEnded = true;
 					break;
 				} catch (SerializationException ex2) {
-					Console.WriteLine("Connection ended");
+					if (debug) tcpConnectionLogger("Connection ended");
 					//Console.WriteLine(ex2.StackTrace);
 					connectionEnded = true;
 					break;
@@ -218,12 +304,12 @@ namespace GAME_connection {
 					connectionEndedEvent.WaitOne(connectionTestIntervalMilis);
 					//Thread.Sleep(connectionTestIntervalMilis);
 				} catch (IOException ex) {
-					Console.WriteLine("Connection ended");
+					if (debug) tcpConnectionLogger("Connection ended");
 					//Console.WriteLine(ex.StackTrace);
 					connectionEnded = true;
 					break;
 				} catch (SerializationException ex2) {
-					Console.WriteLine("Connection ended");
+					if (debug) tcpConnectionLogger("Connection ended");
 					//Console.WriteLine(ex2.StackTrace);
 					connectionEnded = true;
 					break;
@@ -248,7 +334,7 @@ namespace GAME_connection {
 		#endregion
 
 		public TcpClient TcpClient { get => tcpClient; set => tcpClient = value; }
-		public NetworkStream NetStream { get => netStream; set => netStream = value; }
+		public Stream NetStream { get => netStream; set => netStream = value; }
 		public string RemoteIpAddress { get => remoteIpAddress; set => remoteIpAddress = value; }
 		public int RemotePortNumber { get => remotePortNumber; set => remotePortNumber = value; }
 		public bool RemotePlannedDisconnect { get => remotePlannedDisconnect; set => remotePlannedDisconnect = value; }
@@ -301,11 +387,11 @@ namespace GAME_connection {
 		public void Dispose() {
 			TcpClient.Dispose();
 
-			//Console.WriteLine("0");
+			//if(debug) tcpConnectionLogger("0");
 			if (connectionTester != null) connectionTester.Join();
-			//Console.WriteLine("1");
+			//if(debug) tcpConnectionLogger("1");
 			if (receiver.ManagedThreadId != Thread.CurrentThread.ManagedThreadId) receiver.Join();
-			//Console.WriteLine("2");
+			//if(debug) tcpConnectionLogger("2");
 			AlreadyDisconnected = true;
 		}
 		#endregion

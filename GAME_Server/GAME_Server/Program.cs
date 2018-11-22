@@ -82,7 +82,7 @@ namespace GAME_Server {
 			while (continueAcceptingConnections) {
 				Log("Server is waiting for client...");
 				TcpClient client = listener.AcceptTcpClient();
-				TcpConnection gameClient = new TcpConnection(client, false);
+				TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
 				Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
 				//Thread t = new Thread(new ParameterizedThreadStart(Test));

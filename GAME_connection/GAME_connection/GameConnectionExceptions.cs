@@ -50,4 +50,10 @@ namespace GAME_connection {
 		public int PlayerNumber { get => playerNumber; set => playerNumber = value; }
 	}
 
+	public class NotAdministratorException : Exception {
+		public NotAdministratorException() { }
+
+		public NotAdministratorException(string message) : base(message) { }
+	}
+
 }
