@@ -25,6 +25,20 @@ namespace Client_PC.UI
         public virtual void Draw(SpriteBatch sp) { }
         public bool DrawBackground { get; set; }
         public object Parent { get; set; }
+
+        public bool NeedNewTexture
+        {
+            get
+            {
+                if (Texture == null)
+                    return true;
+                if (Texture.Width != Width || Texture.Height != Height)
+                    return true;
+                else
+                    return false;
+            }
+        }
+
         public GuiElement()
         {
         }
@@ -36,11 +50,6 @@ namespace Client_PC.UI
             Height = height;
             Device = device;
             Gui = gui;
-            using (FileStream st = new FileStream("Content/Graphics/Button/ButtonTexture.png", FileMode.Open))
-            {
-                Texture = Texture2D.FromStream(Game1.self.GraphicsDevice, st);
-            }
-
             DrawBackground = true;
         }
 

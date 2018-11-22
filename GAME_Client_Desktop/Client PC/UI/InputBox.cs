@@ -50,6 +50,8 @@ namespace Client_PC.UI
         {
             Vector2 z = Font.MeasureString(textToShow);
             TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
+            if (NeedNewTexture)
+                Texture = Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black);
         }
         public void OnClick()
         {
@@ -58,7 +60,7 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
-            spriteBatch.Draw(Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
+            spriteBatch.Draw(Texture, Boundary, Color.White);
             if(!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
             spriteBatch.End();

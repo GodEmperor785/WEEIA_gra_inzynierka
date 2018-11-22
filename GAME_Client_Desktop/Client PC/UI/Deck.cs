@@ -22,6 +22,8 @@ namespace Client_PC.UI
         public bool TextWrappable { get; set; }
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }
+        private bool focused;
+        private bool lastStateOfFocus;
         public object Parent { get; set; }
         public Tooltip Tooltip { get; set; }
         private List<Ship> ships;
@@ -35,6 +37,7 @@ namespace Client_PC.UI
         public void OnClick()
         {
             clickEvent(this);
+            focused = true;
         }
 
         public void SetShips(List<Ship> newShips)
@@ -49,6 +52,22 @@ namespace Client_PC.UI
         public override void Update()
         {
             Update(Text, ref textPosition, Font);
+            focused = Game1.self.FocusedElement == this;
+            bool changeOfFocus = focused != lastStateOfFocus;
+            if (focused)
+            {
+                if(changeOfFocus || NeedNewTexture)
+                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, new Color(140, 140, 140),
+                    new Color(60, 60, 60));
+            }
+            else
+            {
+                if(changeOfFocus || NeedNewTexture)
+                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, new Color(180, 180, 180),
+                    new Color(100, 100, 100));
+            }
+
+            lastStateOfFocus = focused;
         }
 
         public void AddShip(Ship s)
@@ -70,11 +89,11 @@ namespace Client_PC.UI
             sp.Begin();
             if (Game1.self.FocusedElement == this)
             {
-                sp.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black, new Color(140, 140, 140), new Color(60, 60, 60)), Boundary, Color.White);
+                sp.Draw(Texture, Boundary, Color.White);
             }
             else
             {
-                sp.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black, new Color(180, 180, 180), new Color(100, 100, 100)), Boundary, Color.White);
+                sp.Draw(Texture, Boundary, Color.White);
             }
             if (!String.IsNullOrEmpty(Text))
                 sp.DrawString(Font, Text, TextPosition, Color.Black);

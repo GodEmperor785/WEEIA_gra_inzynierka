@@ -42,6 +42,7 @@ namespace Client_PC
         internal object graphicsDevice;
         internal IClickable FocusedElement;
         internal Texture2D Wallpaper;
+        public Effect Darker;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
         List<Menu> menus = new List<Menu>();
         public Game1()
@@ -150,6 +151,7 @@ namespace Client_PC
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            Darker = Content.Load<Effect>("Shaders/GrayScaleShader");
             // TODO: use this.Content to load your game content here
         }
 
@@ -298,7 +300,8 @@ namespace Client_PC
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            Game1.self.spriteBatch.Begin();
+            Game1.self.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            //Darker.CurrentTechnique.Passes[0].Apply();
             Game1.self.spriteBatch.Draw(Game1.self.Wallpaper, new Vector2(0, 0), Color.White);
             Game1.self.spriteBatch.End();
             switch (state)

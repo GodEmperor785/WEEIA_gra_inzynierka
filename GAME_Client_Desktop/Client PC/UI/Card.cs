@@ -94,7 +94,7 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
-            spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
+            spriteBatch.Draw(Texture, Boundary, Color.White);
             spriteBatch.End();
             overlay.Draw(spriteBatch);
         }
@@ -111,6 +111,8 @@ namespace Client_PC.UI
 
             Graphic armorText = (Graphic) overlay.GetChild("armorText");
             armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
+            if (NeedNewTexture)
+                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
         }
 
         public void ChangeParent(Grid from, Grid to)

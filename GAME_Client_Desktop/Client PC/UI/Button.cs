@@ -60,6 +60,8 @@ namespace Client_PC.UI
         public override void Update()
         {
             Update(text, ref textPosition, Font);
+            if(NeedNewTexture)
+                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
         }
 
 
@@ -67,7 +69,7 @@ namespace Client_PC.UI
         {
             spriteBatch.Begin();
             if(DrawBackground)
-                spriteBatch.Draw(Util.CreateTexture(Device,Width,Height, pixel => Color.Black),Boundary,Color.White);
+                spriteBatch.Draw(Texture, Boundary,Color.White);
             if (!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
             spriteBatch.End();

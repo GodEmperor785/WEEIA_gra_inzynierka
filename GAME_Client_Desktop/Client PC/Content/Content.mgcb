@@ -41,3 +41,9 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/small.spritefont
 
+#begin Shaders/File.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Shaders/File.fx;Shaders/GrayScaleShader.fx
+

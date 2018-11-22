@@ -63,12 +63,13 @@ namespace Client_PC.UI
             }
         }
         */
+        
         public override void Draw(SpriteBatch spriteBatch)
         {
             this.Update();
             spriteBatch.Begin();
             if(DrawBackground)
-                spriteBatch.Draw(Util.CreateTexture(Device, Width, Height, pixel => Color.Black), Boundary, Color.White);
+                spriteBatch.Draw(Texture, Boundary, Color.White);
             if(text != null)
                 spriteBatch.DrawString(Font, parseText(Text,Font), TextPosition, Color.Black);
             spriteBatch.End();
@@ -77,6 +78,8 @@ namespace Client_PC.UI
         public override void Update()
         {
             Update(text,ref textPosition,Font);
+            if (NeedNewTexture)
+                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
         }
     }
 }
