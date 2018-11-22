@@ -32,6 +32,7 @@ namespace Client_PC.UI
         {
             Width = grid.Width + 20;
             Height = grid.Height + 20;
+            Origin = Origin - new Point(Width / 2, Height / 2);
             grid.Origin = Origin + new Point(10, 10);
             SetBackground();
             grid.UpdateP();

@@ -47,7 +47,7 @@ namespace Client_PC.Scenes
                 Text = "Exit"
             };
 
-            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferHeight * 0.25), (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.25)),100,400,Game1.self.GraphicsDevice,Gui);
+            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5),(int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)),100,400,Game1.self.GraphicsDevice,Gui);
             Grid popupGrid = new Grid();
             Label lbl1 = new Label(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
@@ -98,6 +98,9 @@ namespace Client_PC.Scenes
             {
                 clickable.Active = true;
             }
+
+            Game1.self.popupToDraw = null;
+            
         }
 
         protected override void SetClickables(bool active)
@@ -124,10 +127,6 @@ namespace Client_PC.Scenes
         {
            
             grid.Draw(Game1.self.spriteBatch);
-            if (popup.Active)
-            {
-                popup.Draw(Game1.self.spriteBatch);
-            }
         }
         public void ExitClick()
         {
@@ -145,6 +144,7 @@ namespace Client_PC.Scenes
                 popup.SetActive(true);
                 inputLogin.Text = "";
                 inputPassword.Text = "";
+                Game1.self.popupToDraw = popup;
                 SetClickables(false);
             }
         }

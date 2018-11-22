@@ -38,6 +38,7 @@ namespace Client_PC
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
+        internal Popup popupToDraw;
         public Config conf;
         internal object graphicsDevice;
         internal IClickable FocusedElement;
@@ -302,6 +303,11 @@ namespace Client_PC
         {
             Game1.self.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             //Darker.CurrentTechnique.Passes[0].Apply();
+            if (popupToDraw != null)
+            {
+                Darker.CurrentTechnique.Passes[0].Apply();
+                popupToDraw.Draw(spriteBatch);
+            }
             Game1.self.spriteBatch.Draw(Game1.self.Wallpaper, new Vector2(0, 0), Color.White);
             
             switch (state)
@@ -332,6 +338,12 @@ namespace Client_PC
             }
             base.Draw(gameTime);
             Game1.self.spriteBatch.End();
+            if (popupToDraw != null)
+            {
+                Game1.self.spriteBatch.Begin();
+                popupToDraw.Draw(spriteBatch);
+                Game1.self.spriteBatch.End();
+            }
         }
     }
 }
