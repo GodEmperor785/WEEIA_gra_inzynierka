@@ -302,8 +302,14 @@ namespace GAME_Server {
 		public bool WasDraw { get; set; }
 		public DateTime GameDate { get; set; }
 
-		public GameHistory ToGameHistory() {
-			return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleet(), LoserFleet.ToFleet(), WasDraw, GameDate);
+		public GameHistory ToGameHistory(bool fullEntry) {
+			if(fullEntry) {
+				return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleet(), LoserFleet.ToFleet(), WasDraw, GameDate);
+			}
+			else {
+				return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), new Fleet(WinnerFleet.Name, Winner.ToPlayer(), new List<Ship>()), 
+					new Fleet(LoserFleet.Name, Loser.ToPlayer(), new List<Ship>()), WasDraw, GameDate);
+			}
 		}
 	}
 

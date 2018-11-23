@@ -95,7 +95,14 @@ namespace GAME_Server {
 			}
 		}
 
-		private IEnumerable<DbGameHistory> BasicHistoryQuery(int playerId) {
+		private IEnumerable<DbGameHistory> BasicPlayersHistoryQuery {
+			get {
+				var q = DbContext.GameHistories.Include(x => x.Winner).Include(x => x.Loser).Include(x => x.WinnerFleet).Include(x => x.LoserFleet);
+				return q;
+			}
+		}
+
+		private DbGameHistory HistoryQuery(int entryId) {
 			var q = DbContext.GameHistories.Include(x => x.Winner).Include(x => x.WinnerFleet).Include(x => x.WinnerFleet.Owner).Include(x => x.WinnerFleet.Ships)
 				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Faction))
 				.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Faction));
@@ -103,16 +110,16 @@ namespace GAME_Server {
 			var q22 = DbContext.GameHistories.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)));
 			var q3 = DbContext.GameHistories.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
 			var q32 = DbContext.GameHistories.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)));
-			q = q.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
-			q2 = q2.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
-			q3 = q3.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
-			q22 = q22.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
-			q32 = q32.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
-			var basic = q.ToList();
-			var winner = q2.ToList();
-			var winner2 = q22.ToList();
-			var loser = q3.ToList();
-			var loser2 = q32.ToList();
+			q = q.Where(history => history.Id == entryId);
+			q2 = q2.Where(history => history.Id == entryId);
+			q3 = q3.Where(history => history.Id == entryId);
+			q22 = q22.Where(history => history.Id == entryId);
+			q32 = q32.Where(history => history.Id == entryId);
+			var basic = q.FirstOrDefault();
+			var winner = q2.FirstOrDefault();
+			var winner2 = q22.FirstOrDefault();
+			var loser = q3.FirstOrDefault();
+			var loser2 = q32.FirstOrDefault();
 			return basic;
 			/*return DbContext.GameHistories.Include(x => x.Winner).Include(x => x.WinnerFleet).Include(x => x.WinnerFleet.Owner).Include(x => x.WinnerFleet.Ships)
 				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Faction))
@@ -363,9 +370,20 @@ namespace GAME_Server {
 			return query.FirstOrDefault();
 		}
 
+		/// <summary>
+		/// gets basic player game history - fleets are not set, you need to call <see cref="GetGameHistoryEntry"/>
+		/// </summary>
+		/// <param name="playerId"></param>
+		/// <returns></returns>
 		public List<DbGameHistory> GetPlayersGameHistory(int playerId) {
-			var query = BasicHistoryQuery(playerId);
+			/*var query = BasicHistoryQuery(playerId);
+			return query.ToList();*/
+			var query = BasicPlayersHistoryQuery.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
 			return query.ToList();
+		}
+
+		public DbGameHistory GetGameHistoryEntry(int id) {
+			return HistoryQuery(id);
 		}
 
 		public List<DbPlayer> GetAllPlayers() {

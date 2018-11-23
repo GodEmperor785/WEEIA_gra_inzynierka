@@ -319,6 +319,9 @@ namespace GAME_Server {
 				Server.Log("Game Histories in DB are:");
 				foreach (var p in historiesP1) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
 				foreach (var p in historiesP2) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+				var x3 = gameDataBase.GetGameHistoryEntry(1);
+				Server.Log("winner: " + x3.Winner.Username + " loser: " + x3.Loser.Username + " winner fleet: " + x3.WinnerFleet.Name + " fleet first ship weapon faction name: "
+					+ x3.WinnerFleet.Ships[0].ShipBaseStats.Weapons[0].Faction.Name);
 
 				Server.Log(">>> Additional ship templates and weapons for application testing - so the DB is more or less complete");
 				Server.Log(">>> first more weapons and defences");
@@ -397,6 +400,9 @@ namespace GAME_Server {
 				foreach (var p in x) Server.Log("fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
 				var x2 = gameDataBase.GetPlayersGameHistory(1);
 				foreach (var p in x2) Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet: " + p.WinnerFleet.Name);
+				var x3 = gameDataBase.GetGameHistoryEntry(1);
+				Server.Log("winner: " + x3.Winner.Username + " loser: " + x3.Loser.Username + " winner fleet: " + x3.WinnerFleet.Name + " fleet first ship weapon faction name: " 
+					+ x3.WinnerFleet.Ships[0].ShipBaseStats.Weapons[0].Faction.Name );
 			}
 
 
@@ -869,8 +875,15 @@ namespace GAME_Server {
 						case OperationType.GET_PLAYER_STATS:
 							Server.Log(User.Username + " wants to view game history");
 							List<DbGameHistory> dbGameHistory = GameDataBase.GetPlayersGameHistory(User.Id);
-							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory()).ToList();
+							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory(false)).ToList();
 							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
+							break;
+						case OperationType.GET_PLAYER_STATS_ENTRY:
+							GameHistory entry = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(User.Username + " wants to view details of game history entry with ID: " + entry.Id);
+							DbGameHistory dbEntry = GameDataBase.GetGameHistoryEntry(entry.Id);
+							entry = dbEntry.ToGameHistory(true);
+							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS_ENTRY, entry));
 							break;
 						//====================================================== PLAYER STATS =====================================================================================================
 						case OperationType.DISCONNECT:          //OK

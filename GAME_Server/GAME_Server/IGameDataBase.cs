@@ -90,5 +90,7 @@ namespace GAME_Server {
 		DbFleet ConvertFleetToDbFleet(Fleet fleet, Player player, bool isNew);
 
 		int GetPlayerFleetCount(Player player);
+
+		DbGameHistory GetGameHistoryEntry(int id);
 	}
 }

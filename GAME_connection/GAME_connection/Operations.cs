@@ -27,6 +27,7 @@ namespace GAME_connection {
 		DISCONNECT,
 		PLAYER_DATA,
 		GET_PLAYER_STATS,
+		GET_PLAYER_STATS_ENTRY,
 		BASE_MODIFIERS,
 
 		//shop
@@ -50,7 +51,7 @@ namespace GAME_connection {
 			operationMapping = new Dictionary<OperationType, Type>();
 			operationMapping.Add(OperationType.CONNECTION_TEST, typeof(object));			//nothing - never used									- null
 			operationMapping.Add(OperationType.VIEW_FLEETS, typeof(List<Fleet>));           //list of players fleets								- important for client
-			operationMapping.Add(OperationType.VIEW_ALL_PLAYER_SHIPS, typeof(Fleet));       //list of player owned ships							- important for clientF
+			operationMapping.Add(OperationType.VIEW_ALL_PLAYER_SHIPS, typeof(Fleet));       //list of player owned ships							- important for client
 			operationMapping.Add(OperationType.UPDATE_FLEET, typeof(Fleet));                //updated fleet object		maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.ADD_FLEET, typeof(Fleet));                   //new fleet object			maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DELETE_FLEET, typeof(Fleet));                //fleet to delete		maybe only fleet name or id?	- important for server, server respons with S/F
@@ -62,6 +63,7 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.PLAYER_DATA, typeof(Player));                //player object with exp and maxFleetPoints set			- important for client
 			operationMapping.Add(OperationType.BASE_MODIFIERS, typeof(BaseModifiers));      //base modifiers for client								- important for client
 			operationMapping.Add(OperationType.GET_PLAYER_STATS, typeof(List<GameHistory>)); //list of game history entries for given player		- important for client
+			operationMapping.Add(OperationType.GET_PLAYER_STATS_ENTRY, typeof(GameHistory)); //full game history entry with given id				- important for client
 			operationMapping.Add(OperationType.MAKE_MOVE, typeof(string));                  //TODO <---------------------------------------------	- 
 			operationMapping.Add(OperationType.SUCCESS, typeof(object));                    //nothing - never used									- null
 			operationMapping.Add(OperationType.FAILURE, typeof(string));                    //reason for failure									- important for client
@@ -73,6 +75,8 @@ namespace GAME_connection {
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F
 			//if important for client: client sends this OperationType and server does not care for internal packet, server responds with the right internal packet and same OperationType as client
+
+			//when getting game history you need to first get all game histories with: GET_PLAYER_STATS and then to view fleet details use GET_PLAYER_STATS_ENTRY with right game history entry
 
 			//initial order of packets:
 			//1. client sends LOGIN or REGISTER
