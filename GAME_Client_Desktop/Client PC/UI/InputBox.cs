@@ -31,6 +31,7 @@ namespace Client_PC.UI
         public int TextLimit { get; set; }
         public bool TextWrappable { get; set; }
         public Tooltip Tooltip { get; set; }
+        public bool IsPassword { get; set; }
         public Rectangle GetBoundary()
         {
             return Boundary;
@@ -45,9 +46,16 @@ namespace Client_PC.UI
             text = "";
             textToShow = "";
             TextWrappable = wrapable;
+            IsPassword = false;
         }
         public override void Update()
         {
+            if (IsPassword)
+            {
+                int length = textToShow.Length;
+                string str = new string('*',length);
+                textToShow = str;
+            }
             Vector2 z = Font.MeasureString(textToShow);
             TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
             if (NeedNewTexture)

@@ -14,7 +14,9 @@ namespace Client_PC.Scenes
     class RegisterMenu : Menu
     {
         private Grid grid;
-
+        private InputBox passwordInputBox;
+        private InputBox passwordInputBox2;
+        private InputBox loginInputBox;
 
         public override void Initialize(ContentManager Content)
         {
@@ -39,15 +41,15 @@ namespace Client_PC.Scenes
             {
                 Text = "Password again"
             };
-            InputBox loginInputBox = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
+            loginInputBox = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
             {
                 TextLimit = 30
             };
-            InputBox passwordInputBox = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            passwordInputBox = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30
             };
-            InputBox passwordInputBox2 = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            passwordInputBox2 = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30
             };
@@ -67,6 +69,8 @@ namespace Client_PC.Scenes
             loginInputBox.Tooltip = tooltipLogin;
             passwordInputBox.Tooltip = tooltipPassword1;
             passwordInputBox2.Tooltip = tooltipPassword2;
+            passwordInputBox.IsPassword = true;
+            passwordInputBox2.IsPassword = true;
             Clickable.Add(registerButton);
             Clickable.Add(backButton);
             Clickable.Add(loginInputBox);
@@ -89,6 +93,13 @@ namespace Client_PC.Scenes
             SetClickables(true);
         }
 
+        public override void Clean()
+        {
+            loginInputBox.Text = "";
+            passwordInputBox.Text = "";
+            passwordInputBox2.Text = "";
+        }
+
         public override void UpdateGrid()
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
@@ -98,11 +109,13 @@ namespace Client_PC.Scenes
         public void backClick()
         {
             Game1.self.state = Game1.State.LoginMenu;
+            Game1.self.CleanLogin();
         }
 
         public void registerClick()
         {
             Game1.self.state = Game1.State.LoginMenu;
+            Game1.self.CleanLogin();
         }
 
 

@@ -198,9 +198,19 @@ namespace Client_PC
             base.Update(gameTime);
         }
 
-        public void ReinitializeDeck()
+        public void CleanDeck()
         {
-            deckMenu.Clear();
+            deckMenu.Clean();
+        }
+
+        public void CleanLogin()
+        {
+            loginMenu.Clean();
+        }
+
+        public void CleanRegister()
+        {
+            registerMenu.Clean();
         }
         private void WallpaperChange()
         {

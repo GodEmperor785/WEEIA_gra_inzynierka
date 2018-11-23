@@ -49,6 +49,11 @@ namespace Client_PC.Scenes
             }
 
         }
+
+        public virtual void Clean()
+        {
+
+        }
         private void CheckClickables(MouseState mouseState)
         {
             int x = mouseState.X;

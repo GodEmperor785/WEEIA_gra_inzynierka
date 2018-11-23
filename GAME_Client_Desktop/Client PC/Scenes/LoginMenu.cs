@@ -66,7 +66,7 @@ namespace Client_PC.Scenes
             Clickable.Add(b1);
             popup.SetToGrid();
 
-
+            inputPassword.IsPassword = true;
             Clickable.Add(inputLogin);
             Clickable.Add(inputPassword);
             Clickable.Add(loginButton);
@@ -113,6 +113,12 @@ namespace Client_PC.Scenes
             }
         }
 
+        public override void Clean()
+        {
+            inputLogin.Text = "";
+            inputPassword.Text = "";
+        }
+
         public void RefResh()
         {
             Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
@@ -152,6 +158,7 @@ namespace Client_PC.Scenes
         public void RegisterClick()
         {
             Game1.self.state = Game1.State.RegisterMenu;
+            Game1.self.CleanRegister();
         }
 
         

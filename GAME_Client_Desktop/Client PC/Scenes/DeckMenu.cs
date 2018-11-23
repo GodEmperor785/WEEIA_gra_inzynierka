@@ -229,7 +229,7 @@ namespace Client_PC.Scenes
 
         }
 
-        public void Clear()
+        public override void Clean()
         {
             ClearTopGrid();
             ShipsInTop.Clear();
