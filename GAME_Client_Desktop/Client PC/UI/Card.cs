@@ -14,6 +14,10 @@ namespace Client_PC.UI
 {
     class Card : GuiElement, IClickable, IHasText
     {
+        public enum status { clear,clicked,target,hasMove,isTarget}
+
+        public status Status { get; set; } = status.clear;
+        private status LastStatus = status.clear;
         private Texture2D skin;
         private Texture2D hpIcon;
         private Texture2D armorIcon;
@@ -31,7 +35,6 @@ namespace Client_PC.UI
         private Ship ship;
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }
-        public object Parent { get; set; }
         public Tooltip Tooltip { get; set; }
         public string Text { get; set; }
         public Vector2 TextPosition { get; set; }
@@ -39,7 +42,8 @@ namespace Client_PC.UI
         public bool TextWrappable { get; set; }
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
-        public Card(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base(origin, width, height, device, gui)
+        private bool clicked;
+        public Card(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base( width, height, device, gui)
         {
             ship = shipInc;
             Font = font;
@@ -113,6 +117,46 @@ namespace Client_PC.UI
             armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
             if (NeedNewTexture)
                 Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
+            /// blue - has chosen move
+            /// green - is clicked
+            /// red - is target of current action
+            /// yellow - is target
+
+
+            if (Status != LastStatus)
+            {
+                if (Status == status.target)
+                {
+                    Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, Color.Red,
+                        new Color(100, 100, 100)
+                    );
+                }
+                else if (Status == status.isTarget)
+                {
+                    Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, Color.Yellow,
+                        new Color(100, 100, 100)
+                    );
+                }
+                else if (Status == status.clicked)
+                {
+                    Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, Color.Green,
+                        new Color(100, 100, 100)
+                    );
+                }
+                else if (Status == status.hasMove)
+                {
+                    Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, Color.Blue,
+                        new Color(100, 100, 100)
+                    );
+                }
+                else if (Status == status.clear)
+                {
+                    Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
+                }
+            }
+
+            LastStatus = Status;
+
         }
 
         public void ChangeParent(Grid from, Grid to)

@@ -347,7 +347,7 @@ namespace Client_PC.Scenes
         {
             foreach (var ship in ships)
             {
-                Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
+                Card dc = new Card( cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
                 Clickable.Add(dc);
                 dc.clickEvent += CardClick;
                 ShipsInTop.Add(dc);
@@ -358,7 +358,7 @@ namespace Client_PC.Scenes
         {
             foreach (var ship in ships)
             {
-                Card dc = new Card(new Point(), cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
+                Card dc = new Card( cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
                 Clickable.Add(dc);
                 dc.clickEvent += CardClick;
                 ShipsInBot.Add(dc);

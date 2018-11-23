@@ -74,9 +74,15 @@ namespace Client_PC.Scenes
                 {
                     Game1.self.FocusedElement = null;
                 }
+
+                UpdateClickables();
             }
         }
 
+        public virtual void UpdateClickables()
+        {
+
+        }
         private void CheckTooltips(MouseState mouseState)
         {
             int x = mouseState.X;
