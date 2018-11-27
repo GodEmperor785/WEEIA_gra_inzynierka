@@ -75,7 +75,7 @@ namespace GAME_Server {
 			//TcpListener listener = new TcpListener(ipAddress, port);
 			TcpListener listener = new TcpListener(IPAddress.Any, port);
 			listener.Start();
-			Log("Server listening on: " + ip + ":" + port);
+			//Log("Server listening on: " + ip + ":" + port);
 			Thread cliThread = new Thread(new ThreadStart(ServerCLI));
 			cliThread.Start();
 

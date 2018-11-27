@@ -13,7 +13,7 @@ namespace GAME_Server {
 		private Random rng;
 
 		#region basic queries
-		private IEnumerable<DbShipTemplate> BasicShipTemplateQuery {
+		private IQueryable<DbShipTemplate> BasicShipTemplateQuery {
 			get {
 				//return from shipTemplates in DbContext.ShipTemplates select shipTemplates;
 				return DbContext.ShipTemplates.Include(x => x.Faction).Include(x => x.Weapons).Include(x => x.Weapons.Select(d => d.Faction))
@@ -21,7 +21,7 @@ namespace GAME_Server {
 			}
 		}
 
-		private IEnumerable<DbShip> BasicShipQuery {
+		private IQueryable<DbShip> BasicShipQuery {
 			get {
 				//return from ships in DbContext.Ships select ships;
 				return DbContext.Ships.Include(x => x.Owner).Include(x => x.ShipBaseStats.Faction).Include(x => x.ShipBaseStats).Include(x => x.ShipBaseStats.Weapons)
@@ -29,14 +29,14 @@ namespace GAME_Server {
 			}
 		}
 
-		private IEnumerable<DbPlayer> BasicPlayerQuery {
+		private IQueryable<DbPlayer> BasicPlayerQuery {
 			get {
 				//return from players in DbContext.Players select players;
 				return DbContext.Players.Include(x => x.OwnedShips);
 			}
 		}
 
-		private IEnumerable<DbFleet> BasicFleetQueryPt1 {
+		private IQueryable<DbFleet> BasicFleetQueryPt1 {
 			get {
 				var q = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
 				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction));
@@ -44,58 +44,58 @@ namespace GAME_Server {
 			}
 		}
 
-		private IEnumerable<DbFleet> BasicFleetQueryPt2 {
+		private IQueryable<DbFleet> BasicFleetQueryPt2 {
 			get {
 				var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
 				return q2;
 			}
 		}
 
-		private IEnumerable<DbFleet> BasicFleetQueryPt3 {
+		private IQueryable<DbFleet> BasicFleetQueryPt3 {
 			get {
 				var q3 = DbContext.Fleets.Include(xxx => xxx.Ships.Select(sss => sss.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));
 				return q3;
 			}
 		}
 
-		/*private IEnumerable<DbFleet> BasicFleetQuery {
-			get {*/
-		//return from fleets in DbContext.Fleets select fleets;
-		/*return DbContext.Fleets.Include(x => x.Owner).Include(x => x.Ships.Select(s => s.Owner)).Include(x => x.Ships.Select(s => s.ShipBaseStats)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction))
-			.Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)))
-			.Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));*/
-		/*var q = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
-		.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction));
-		var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
-		var q3 = DbContext.Fleets.Include(xxx => xxx.Ships.Select(sss => sss.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));
-		var basic = q.ToList();
-		var weps = q2.ToList();
-		var defs = q3.ToList();
-		return q;
-	}
-}*/
+		/*private IQueryable<DbFleet> BasicFleetQuery {
+				get {*/
+				//return from fleets in DbContext.Fleets select fleets;
+				/*return DbContext.Fleets.Include(x => x.Owner).Include(x => x.Ships.Select(s => s.Owner)).Include(x => x.Ships.Select(s => s.ShipBaseStats)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction))
+					.Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)))
+					.Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));*/
+				/*var q = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
+				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction));
+				var q2 = DbContext.Fleets.Include(xx => xx.Ships.Select(ss => ss.ShipBaseStats.Weapons)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
+				var q3 = DbContext.Fleets.Include(xxx => xxx.Ships.Select(sss => sss.ShipBaseStats.Defences)).Include(x => x.Ships.Select(s => s.ShipBaseStats.Defences.Select(d => d.Faction)));
+				var basic = q.ToList();
+				var weps = q2.ToList();
+				var defs = q3.ToList();
+				return q;
+			}
+		}*/
 
-		private IEnumerable<DbWeapon> BasicWeaponQuery {
+		private IQueryable<DbWeapon> BasicWeaponQuery {
 			get {
 				//return from weapons in DbContext.Weapons select weapons;
 				return DbContext.Weapons.Include(x => x.Faction);
 			}
 		}
 
-		private IEnumerable<DbDefenceSystem> BasicDefenceSystemQuery {
+		private IQueryable<DbDefenceSystem> BasicDefenceSystemQuery {
 			get {
 				//return from defences in DbContext.DefenceSystems select defences;
 				return DbContext.DefenceSystems.Include(x => x.Faction);
 			}
 		}
 
-		private IEnumerable<DbLootBox> BasicLootBoxQuery {
+		private IQueryable<DbLootBox> BasicLootBoxQuery {
 			get {
 				return from lootboxes in DbContext.LootBoxes select lootboxes;
 			}
 		}
 
-		private IEnumerable<DbGameHistory> BasicPlayersHistoryQuery {
+		private IQueryable<DbGameHistory> BasicPlayersHistoryQuery {
 			get {
 				var q = DbContext.GameHistories.Include(x => x.Winner).Include(x => x.Loser).Include(x => x.WinnerFleet).Include(x => x.LoserFleet);
 				return q;
