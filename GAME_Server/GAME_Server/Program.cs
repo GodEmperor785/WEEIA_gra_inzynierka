@@ -86,8 +86,8 @@ namespace GAME_Server {
 			while (continueAcceptingConnections) {
 				Log("Server is waiting for client...");
 				TcpClient client = listener.AcceptTcpClient();
-				//TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
-				TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");
+				TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
+				//TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
 				Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
 				//Thread t = new Thread(new ParameterizedThreadStart(Test));
