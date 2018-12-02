@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GAME_connection</name>
+    </assembly>
+    <members>
+        <member name="M:GAME_connection.GameEnumUtils.GetRarityName(GAME_connection.Rarity)">
+            <summary>
+            should be used to get string name of given <see cref="T:GAME_connection.Rarity"/> enum. Use like: string x = Rarity.COMMON.GetRarityName();
+            </summary>
+            <param name="rarity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GAME_connection.GameEnumUtils.GetWeaponTypeyName(GAME_connection.WeaponType)">
+            <summary>
+            should be used to get string name of given <see cref="T:GAME_connection.WeaponType"/> enum. Use like: string x = WeaponType.KINETIC.GetWeaponTypeyName();
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GAME_connection.GameEnumUtils.GetDefenceSystemType(GAME_connection.DefenceSystemType)">
+            <summary>
+            should be used to get string name of given <see cref="T:GAME_connection.DefenceSystemType"/> enum. Use like: string x = DefenceSystemType.SHIELD.GetDefenceSystemType();
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GAME_connection.BaseModifiers">
+            <summary>
+            Used to send base modifiers to client (to calculate actual modifiers)
+            </summary>
+        </member>
+        <member name="P:GAME_connection.ConnectionEndedException.Orign">
+            <summary>
+            should specify whether exception occured on send or receive
+            </summary>
+        </member>
+        <member name="T:GAME_connection.OperationsMap">
+            <summary>
+            Maps  <see cref="T:GAME_connection.OperationType"/> to <see cref="T:System.Type"/> (class) of <see cref="P:GAME_connection.GamePacket.Packet"/> in <see cref="T:GAME_connection.GamePacket"/> object
+            </summary>
+        </member>
+        <member name="T:GAME_connection.TcpConnection">
+            <summary>
+            Class used to send and receive GamePackets between server and client.
+            <para>Should be used instead of TcpClient and its NetworkStream, if you need to have same connection in multiple places PASS instance of this object, DON'T create new object.</para>
+            <para>All send and receive operations are synchronized separately (one lock for send and one for receive)</para>
+            <para>Receive operations are preformed on separate thread to allow constant connection testing</para>
+            <para>To disconnect from remote use <see cref="M:GAME_connection.TcpConnection.SendDisconnect"/>. To process remote disconnect use <see cref="M:GAME_connection.TcpConnection.Disconnect"/></para>
+            </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.#ctor(System.Net.Sockets.TcpClient,System.Boolean)">
+            <summary>
+            Creates all necessary variables and threads for game connection, requires connected <see cref="T:System.Net.Sockets.TcpClient"/>.
+            </summary>
+            <param name="client">connected <see cref="T:System.Net.Sockets.TcpClient"/></param>
+            <param name="isClient">true if used on the client side - clients send  <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/> packets to server</param>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.Send(GAME_connection.GamePacket)">
+            <summary>
+            Used to send <see cref="T:GAME_connection.GamePacket"/> to client specified in constructor (TcpClient)
+            </summary>
+            <param name="packet">instance of <see cref="T:GAME_connection.GamePacket"/> object to send</param>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.GetReceivedPacket">
+            <summary>
+            Waits and gets oldest unprocessed received packet. Waits without timeout.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.GetReceivedPacket(System.Int32,System.Int32)">
+            <summary>
+            Waits and gets oldest unprocessed received packet with timeout in miliseconds, on timeout throws exception
+            </summary>
+            <param name="timeoutMilis">timeout in miliseconds for receive operation</param>
+            <param name="playerNumber">number of player that had timeout</param>
+            <returns></returns>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.DoReceiving">
+            <summary>
+            Main receiving thread, receives <see cref="T:GAME_connection.GamePacket"/>s and puts them on the queue, ignores <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/> packets
+            </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.Receive">
+            <summary>
+            Used to receive <see cref="T:GAME_connection.GamePacket"/>s
+            </summary>
+            <returns>received (deserialized) GamePacket</returns>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.DoTestConnection">
+            <summary>
+            Periodically tests connection, used on client
+            </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.SendDisconnect">
+            <summary>
+            Use this method to send proper disconnect to remote. DO NOT send packet <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/> manually and call Dispose or Disconnect!
+            </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.Disconnect">
+            <summary>
+            Use this method when you receive <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/> packet from remote. DO NOT use it when you want to SEND <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/>
+            </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.Dispose">
+            <summary>
+            called internally by proper <see cref="M:GAME_connection.TcpConnection.Disconnect"/> and <see cref="M:GAME_connection.TcpConnection.SendDisconnect"/>. SHOULDN'T be used manually!
+            </summary>
+        </member>
+    </members>
+</doc>
