@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseModifiers.cs" />
+    <Compile Include="CustomGameRoom.cs" />
     <Compile Include="DefenceSystem.cs" />
     <Compile Include="Faction.cs" />
     <Compile Include="Fleet.cs" />

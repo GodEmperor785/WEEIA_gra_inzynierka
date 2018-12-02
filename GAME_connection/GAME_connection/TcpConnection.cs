@@ -60,6 +60,8 @@ namespace GAME_connection {
 		private bool debug;
 		internal Logger tcpConnectionLogger;
 
+		public event EventHandler GameAbandoned;
+
 		#region Constructor
 		/// <summary>
 		/// Creates all necessary variables and threads for game connection, requires connected <see cref="System.Net.Sockets.TcpClient"/>.
@@ -243,6 +245,7 @@ namespace GAME_connection {
 				try {
 					GamePacket receivedPacket = Receive();
 					if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) Console.WriteLine("CONNECTION_TEST received");
+					else if (receivedPacket.OperationType == OperationType.ABANDON_GAME) OnGameAbandoned(EventArgs.Empty);
 					else {
 						lock (queueLock) {
 							receivedPackets.Enqueue(receivedPacket);
@@ -274,6 +277,13 @@ namespace GAME_connection {
 			if (connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
 			lock (receiveLock) {
 				return (GamePacket)serializer.Deserialize(netStream);
+			}
+		}
+
+		protected virtual void OnGameAbandoned(EventArgs e) {
+			EventHandler handler = GameAbandoned;
+			if (handler != null) {
+				handler(this, e);
 			}
 		}
 
@@ -385,6 +395,7 @@ namespace GAME_connection {
 		/// called internally by proper <see cref="Disconnect"/> and <see cref="SendDisconnect"/>. SHOULDN'T be used manually!
 		/// </summary>
 		public void Dispose() {
+			NetStream.Dispose();
 			TcpClient.Dispose();
 
 			//if(debug) tcpConnectionLogger("0");

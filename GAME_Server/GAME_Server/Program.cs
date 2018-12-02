@@ -25,7 +25,10 @@ namespace GAME_Server {
 		private static List<Faction> allFactions;
 		private static BaseModifiers baseModifiers;
 
+		//locks
 		private static readonly object logLock = new object();
+		private static readonly object customRoomsLock = new object();
+		private static readonly object rankedRoomsLock = new object();
 
 		//http://www.entityframeworktutorial.net/code-first/database-initialization-strategy-in-code-first.aspx
 		//https://dev.mysql.com/doc/connector-net/en/connector-net-entityframework60.html
@@ -63,7 +66,8 @@ namespace GAME_Server {
 		//thread management specific fields and properties
 		private static List<Thread> userThreads = new List<Thread>();
 		private static List<UserThread> userThreadObjects = new List<UserThread>();
-		private static List<GameRoomThread> gameRoomThreads = new List<GameRoomThread>();
+		internal static Dictionary<CustomGameRoom, GameRoomThread> availableCustomGameRooms = new Dictionary<CustomGameRoom, GameRoomThread>();
+		internal static List<GameRoomThread> availableRankedGameRooms = new List<GameRoomThread>();
 
 		internal static bool continueAcceptingConnections = true;
 
@@ -82,7 +86,8 @@ namespace GAME_Server {
 			while (continueAcceptingConnections) {
 				Log("Server is waiting for client...");
 				TcpClient client = listener.AcceptTcpClient();
-				TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
+				//TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
+				TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");
 				Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
 				//Thread t = new Thread(new ParameterizedThreadStart(Test));
@@ -112,6 +117,135 @@ namespace GAME_Server {
 					break;
 			}
 		}
+
+		//========================= GAME ROOM LIST/DICT UTILS ==================================================================================================================
+		internal static List<CustomGameRoom> GetAvailableCustomRooms() {
+			List<CustomGameRoom> availableRooms = new List<CustomGameRoom>();
+			lock(customRoomsLock) {
+				foreach(var roomPair in availableCustomGameRooms) {
+					availableRooms.Add(new CustomGameRoom(roomPair.Key));
+				}
+			}
+			return availableRooms;
+		}
+
+		private static void RemoveCustomRoom(CustomGameRoom roomToRemove) {
+			CustomGameRoom removeIt = new CustomGameRoom();
+			foreach (var roomPair in availableCustomGameRooms) {
+				if (roomToRemove.RoomName == roomPair.Key.RoomName) {
+					removeIt = roomPair.Key;
+				}
+			}
+			availableCustomGameRooms.Remove(removeIt);
+		}
+
+		/// <summary>
+		/// null check necessary, result string indicates failure type if GameRoomThread is null
+		/// </summary>
+		/// <param name="roomToJoin"></param>
+		/// <param name="result"></param>
+		/// <returns></returns>
+		internal static GameRoomThread JoinCustomRoom(CustomGameRoom roomToJoin, out string result) {
+			string success = "SUCCESS";
+			lock (customRoomsLock) {
+				foreach (var roomPair in availableCustomGameRooms) {
+					var customRoom = roomPair.Key;
+					if (roomToJoin.RoomName == customRoom.RoomName && roomToJoin.CreatorsUsername == customRoom.CreatorsUsername) {	//room name found and creator matches
+						if (customRoom.OpenForAll) {	//don't check password if there is none - openForAll
+							result = success;
+							RemoveCustomRoom(customRoom);   //remove custom room from available rooms
+							return roomPair.Value;
+						}
+						else if (roomToJoin.Password == customRoom.Password) {	//else check password
+							result = success;
+							RemoveCustomRoom(customRoom);	//remove custom room from available rooms
+							return roomPair.Value;
+						}
+						else {
+							result = FailureReasons.WRONG_ROOM_PASSWORD;
+							return null;		//return null on error
+						}
+					}
+				}
+			}
+			result = FailureReasons.NO_SUCH_ROOM;
+			return null;        //return null on error
+		}
+
+		/// <summary>
+		/// used by GameRoomThread to remove a custom room
+		/// </summary>
+		/// <param name="roomToRemove"></param>
+		internal static void AbandonCustomGameRoom(CustomGameRoom roomToRemove) {
+			lock (customRoomsLock) {
+				RemoveCustomRoom(roomToRemove);
+			}
+		}
+
+		/// <summary>
+		/// used to create a new available custom room
+		/// </summary>
+		/// <param name="roomToAdd"></param>
+		internal static void CreateCustomRoom(CustomGameRoom roomToAdd, GameRoomThread roomObj) {
+			lock (customRoomsLock) {
+				availableCustomGameRooms.Add(roomToAdd, roomObj);
+			}
+		}
+
+		//----------------- RANKED -------------------------------------------------------------------------------------
+		private static void RemoveRankedRoom(GameRoomThread game) {
+			availableRankedGameRooms.Remove(game);
+		}
+
+		/// <summary>
+		/// used to create a new ranked game if there are no free ranked rooms available
+		/// </summary>
+		/// <param name="newRoom"></param>
+		internal static void CreateRankedGame(GameRoomThread newRoom) {
+			lock (rankedRoomsLock) {
+				availableRankedGameRooms.Add(newRoom);
+			}
+		}
+
+		/// <summary>
+		/// joins ranked game with player with matchmaking score as close as possible to searching player, returns null if there are no rooms
+		/// </summary>
+		/// <param name="player"></param>
+		/// <returns></returns>
+		internal static GameRoomThread JoinBestGameRoomForPlayer(Player player) {
+			double searchingPlayerScore = CalculateMatchmakingScore(player);
+			GameRoomThread bestRoom = null;
+			double minScoreDelta = double.MaxValue;
+			lock(rankedRoomsLock) {
+				if (availableRankedGameRooms.Count == 0) return null;		//if no rooms present - return null, user thread will handle that
+				foreach (GameRoomThread game in availableRankedGameRooms) {
+					double currentDelta = Math.Abs(game.MatchMakingScore - searchingPlayerScore);
+					if(currentDelta < minScoreDelta) {
+						bestRoom = game;
+						minScoreDelta = currentDelta;
+					}
+				}
+				RemoveRankedRoom(bestRoom);
+			}
+			Server.Log(player.Username + " with score: " + searchingPlayerScore + " joins room with score delta of " + minScoreDelta);
+			return bestRoom;
+		}
+
+		internal static void AbandonRankedGame(GameRoomThread game) {
+			lock (rankedRoomsLock) {
+				RemoveRankedRoom(game);
+			}
+		}
+
+		/// <summary>
+		/// Calculates players matchmaking score to find best opponent using Exp and win-lose ratio
+		/// </summary>
+		/// <param name="player"></param>
+		/// <returns></returns>
+		internal static double CalculateMatchmakingScore(Player player) {
+			return (player.Experience * Math.Pow(player.WinLoseRatio, 3));
+		}
+
 		//====================================================================================================================================================================================
 		//===DB_TEST==========================================================================================================================================================================
 		//====================================================================================================================================================================================
@@ -637,6 +771,7 @@ namespace GAME_Server {
 		private GameRNG gameRNG;
 		private bool clientConnected;
 		private object loopLock = new object();
+		private object userLock = new object();
 
 		internal UserThread(TcpConnection client) {
 			this.Client = client;
@@ -645,7 +780,10 @@ namespace GAME_Server {
 		}
 
 		public TcpConnection Client { get => client; set => client = value; }
-		public Player User { get => user; set => user = value; }
+		public Player User {
+			get => user;
+			set => user = value;
+		}
 		public IGameDataBase GameDataBase { get => gameDataBase; set => gameDataBase = value; }     //use only this as DB in this thread
 		public GameRNG GameRNG { get => gameRNG; set => gameRNG = value; }
 		internal bool ClientConnected {
@@ -751,18 +889,6 @@ namespace GAME_Server {
 			GameDataBase.AddPlayer(newPlayer);  //finally add player to db
 		}
 		#endregion
-
-		public List<DbShip> GetPlayersShips(Player player, GameDBContext c) {
-			var query2 = from s in c.Ships
-						 where s.Owner.Id == 1
-						 select s;
-			var w = query2.ToList();
-			var xx = w[0];
-			var xxx = xx.ShipBaseStats.Name;
-			var query = c.Ships.Where(ship => ship.Owner.Id == player.Id);
-			return query.ToList();
-		}
-
 
 		#region main logic
 		private void UserProcessing() {
@@ -872,13 +998,13 @@ namespace GAME_Server {
 							else SendFailure(FailureReasons.INVALID_ID);
 							break;
 						//====================================================== PLAYER STATS =====================================================================================================
-						case OperationType.GET_PLAYER_STATS:
+						case OperationType.GET_PLAYER_STATS:		//OK
 							Server.Log(User.Username + " wants to view game history");
 							List<DbGameHistory> dbGameHistory = GameDataBase.GetPlayersGameHistory(User.Id);
 							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory(false)).ToList();
 							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
 							break;
-						case OperationType.GET_PLAYER_STATS_ENTRY:
+						case OperationType.GET_PLAYER_STATS_ENTRY:		//OK
 							GameHistory entry = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + " wants to view details of game history entry with ID: " + entry.Id);
 							DbGameHistory dbEntry = GameDataBase.GetGameHistoryEntry(entry.Id);
@@ -890,15 +1016,79 @@ namespace GAME_Server {
 							Server.Log(User.Username + ": wants to disconnect");
 							clientConnected = false;
 							break;
-						default:
-							Server.Log(User.Username + ": unsupported operation");
+						//====================================================== CUSTOM GAME =====================================================================================================
+						case OperationType.GET_CUSTOM_ROOMS:		//TODO NOT TESTED
+							Server.Log(User.Username + ": wants to get list od custom rooms");
+							List<CustomGameRoom> rooms = Server.GetAvailableCustomRooms();
+							Client.Send(new GamePacket(OperationType.GET_CUSTOM_ROOMS, rooms));
+							break;
+						case OperationType.PLAY_CUSTOM_CREATE:		//TODO NOT TESTED
+							CustomGameRoom roomToCreate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(User.Username + ": wants to create a new custom game with name: " + roomToCreate.RoomName);
+							GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true);
+							Server.CreateCustomRoom(roomToCreate, customGameRoomToCreate);
+							Thread newCustomGameThread = new Thread(new ThreadStart(customGameRoomToCreate.RunGameThread));
+							newCustomGameThread.Start();
+							//newCustomGameThread.Join();
+							Server.Log(User.Username + ": create game room: " + roomToCreate.RoomName + "successful, user thread blocks");
+							customGameRoomToCreate.gameEnded.WaitOne();		//block until end of the game
+							Server.Log(User.Username + ": has ended his game, user thread continues");
+							break;
+						case OperationType.PLAY_CUSTOM_JOIN:        //TODO NOT TESTED
+							CustomGameRoom roomToJoin = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log(User.Username + ": wants to join custom game with name: " + roomToJoin.RoomName);
+							string joinResult;
+							GameRoomThread customGameRoomToJoin = Server.JoinCustomRoom(roomToJoin, out joinResult);
+							if (customGameRoomToJoin == null) {     //join failed
+								SendFailure(joinResult);
+							}
+							else {      //join succeeded - thread removed from available and JoinThisRoom can be called
+								bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase);
+								if (joinSuccess) {
+									Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
+									customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
+									Server.Log(User.Username + ": has ended his game, user thread continues");
+								}
+								else {
+									SendFailure(FailureReasons.ROOM_FULL);
+								}
+							}
+							break;
+						//====================================================== RANKED GAME =====================================================================================================
+						case OperationType.PLAY_RANKED:     //TODO NOT TESTED
+							Server.Log(User.Username + ": wants to play ranked game");
+							GameRoomThread rankedGame = Server.JoinBestGameRoomForPlayer(User);
+							if(rankedGame == null) {			//there are no rooms - need to create new one
+								GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false);
+								Thread newRankedGameThread = new Thread(new ThreadStart(newRankedRoom.RunGameThread));
+								newRankedGameThread.Start();
+								//newCustomGameThread.Join();
+								Server.Log(User.Username + ": create ranked game room successful, user thread blocks");
+								newRankedRoom.gameEnded.WaitOne();     //block until end of the game
+								Server.Log(User.Username + ": has ended his game, user thread continues");
+							}
+							else {      //join successful - GameRoomThread removed from available and JoinThisThread can be called
+								bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase);
+								if (joinSuccess) {
+									Server.Log(User.Username + ": join game room successful, user thread blocks");
+									rankedGame.gameEnded.WaitOne();   //block until end of the game
+									Server.Log(User.Username + ": has ended his game, user thread continues");
+								}
+								else {
+									SendFailure(FailureReasons.ROOM_FULL);
+								}
+							}
+							break;
+						default:		//OK
+							SendFailure(FailureReasons.INVALID_PACKET);
+							Server.Log(User.Username + ": unsupported operation: " + gamePacket.OperationType);
 							break;
 					}
 				}
 				catch (InvalidCastException) {
 					SendFailure(FailureReasons.INVALID_PACKET);
 				}
-				catch (NullReferenceException ex) {			//null indicates that some object does not exist in DB and most likely that someone is manually passing fake object with fake IDs
+				catch (NullReferenceException ex) {			//null indicates that some object does not exist in DB
 					Server.Log("NULL caught - " + User.Username + "is sending wrong id values - Exception message: " + ex.Message + " From:" + ex.Source, true);
 					Server.Log(ex.StackTrace);
 					SendFailure(FailureReasons.INVALID_ID);
@@ -910,6 +1100,7 @@ namespace GAME_Server {
 		}
 		#endregion
 
+		#region user thread utils
 		/// <summary>
 		/// sends <see cref="OperationType.FAILURE"/> <see cref="GamePacket"/> to client and logs reason and caller line
 		/// </summary>
@@ -943,6 +1134,7 @@ namespace GAME_Server {
 			this.GameDataBase.Dispose();
 			this.Client.Disconnect();
 		}
+		#endregion
 
 	}
 	#endregion
@@ -962,26 +1154,154 @@ namespace GAME_Server {
 		private IGameDataBase player1DB;
 		private IGameDataBase player2DB;
 
-		internal GameRoomThread(TcpConnection hostConnection, Player host, IGameDataBase player1DB) {
+		private CustomGameRoom customRoomDescriptor;
+
+		private string usernamesOfPlayers;
+
+		private bool isCustom;
+		private bool isFull;
+		private bool isAbandoned;
+
+		private object joinLock = new object();
+		private object isFullLock = new object();
+		private object isAbandonedLock = new object();
+		private object matchmakinglock = new object();
+		private double matchmakingScore;
+
+		private AutoResetEvent roomFull;	//indicates that waiting for second player is over
+		internal ManualResetEvent gameEnded;
+
+		internal GameRoomThread(TcpConnection hostConnection, Player host, IGameDataBase player1DB, bool isCustom, CustomGameRoom customGameObj = null) {
+			hostConnection.GameAbandoned += GameAbandonedHandler;	//add event that indicates that player abandoned game
 			Player1 = host;
 			Player1Conn = hostConnection;
 			Player1DB = player1DB;
+			IsCustom = isCustom;
+			IsFull = false;
+			MatchMakingScore = Server.CalculateMatchmakingScore(Player1);
+			roomFull = new AutoResetEvent(false);
+			gameEnded = new ManualResetEvent(false);
+			if(isCustom) {
+				customRoomDescriptor = customGameObj;
+			}
 		}
 
-		public Player Player1 { get => player1; set => player1 = value; }
+		public Player Player1 { get => player1;set => player1 = value; }
 		public Player Player2 { get => player2; set => player2 = value; }
 		public TcpConnection Player1Conn { get => player1Conn; set => player1Conn = value; }
 		public TcpConnection Player2Conn { get => player2Conn; set => player2Conn = value; }
+		public bool IsCustom { get => isCustom; set => isCustom = value; }
+		public double MatchMakingScore { get => matchmakingScore; set => matchmakingScore = value; }
 		internal IGameDataBase Player1DB { get => player1DB; set => player1DB = value; }
 		internal IGameDataBase Player2DB { get => player2DB; set => player2DB = value; }
+		public bool IsFull {
+			get {
+				bool localIsFull;
+				lock (isFullLock) {
+					localIsFull = isFull;
+				}
+				return localIsFull;
+			}
+			set {
+				lock (isFullLock) {
+					isFull = value;
+				}
+			}
+		}
+		public bool IsAbandoned {
+			get {
+				bool localIsAbandoned;
+				lock (isAbandonedLock) {
+					localIsAbandoned = isAbandoned;
+				}
+				return localIsAbandoned;
+			}
+			set {
+				lock (isAbandonedLock) {
+					isAbandoned = value;
+				}
+			}
+		}
+		public string UsernamesOfPlayers { get => UsernamesOfPlayers; set => UsernamesOfPlayers = value; }
 		#endregion
 
+		#region main logic
 		/// <summary>
 		/// main function of <see cref="GameRoomThread"/>
 		/// </summary>
 		internal void RunGameThread() {
-
+			Server.Log("Game room started by: " + Player1.Username + " is custom: " + IsCustom + ", waiting for second player...");
+			roomFull.WaitOne();
+			if (IsAbandoned) {      //creator of room abandoned this room - end it, logging and setting variables is done in event handler
+				EndGameThread();
+			}
+			else {  //room is full and game can start
+				UsernamesOfPlayers = Player1.Username + "__vs__" + Player2.Username;
+				Server.Log(UsernamesOfPlayers + ": room is full, starting game");
+				//TODO game logic
+				Thread.Sleep(2000);
+				Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
+				EndGameThread();
+			}
 		}
+		#endregion
+
+		#region game room utils
+		internal bool JoinThisRoom(TcpConnection joinerConnection, Player joiner, IGameDataBase player2DB) {
+			lock (joinLock) {
+				if (!IsFull) {
+					Player2 = joiner;
+					Player2Conn = joinerConnection;
+					Player2DB = player2DB;
+					IsFull = true;
+					roomFull.Set();
+					return true;
+				}
+				else return false;
+			}
+		}
+
+		private void GameAbandonedHandler(object sender, EventArgs e) {
+			if (!IsFull) {
+				Server.Log(Player1.Username + ": abandoned his game before someone joined, ending game thread...");
+				if (IsCustom) Server.AbandonCustomGameRoom(customRoomDescriptor);
+				else Server.AbandonRankedGame(this);
+				IsAbandoned = true;
+				roomFull.Set();
+				SendSuccess(Player1Conn);
+			}
+			else {
+				Server.Log(Player1.Username + ": cannot abandon game if second player already joined");
+				SendFailure(Player2Conn, FailureReasons.CANT_ABANDON);
+			}
+		}
+
+		/// <summary>
+		/// this should be the last operation called in this thread
+		/// </summary>
+		internal void EndGameThread() {
+			gameEnded.Set();
+		}
+
+		internal double GetMatchmakingScore() {
+			lock(matchmakinglock) {
+				return MatchMakingScore;
+			}
+		}
+
+		/// <summary>
+		/// sends <see cref="OperationType.FAILURE"/> <see cref="GamePacket"/> to client and logs reason and caller line
+		/// </summary>
+		private void SendFailure(TcpConnection playerConn, string reason, [CallerLineNumber] int callerLine = 0) {
+			string failMsg = "Operation Failed! at: " + callerLine + ". Reason: " + reason;
+			Server.Log(failMsg);
+			playerConn.Send(new GamePacket(OperationType.FAILURE, reason));
+		}
+
+		private void SendSuccess(TcpConnection playerConn) {
+			playerConn.Send(new GamePacket(OperationType.SUCCESS, new object()));
+		}
+		#endregion
 
 	}
 	#endregion

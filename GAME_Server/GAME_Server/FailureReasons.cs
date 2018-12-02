@@ -21,5 +21,9 @@ namespace GAME_Server {
 		public static readonly string DUPLICATES_NOT_ALLOWED = "no duplicates in lists are allowed";
 		public static readonly string ZERO_SHIPS_IN_FLEET = "fleet must contain at least one ship";
 		public static readonly string FACTION_MUST_BE_SAME = "All elements must belong to the same faction";
+		public static readonly string NO_SUCH_ROOM = "Room already full or deleted";
+		public static readonly string WRONG_ROOM_PASSWORD = "Wrong room password";
+		public static readonly string ROOM_FULL = "Room is already full";
+		public static readonly string CANT_ABANDON = "Cannot abandon room that is already full";
 	}
 }

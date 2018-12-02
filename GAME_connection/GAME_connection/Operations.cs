@@ -18,8 +18,12 @@ namespace GAME_connection {
 
 		//game
 		PLAY_RANKED,
-		PLAY_CUSTOM,
+		PLAY_CUSTOM_JOIN,
+		PLAY_CUSTOM_CREATE,
+		GET_CUSTOM_ROOMS,
 		MAKE_MOVE,
+		ABANDON_GAME,
+		SURRENDER,
 
 		//login/register/logout
 		LOGIN,
@@ -55,8 +59,11 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.UPDATE_FLEET, typeof(Fleet));                //updated fleet object		maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.ADD_FLEET, typeof(Fleet));                   //new fleet object			maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DELETE_FLEET, typeof(Fleet));                //fleet to delete		maybe only fleet name or id?	- important for server, server respons with S/F
-			operationMapping.Add(OperationType.PLAY_RANKED, typeof(object));				//nothing - never used									- null
-			operationMapping.Add(OperationType.PLAY_CUSTOM, typeof(string));                //TODO <---------------------------------------------	- 
+			operationMapping.Add(OperationType.PLAY_RANKED, typeof(object));                //nothing - never used									- null
+			operationMapping.Add(OperationType.ABANDON_GAME, typeof(object));               //internal packet does not matter, s/F response			- server respons with S/F
+			operationMapping.Add(OperationType.PLAY_CUSTOM_JOIN, typeof(CustomGameRoom));   //room with room name, creator name and password		- important for server, server respons with S/F
+			operationMapping.Add(OperationType.PLAY_CUSTOM_CREATE, typeof(CustomGameRoom)); //room with all variables set							- important for server, server respons with S/F
+			operationMapping.Add(OperationType.GET_CUSTOM_ROOMS, typeof(List<CustomGameRoom>)); //list of available vustom rooms					- important for client
 			operationMapping.Add(OperationType.LOGIN, typeof(Player));                      //player object with password and username set			- important for server, server respons with S/F
 			operationMapping.Add(OperationType.REGISTER, typeof(Player));                   //player object with password and username set			- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DISCONNECT, typeof(object));                 //nothing - never used									- importnant for server, no server response

@@ -42,5 +42,10 @@ namespace GAME_connection {
 		public int GamesPlayed { get => gamesPlayed; set => gamesPlayed = value; }
 		public int GamesWon { get => gamesWon; set => gamesWon = value; }
 		public int Money { get => money; set => money = value; }
+		public int WinLoseRatio {
+			get {
+				return GamesWon / GamesPlayed;
+			}
+		}
 	}
 }
