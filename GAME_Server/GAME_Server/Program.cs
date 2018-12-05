@@ -774,6 +774,7 @@ namespace GAME_Server {
 		private object userLock = new object();
 
 		internal UserThread(TcpConnection client) {
+			client.ConnectionEnded += UserDisconnectedHandler;
 			this.Client = client;
 			this.GameDataBase = Server.GetGameDBContext();
 			this.gameRNG = new GameRNG();
@@ -892,10 +893,11 @@ namespace GAME_Server {
 
 		#region main logic
 		private void UserProcessing() {
-			bool clientConnected = true;
+			//bool clientConnected = true;
+			ClientConnected = true;
 			DbPlayer thisUser;
 			string validationResult;
-			mainLoop: while (clientConnected) {
+			mainLoop: while (ClientConnected) {
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				try {
 					gameSwitch: switch (gamePacket.OperationType) {
@@ -1014,7 +1016,7 @@ namespace GAME_Server {
 						//====================================================== PLAYER STATS =====================================================================================================
 						case OperationType.DISCONNECT:          //OK
 							Server.Log(User.Username + ": wants to disconnect");
-							clientConnected = false;
+							ClientConnected = false;
 							break;
 						//====================================================== CUSTOM GAME =====================================================================================================
 						case OperationType.GET_CUSTOM_ROOMS:		//TODO NOT TESTED
@@ -1025,7 +1027,7 @@ namespace GAME_Server {
 						case OperationType.PLAY_CUSTOM_CREATE:		//TODO NOT TESTED
 							CustomGameRoom roomToCreate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + ": wants to create a new custom game with name: " + roomToCreate.RoomName);
-							GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true);
+							GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true, this, roomToCreate);
 							Server.CreateCustomRoom(roomToCreate, customGameRoomToCreate);
 							Thread newCustomGameThread = new Thread(new ThreadStart(customGameRoomToCreate.RunGameThread));
 							newCustomGameThread.Start();
@@ -1059,7 +1061,7 @@ namespace GAME_Server {
 							Server.Log(User.Username + ": wants to play ranked game");
 							GameRoomThread rankedGame = Server.JoinBestGameRoomForPlayer(User);
 							if(rankedGame == null) {			//there are no rooms - need to create new one
-								GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false);
+								GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false, this);
 								Thread newRankedGameThread = new Thread(new ThreadStart(newRankedRoom.RunGameThread));
 								newRankedGameThread.Start();
 								//newCustomGameThread.Join();
@@ -1101,13 +1103,18 @@ namespace GAME_Server {
 		#endregion
 
 		#region user thread utils
+		private void UserDisconnectedHandler(object sender, GameEventArgs e) {
+			Server.Log(User.Username + ": sudden disconnection (disconnect event received) - ending user thread");
+			ClientConnected = false;
+		}
+
 		/// <summary>
 		/// sends <see cref="OperationType.FAILURE"/> <see cref="GamePacket"/> to client and logs reason and caller line
 		/// </summary>
 		/// <param name="reason"></param>
 		/// <param name="callerLine">DO NOT SET</param>
 		private void SendFailure(string reason, [CallerLineNumber] int callerLine = 0) {
-			string failMsg = "Operation Failed! at: " + callerLine + ". Reason: " + reason;
+			string failMsg = "! FAIL: Operation failed at: " + callerLine + ". Reason: " + reason;
 			Server.Log(failMsg);
 			this.Client.Send(new GamePacket(OperationType.FAILURE, reason));
 		}
@@ -1154,6 +1161,9 @@ namespace GAME_Server {
 		private IGameDataBase player1DB;
 		private IGameDataBase player2DB;
 
+		private UserThread player1ThreadObj;
+		private UserThread player2ThreadObj;
+
 		private CustomGameRoom customRoomDescriptor;
 
 		private string usernamesOfPlayers;
@@ -1161,20 +1171,25 @@ namespace GAME_Server {
 		private bool isCustom;
 		private bool isFull;
 		private bool isAbandoned;
+		private bool continueGameLoop;
 
 		private object joinLock = new object();
 		private object isFullLock = new object();
 		private object isAbandonedLock = new object();
 		private object matchmakinglock = new object();
+		private object continueGameLoopLock = new object();
+		private object gameEndLock = new object();
 		private double matchmakingScore;
 
 		private AutoResetEvent roomFull;	//indicates that waiting for second player is over
 		internal ManualResetEvent gameEnded;
 
-		internal GameRoomThread(TcpConnection hostConnection, Player host, IGameDataBase player1DB, bool isCustom, CustomGameRoom customGameObj = null) {
-			hostConnection.GameAbandoned += GameAbandonedHandler;	//add event that indicates that player abandoned game
+		internal GameRoomThread(TcpConnection hostConnection, Player host, IGameDataBase player1DB, bool isCustom, UserThread player1ThreadObj, CustomGameRoom customGameObj = null) {
+			hostConnection.GameAbandoned += GameAbandonedHandler;   //add event that indicates that player abandoned game
+			hostConnection.ConnectionEnded += PlayerDisconnectedHandler;	//add event that indicates player disconnection
 			Player1 = host;
 			Player1Conn = hostConnection;
+			Player1Conn.PlayerNumber = 1;
 			Player1DB = player1DB;
 			IsCustom = isCustom;
 			IsFull = false;
@@ -1222,7 +1237,23 @@ namespace GAME_Server {
 				}
 			}
 		}
+		public bool ContinueGameLoop {
+			get {
+				bool localContinueGameLoop;
+				lock (continueGameLoopLock) {
+					localContinueGameLoop = continueGameLoop;
+				}
+				return localContinueGameLoop;
+			}
+			set {
+				lock (continueGameLoopLock) {
+					continueGameLoop = value;
+				}
+			}
+		}
 		public string UsernamesOfPlayers { get => UsernamesOfPlayers; set => UsernamesOfPlayers = value; }
+		internal UserThread Player1ThreadObj { get => player1ThreadObj; set => player1ThreadObj = value; }
+		internal UserThread Player2ThreadObj { get => player2ThreadObj; set => player2ThreadObj = value; }
 		#endregion
 
 		#region main logic
@@ -1238,8 +1269,13 @@ namespace GAME_Server {
 			else {  //room is full and game can start
 				UsernamesOfPlayers = Player1.Username + "__vs__" + Player2.Username;
 				Server.Log(UsernamesOfPlayers + ": room is full, starting game");
+				SendSuccess(Player1Conn);
+				SendSuccess(Player2Conn);
+
 				//TODO game logic
 				Thread.Sleep(2000);
+				//---------------
+
 				Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
 				EndGameThread();
 			}
@@ -1252,6 +1288,7 @@ namespace GAME_Server {
 				if (!IsFull) {
 					Player2 = joiner;
 					Player2Conn = joinerConnection;
+					Player2Conn.PlayerNumber = 2;
 					Player2DB = player2DB;
 					IsFull = true;
 					roomFull.Set();
@@ -1261,6 +1298,25 @@ namespace GAME_Server {
 			}
 		}
 
+		private void UpdateLoserAndWiner(Player loser, Player winner) {
+			if(winner.Username == Player1.Username) {
+				//TODO player victory/loss
+			}
+			else {
+
+			}
+		}
+
+		private void HandleSuddenDisconnect(Player disconnectedPlayer) {
+			if(IsFull) {    //all players were connected - need to set that disconnected player lost
+				Server.Log(Player1.Username + ": disconnected before game end");
+				if (disconnectedPlayer.Username == Player1.Username) UpdateLoserAndWiner(Player1, Player2);
+				else UpdateLoserAndWiner(Player2, Player1);
+				EndGameThread();
+			}
+		}
+
+		#region TcpConnection event handlers
 		private void GameAbandonedHandler(object sender, EventArgs e) {
 			if (!IsFull) {
 				Server.Log(Player1.Username + ": abandoned his game before someone joined, ending game thread...");
@@ -1276,11 +1332,28 @@ namespace GAME_Server {
 			}
 		}
 
+		private void PlayerDisconnectedHandler(object sender, GameEventArgs e) {
+			if (e.PlayerNumber == 1) {
+				Player1ThreadObj.ClientConnected = false;	//tell user thread that player is no longer connected
+				HandleSuddenDisconnect(Player1);
+			}
+			else if(e.PlayerNumber == 2) {
+				Player2ThreadObj.ClientConnected = false;
+				HandleSuddenDisconnect(Player2);
+			}
+		}
+		#endregion
+
 		/// <summary>
 		/// this should be the last operation called in this thread
 		/// </summary>
 		internal void EndGameThread() {
-			gameEnded.Set();
+			ContinueGameLoop = false;
+			lock (gameEndLock) {
+				ClearPlayerNumberInConnection(Player1Conn);
+				ClearPlayerNumberInConnection(Player2Conn);
+				gameEnded.Set();
+			}
 		}
 
 		internal double GetMatchmakingScore() {
@@ -1289,11 +1362,15 @@ namespace GAME_Server {
 			}
 		}
 
+		private void ClearPlayerNumberInConnection(TcpConnection connection) {
+			connection.PlayerNumber = 0;
+		}
+
 		/// <summary>
 		/// sends <see cref="OperationType.FAILURE"/> <see cref="GamePacket"/> to client and logs reason and caller line
 		/// </summary>
 		private void SendFailure(TcpConnection playerConn, string reason, [CallerLineNumber] int callerLine = 0) {
-			string failMsg = "Operation Failed! at: " + callerLine + ". Reason: " + reason;
+			string failMsg = "! FAIL: Operation failed at: " + callerLine + ". Reason: " + reason;
 			Server.Log(failMsg);
 			playerConn.Send(new GamePacket(OperationType.FAILURE, reason));
 		}

@@ -60,7 +60,14 @@ namespace GAME_connection {
 		private bool debug;
 		internal Logger tcpConnectionLogger;
 
+		private int playerNumber = 0;
+
 		public event EventHandler GameAbandoned;
+		/// <summary>
+		/// this event is used when sudden disconnect has taken place - disconnect that was not planned by client sending <see cref="OperationType.DISCONNECT"/> message to server
+		/// </summary>
+		public event EventHandler<GameEventArgs> ConnectionEnded;
+		public event EventHandler ConnectionTestReceived;
 
 		#region Constructor
 		/// <summary>
@@ -180,11 +187,13 @@ namespace GAME_connection {
 					serializer.Serialize(netStream, packet);
 				}
 			} catch (IOException ex) {
-				if(debug) tcpConnectionLogger("Connection ended");
+				if(debug) tcpConnectionLogger("Connection ended - on write");
+				OnConnectionEnded(new GameEventArgs(PlayerNumber));
 				//Console.WriteLine(ex.StackTrace);
 				connectionEnded = true;
 			} catch (SerializationException ex2) {
-				if (debug) tcpConnectionLogger("Connection ended");
+				if (debug) tcpConnectionLogger("Connection ended - on write");
+				OnConnectionEnded(new GameEventArgs(PlayerNumber));
 				//Console.WriteLine(ex2.StackTrace);
 				connectionEnded = true;
 			}
@@ -244,7 +253,7 @@ namespace GAME_connection {
 			while(KeepReceiving) {
 				try {
 					GamePacket receivedPacket = Receive();
-					if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) Console.WriteLine("CONNECTION_TEST received");
+					if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) OnConnectionTestReceived(EventArgs.Empty);
 					else if (receivedPacket.OperationType == OperationType.ABANDON_GAME) OnGameAbandoned(EventArgs.Empty);
 					else {
 						lock (queueLock) {
@@ -254,12 +263,14 @@ namespace GAME_connection {
 					}
 					if (receivedPacket.OperationType == OperationType.DISCONNECT) KeepReceiving = false;        //stop receiving if disconnect
 				} catch(IOException ex) {
-					if (debug) tcpConnectionLogger("Connection ended");
+					if (debug) tcpConnectionLogger("Connection ended - on read");
+					OnConnectionEnded(new GameEventArgs(PlayerNumber));
 					//Console.WriteLine(ex.StackTrace);
 					connectionEnded = true;
 					break;
 				} catch (SerializationException ex2) {
-					if (debug) tcpConnectionLogger("Connection ended");
+					if (debug) tcpConnectionLogger("Connection ended - on read");
+					OnConnectionEnded(new GameEventArgs(PlayerNumber));
 					//Console.WriteLine(ex2.StackTrace);
 					connectionEnded = true;
 					break;
@@ -280,12 +291,28 @@ namespace GAME_connection {
 			}
 		}
 
+		#region connection events
 		protected virtual void OnGameAbandoned(EventArgs e) {
 			EventHandler handler = GameAbandoned;
 			if (handler != null) {
 				handler(this, e);
 			}
 		}
+
+		protected virtual void OnConnectionEnded(GameEventArgs e) {
+			EventHandler<GameEventArgs> handler = ConnectionEnded;
+			if (handler != null) {
+				handler(this, e);
+			}
+		}
+
+		protected virtual void OnConnectionTestReceived(EventArgs e) {
+			EventHandler handler = ConnectionTestReceived;
+			if (handler != null) {
+				handler(this, e);
+			}
+		}
+		#endregion
 
 		private bool KeepReceiving {
 			get {
@@ -348,6 +375,7 @@ namespace GAME_connection {
 		public string RemoteIpAddress { get => remoteIpAddress; set => remoteIpAddress = value; }
 		public int RemotePortNumber { get => remotePortNumber; set => remotePortNumber = value; }
 		public bool RemotePlannedDisconnect { get => remotePlannedDisconnect; set => remotePlannedDisconnect = value; }
+		public int PlayerNumber { get => playerNumber; set => playerNumber = value; }
 
 		#region IDisposable and Disconnect
 		private void ProcessDisconnectInternal(bool sendDisconnectToRemote) {
