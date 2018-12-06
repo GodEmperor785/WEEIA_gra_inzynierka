@@ -772,6 +772,7 @@ namespace GAME_Server {
 		private bool clientConnected;
 		private object loopLock = new object();
 		private object userLock = new object();
+		private Fleet selectedFleetForGame = null;
 
 		internal UserThread(TcpConnection client) {
 			client.ConnectionEnded += UserDisconnectedHandler;
@@ -801,6 +802,8 @@ namespace GAME_Server {
 				}
 			}
 		}
+
+		public Fleet SelectedFleetForGame { get => selectedFleetForGame; set => selectedFleetForGame = value; }
 		#endregion
 
 		/// <summary>
@@ -1018,66 +1021,92 @@ namespace GAME_Server {
 							Server.Log(User.Username + ": wants to disconnect");
 							ClientConnected = false;
 							break;
+						//====================================================== SELECT FLEET FOR GAME =====================================================================================================
+						case OperationType.SELECT_FLEET:        //TODO NOT TESTED
+							Server.Log(User.Username + ": wants to select fleet used for next game");
+							Fleet selectedFleet = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							DbFleet fleetForGame = GameDataBase.GetFleetWithId(selectedFleet.Id);
+							if (fleetForGame.Owner.Id != User.Id) SendFailure(FailureReasons.INVALID_ID);
+							else {
+								SelectedFleetForGame = fleetForGame.ToFleet();
+								SendSuccess();
+							}
+							break;									
 						//====================================================== CUSTOM GAME =====================================================================================================
 						case OperationType.GET_CUSTOM_ROOMS:		//TODO NOT TESTED
 							Server.Log(User.Username + ": wants to get list od custom rooms");
 							List<CustomGameRoom> rooms = Server.GetAvailableCustomRooms();
 							Client.Send(new GamePacket(OperationType.GET_CUSTOM_ROOMS, rooms));
 							break;
-						case OperationType.PLAY_CUSTOM_CREATE:		//TODO NOT TESTED
-							CustomGameRoom roomToCreate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
-							Server.Log(User.Username + ": wants to create a new custom game with name: " + roomToCreate.RoomName);
-							GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true, this, roomToCreate);
-							Server.CreateCustomRoom(roomToCreate, customGameRoomToCreate);
-							Thread newCustomGameThread = new Thread(new ThreadStart(customGameRoomToCreate.RunGameThread));
-							newCustomGameThread.Start();
-							//newCustomGameThread.Join();
-							Server.Log(User.Username + ": create game room: " + roomToCreate.RoomName + "successful, user thread blocks");
-							customGameRoomToCreate.gameEnded.WaitOne();		//block until end of the game
-							Server.Log(User.Username + ": has ended his game, user thread continues");
+						case OperationType.PLAY_CUSTOM_CREATE:      //TODO NOT TESTED
+							if (SelectedFleetForGame == null) SendFailure(FailureReasons.NO_FLEET_SELECTED);
+							else {
+								CustomGameRoom roomToCreate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+								Server.Log(User.Username + ": wants to create a new custom game with name: " + roomToCreate.RoomName);
+								GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true, this, roomToCreate);
+								Server.CreateCustomRoom(roomToCreate, customGameRoomToCreate);
+								Thread newCustomGameThread = new Thread(new ThreadStart(customGameRoomToCreate.RunGameThread));
+								newCustomGameThread.Start();
+								//newCustomGameThread.Join();
+								Server.Log(User.Username + ": create game room: " + roomToCreate.RoomName + "successful, user thread blocks");
+								customGameRoomToCreate.gameEnded.WaitOne();     //block until end of the game
+								Server.Log(User.Username + ": has ended his game, user thread continues");
+								UnsetSelectedFleetAfterGame();
+							}
 							break;
 						case OperationType.PLAY_CUSTOM_JOIN:        //TODO NOT TESTED
-							CustomGameRoom roomToJoin = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
-							Server.Log(User.Username + ": wants to join custom game with name: " + roomToJoin.RoomName);
-							string joinResult;
-							GameRoomThread customGameRoomToJoin = Server.JoinCustomRoom(roomToJoin, out joinResult);
-							if (customGameRoomToJoin == null) {     //join failed
-								SendFailure(joinResult);
-							}
-							else {      //join succeeded - thread removed from available and JoinThisRoom can be called
-								bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase);
-								if (joinSuccess) {
-									Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
-									customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
-									Server.Log(User.Username + ": has ended his game, user thread continues");
+							if (SelectedFleetForGame == null) SendFailure(FailureReasons.NO_FLEET_SELECTED);
+							else {
+								CustomGameRoom roomToJoin = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+								Server.Log(User.Username + ": wants to join custom game with name: " + roomToJoin.RoomName);
+								GameRoomThread customGameRoomToJoin = Server.JoinCustomRoom(roomToJoin, out string joinResult);
+								if (customGameRoomToJoin == null) {     //join failed
+									UnsetSelectedFleetAfterGame();
+									SendFailure(joinResult);
 								}
-								else {
-									SendFailure(FailureReasons.ROOM_FULL);
+								else {      //join succeeded - thread removed from available and JoinThisRoom can be called
+									bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase);
+									if (joinSuccess) {
+										Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
+										customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
+										Server.Log(User.Username + ": has ended his game, user thread continues");
+										UnsetSelectedFleetAfterGame();
+									}
+									else {
+										UnsetSelectedFleetAfterGame();
+										SendFailure(FailureReasons.ROOM_FULL);
+									}
 								}
 							}
 							break;
 						//====================================================== RANKED GAME =====================================================================================================
 						case OperationType.PLAY_RANKED:     //TODO NOT TESTED
-							Server.Log(User.Username + ": wants to play ranked game");
-							GameRoomThread rankedGame = Server.JoinBestGameRoomForPlayer(User);
-							if(rankedGame == null) {			//there are no rooms - need to create new one
-								GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false, this);
-								Thread newRankedGameThread = new Thread(new ThreadStart(newRankedRoom.RunGameThread));
-								newRankedGameThread.Start();
-								//newCustomGameThread.Join();
-								Server.Log(User.Username + ": create ranked game room successful, user thread blocks");
-								newRankedRoom.gameEnded.WaitOne();     //block until end of the game
-								Server.Log(User.Username + ": has ended his game, user thread continues");
-							}
-							else {      //join successful - GameRoomThread removed from available and JoinThisThread can be called
-								bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase);
-								if (joinSuccess) {
-									Server.Log(User.Username + ": join game room successful, user thread blocks");
-									rankedGame.gameEnded.WaitOne();   //block until end of the game
+							if (SelectedFleetForGame == null) SendFailure(FailureReasons.NO_FLEET_SELECTED);
+							else {
+								Server.Log(User.Username + ": wants to play ranked game");
+								GameRoomThread rankedGame = Server.JoinBestGameRoomForPlayer(User);
+								if (rankedGame == null) {           //there are no rooms - need to create new one
+									GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false, this);
+									Thread newRankedGameThread = new Thread(new ThreadStart(newRankedRoom.RunGameThread));
+									newRankedGameThread.Start();
+									//newCustomGameThread.Join();
+									Server.Log(User.Username + ": create ranked game room successful, user thread blocks");
+									newRankedRoom.gameEnded.WaitOne();     //block until end of the game
 									Server.Log(User.Username + ": has ended his game, user thread continues");
+									UnsetSelectedFleetAfterGame();
 								}
-								else {
-									SendFailure(FailureReasons.ROOM_FULL);
+								else {      //join successful - GameRoomThread removed from available and JoinThisThread can be called
+									bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase);
+									if (joinSuccess) {
+										Server.Log(User.Username + ": join game room successful, user thread blocks");
+										rankedGame.gameEnded.WaitOne();   //block until end of the game
+										Server.Log(User.Username + ": has ended his game, user thread continues");
+										UnsetSelectedFleetAfterGame();
+									}
+									else {
+										UnsetSelectedFleetAfterGame();
+										SendFailure(FailureReasons.ROOM_FULL);
+									}
 								}
 							}
 							break;
@@ -1131,6 +1160,10 @@ namespace GAME_Server {
 			DbPlayer player = GameDataBase.GetPlayerWithUsername(this.User.Username);
 			this.User = player.ToPlayer();
 			return player;
+		}
+
+		private void UnsetSelectedFleetAfterGame() {
+			SelectedFleetForGame = null;
 		}
 
 		/// <summary>
