@@ -313,13 +313,6 @@ namespace GAME_Server {
 		}
 	}
 
-	/*[Table("fleet_size_exp")]
-	public class DbFleetSizeExpMapping {
-		public int Id { get; set; }
-		public int Experience { get; set; }
-		public int MaxFleetSize { get; set; }
-	}*/
-
 	[Table("lootboxes")]
 	public class DbLootBox {
 		public int Id { get; set; }

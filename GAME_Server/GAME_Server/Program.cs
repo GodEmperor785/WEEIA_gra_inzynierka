@@ -22,7 +22,6 @@ namespace GAME_Server {
 
 		//database specific fields and properties
 		private static IGameDataBase gameDataBase;		//used only for initialization of BaseModifiers etc. Other IGameDataBase are created in user threads
-		private static List<Faction> allFactions;
 		private static BaseModifiers baseModifiers;
 
 		//locks
@@ -39,6 +38,7 @@ namespace GAME_Server {
 		//http://www.entityframeworktutorial.net/eager-loading-in-entity-framework.aspx
 		//http://www.entityframeworktutorial.net/crud-operation-in-connected-scenario-entity-framework.aspx
 		//https://mehdi.me/ambient-dbcontext-in-ef6/
+		//https://old.windowsvalley.com/uninstall-mysql-from-windows/
 		//sciagnij mysql connector i zainstaluj, potem dodaj referencje
 		//nuget package manager -> browse -> MySQL i dodaj MySQL.Data.Entity (zwykly MySQL.Data powinien byc dodany wczesniej przy instalacji connectora i dodaniu referencji)
 		//6.9.12 mysql dziala
@@ -47,8 +47,6 @@ namespace GAME_Server {
 		//wymagane jest ssl i/lub tls 1.2 bo inaczej paypal moze odrzucic, wymagane sa certyfikaty, informacje sa tylko o aplikacjach webowych w przegladarce, jakies dane przekazywane przez sesje - trzebaby robic to inaczej
 		//w sumie kilkaset linii kodu - w tym ponad 300 na sama klase z tutoriala (a sama klasa nie wystarczy)
 
-		// - historia rozgrywek, kto z kim i jakie floty - in progress
-		// - wirtualna waluta i kupowanie kart, przypisywanie kart do gracza, player w wersji DB, many-to-many - in progress
 		// - turnieje po okolo 8 graczy o duze nagrody
 		// - apka windows forms dla admina
 
@@ -57,10 +55,7 @@ namespace GAME_Server {
 
 		//aplikacja admina nie powinna dzialac podczas dzialania serwera gry - serwer powinien byc wylaczany na czas potrzebny adminowi do zmian!
 
-		//port forwarding na porcie 10001 dziala jesli pinguje adres lokalny interfejsu zewnetrznego routera 10.3.102.132, ale nie jak publiczne ip 31.183.186.210, moze trzeba cos na modemie
-
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
-		public static List<Faction> AllFactions { get => allFactions; }
 		public static BaseModifiers BaseModifiers { get => baseModifiers; }
 
 		//thread management specific fields and properties
@@ -72,31 +67,40 @@ namespace GAME_Server {
 		internal static bool continueAcceptingConnections = true;
 
 		static void Main(string[] args) {
-			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
-			InitilizeGameDataFromDB(false, true);		//change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
+			try {
+				Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
+				InitilizeGameDataFromDB(false, true);       //change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
-			IPAddress ipAddress = IPAddress.Parse(ip);
-			//TcpListener listener = new TcpListener(ipAddress, port);
-			TcpListener listener = new TcpListener(IPAddress.Any, port);
-			listener.Start();
-			//Log("Server listening on: " + ip + ":" + port);
-			Thread cliThread = new Thread(new ThreadStart(ServerCLI));
-			cliThread.Start();
+				//IPAddress ipAddress = IPAddress.Parse(ip);
+				//TcpListener listener = new TcpListener(ipAddress, port);
+				TcpListener listener = new TcpListener(IPAddress.Any, port);
+				listener.Start();
+				Log("Server listening on port : " + port);
+				Thread cliThread = new Thread(new ThreadStart(ServerCLI));
+				cliThread.Start();
 
-			while (continueAcceptingConnections) {
-				Log("Server is waiting for client...");
-				TcpClient client = listener.AcceptTcpClient();
-				TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
-				//TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
-				Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
+				while (continueAcceptingConnections) {
+					Log("Server is waiting for client...");
+					TcpClient client = listener.AcceptTcpClient();
+					TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
+					//TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "gameServerCert.cer");		//uncomment this to enable ssl (with public certificate)
+					//TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
+					Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
-				//Thread t = new Thread(new ParameterizedThreadStart(Test));
-				UserThread userThread = new UserThread(gameClient);
-				Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
-				userThreads.Add(t);
-				userThreadObjects.Add(userThread);
-				//t.Start(gameClient);
-				t.Start();
+					//Thread t = new Thread(new ParameterizedThreadStart(Test));
+					UserThread userThread = new UserThread(gameClient);
+					Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
+					userThreads.Add(t);
+					userThreadObjects.Add(userThread);
+					//t.Start(gameClient);
+					t.Start();
+				}
+			} catch(Exception critical) {
+				Log("UNHANDLED EXCEPTION HAPPENED - STOPPING SERVER", true);
+				Log(critical.Message);
+				Log(critical.Source);
+				Log(critical.StackTrace);
+				Console.ReadKey();
 			}
 		}
 
@@ -104,7 +108,7 @@ namespace GAME_Server {
 			string cmd = Console.ReadLine();
 			switch(cmd) {
 				case "exit":
-					Console.WriteLine("exiting...");
+					Log("exiting...");
 					continueAcceptingConnections = false;
 					foreach(UserThread t in userThreadObjects) {
 						t.ClientConnected = false;
@@ -113,7 +117,7 @@ namespace GAME_Server {
 					Environment.Exit(EXIT_STATUS_MANUAL_SHUTDOWN);
 					break;
 				default:
-					Console.WriteLine("ERROR: unknown command - " + cmd);
+					Log("ERROR: unknown command - " + cmd);
 					break;
 			}
 		}
@@ -1065,7 +1069,7 @@ namespace GAME_Server {
 									SendFailure(joinResult);
 								}
 								else {      //join succeeded - thread removed from available and JoinThisRoom can be called
-									bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase);
+									bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase, this);
 									if (joinSuccess) {
 										Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
 										customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
@@ -1096,7 +1100,7 @@ namespace GAME_Server {
 									UnsetSelectedFleetAfterGame();
 								}
 								else {      //join successful - GameRoomThread removed from available and JoinThisThread can be called
-									bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase);
+									bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase, this);
 									if (joinSuccess) {
 										Server.Log(User.Username + ": join game room successful, user thread blocks");
 										rankedGame.gameEnded.WaitOne();   //block until end of the game
@@ -1197,6 +1201,9 @@ namespace GAME_Server {
 		private UserThread player1ThreadObj;
 		private UserThread player2ThreadObj;
 
+		private Fleet player1Fleet;
+		private Fleet player2Fleet;
+
 		private CustomGameRoom customRoomDescriptor;
 
 		private string usernamesOfPlayers;
@@ -1227,6 +1234,8 @@ namespace GAME_Server {
 			IsCustom = isCustom;
 			IsFull = false;
 			MatchMakingScore = Server.CalculateMatchmakingScore(Player1);
+			Player1ThreadObj = player1ThreadObj;
+			Player1Fleet = player1ThreadObj.SelectedFleetForGame;
 			roomFull = new AutoResetEvent(false);
 			gameEnded = new ManualResetEvent(false);
 			if(isCustom) {
@@ -1284,9 +1293,11 @@ namespace GAME_Server {
 				}
 			}
 		}
-		public string UsernamesOfPlayers { get => UsernamesOfPlayers; set => UsernamesOfPlayers = value; }
+		public string UsernamesOfPlayers { get => usernamesOfPlayers; set => usernamesOfPlayers = value; }
 		internal UserThread Player1ThreadObj { get => player1ThreadObj; set => player1ThreadObj = value; }
 		internal UserThread Player2ThreadObj { get => player2ThreadObj; set => player2ThreadObj = value; }
+		public Fleet Player1Fleet { get => player1Fleet; set => player1Fleet = value; }
+		public Fleet Player2Fleet { get => player2Fleet; set => player2Fleet = value; }
 		#endregion
 
 		#region main logic
@@ -1316,13 +1327,15 @@ namespace GAME_Server {
 		#endregion
 
 		#region game room utils
-		internal bool JoinThisRoom(TcpConnection joinerConnection, Player joiner, IGameDataBase player2DB) {
+		internal bool JoinThisRoom(TcpConnection joinerConnection, Player joiner, IGameDataBase player2DB, UserThread player2ThreadObj) {
 			lock (joinLock) {
 				if (!IsFull) {
 					Player2 = joiner;
 					Player2Conn = joinerConnection;
 					Player2Conn.PlayerNumber = 2;
 					Player2DB = player2DB;
+					Player2ThreadObj = player2ThreadObj;
+					Player2Fleet = player2ThreadObj.SelectedFleetForGame;
 					IsFull = true;
 					roomFull.Set();
 					return true;
