@@ -24,7 +24,7 @@ namespace GAME_connection {
 	/// <para>To disconnect from remote use <see cref="SendDisconnect"/>. To process remote disconnect use <see cref="Disconnect"/></para>
 	/// </summary>
 	public class TcpConnection : IDisposable {
-		public static readonly int DEFAULT_PORT = 10001;
+		public static readonly int DEFAULT_PORT = 10000;
 
 		private static readonly int connectionTestIntervalMilis = 5000;
 
