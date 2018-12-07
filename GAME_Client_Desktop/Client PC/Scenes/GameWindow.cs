@@ -28,7 +28,7 @@ namespace Client_PC.Scenes
         private List<Ship> ships;
         private Card CurrentCard;
         private Card LastCard;
-        
+        private int CardsInRow = 0;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -154,24 +154,30 @@ namespace Client_PC.Scenes
                 if (CurrentCard.Parent == yourGrid) // checking if it's your card so you can use it later
                 {
                     CurrentCard.Status = Card.status.clicked;
+                    CardsInRow = 1;
                 }
             }
             else
             {
-                if (LastCard.Parent == CurrentCard.Parent) // checking if previous card in action was from the same parent (
+                CardsInRow++;
+                if (CardsInRow == 2)
                 {
-                    LastCard.Status = Card.status.clear;
-                    CurrentCard.Status = Card.status.clicked;
-                }
-                else
-                {
-                    CurrentCard.Status = Card.status.target;
+                    if (LastCard.Parent == CurrentCard.Parent) // checking if previous card in action was from the same parent (
+                    {
+                        LastCard.Status = Card.status.clear;
+                        CurrentCard.Status = Card.status.clicked;
+                        CardsInRow = 1;
+                    }
+                    else
+                    {
+                        CurrentCard.Status = Card.status.target;
+                    }
                 }
             }
 
             LastCard = CurrentCard;
         }
-
+        
         public override void UpdateClickables()
         {
             if (Game1.self.FocusedElement == null)
@@ -194,7 +200,11 @@ namespace Client_PC.Scenes
                 }
             });
         }
-
+        public override void UpdateButtonNull()
+        {
+            CardsInRow = 0;
+            LastCard = null;
+        }
         public void Draw(GameTime gameTime)
         {
             layout.Draw(Game1.self.spriteBatch);

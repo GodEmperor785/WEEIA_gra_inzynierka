@@ -69,14 +69,26 @@ namespace Client_PC.Scenes
                 if (button != null)
                 {
                     UpdateClick(button);
+                    UpdateButtonNotNull();
                 }
                 else
                 {
                     Game1.self.FocusedElement = null;
+                    UpdateButtonNull();
                 }
 
                 UpdateClickables();
             }
+        }
+
+        public virtual void UpdateButtonNotNull()
+        {
+
+        }
+
+        public virtual void UpdateButtonNull()
+        {
+
         }
 
         public virtual void UpdateClickables()
