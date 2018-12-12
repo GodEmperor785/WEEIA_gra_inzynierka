@@ -25,6 +25,7 @@ namespace GAME_connection {
 	/// </summary>
 	public class TcpConnection : IDisposable {
 		public static readonly int DEFAULT_PORT = 10000;
+		public static readonly int DEFAULT_PORT_CLIENT = 51410;
 
 		private static readonly int connectionTestIntervalMilis = 5000;
 
@@ -93,8 +94,7 @@ namespace GAME_connection {
 						this.NetStream = sslStream;
 					}
 					else {
-						PublicKeys.SetUsedPublicKey(PublicKeys.SERVER_CERTIFICATE_PUBLIC_KEY_STRING_HAMACHI);   //modify this in order to change location of server application
-						serverCertificatePublicKey = PublicKeys.USED_PUBLIC_KEY;
+						PublicKeys.SetUsedPublicKey(PublicKeys.SERVER_CERTIFICATE_PUBLIC_KEY_STRING_SERVER);   //modify this in order to change location of server application
 						SslStream sslStream = new SslStream(client.GetStream(), false, new RemoteCertificateValidationCallback(SslUtils.ValidateServerCertificateNoImport), null);
 						sslStream.AuthenticateAsClient(PublicKeys.PublicKeysToServerName[PublicKeys.USED_PUBLIC_KEY]);
 						this.NetStream = sslStream;

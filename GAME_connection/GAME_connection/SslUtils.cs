@@ -46,7 +46,7 @@ namespace GAME_connection {
 		}
 
 		/// <summary>
-		/// Checks validity of received server certificate, reqires the client to import server certificate to trusted root certificates via MMC
+		/// Checks validity of received server certificate, requires the client to import server certificate to trusted root certificates via MMC
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="certificate"></param>

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using MySql.Data.MySqlClient;
+using System.Configuration;
 using GAME_connection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -69,6 +70,12 @@ namespace GAME_Server {
 		static void Main(string[] args) {
 			try {
 				Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
+
+				Log("Getting configuration...");
+				var useSslVar = ConfigurationManager.AppSettings["useSsl"];
+				bool useSsl = Convert.ToBoolean(useSslVar);
+				Log("Server use SSL: " + useSsl);
+
 				InitilizeGameDataFromDB(false, true);       //change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
 				//IPAddress ipAddress = IPAddress.Parse(ip);
@@ -82,9 +89,10 @@ namespace GAME_Server {
 				while (continueAcceptingConnections) {
 					Log("Server is waiting for client...");
 					TcpClient client = listener.AcceptTcpClient();
-					TcpConnection gameClient = new TcpConnection(client, false, Server.Log);
-					//TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "gameServerCert.cer");		//uncomment this to enable ssl (with public certificate)
-					//TcpConnection gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
+					TcpConnection gameClient;
+					//gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
+					if (useSsl) gameClient = new TcpConnection(client, false, Server.Log, true, true, "gameServerCert.cer");        //use this to enable ssl (with public certificate)
+					else gameClient = new TcpConnection(client, false, Server.Log);
 					Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
 
 					//Thread t = new Thread(new ParameterizedThreadStart(Test));
@@ -102,6 +110,7 @@ namespace GAME_Server {
 				Log(critical.StackTrace);
 				Console.ReadKey();
 			}
+			
 		}
 
 		private static void ServerCLI() {
