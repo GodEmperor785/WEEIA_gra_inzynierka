@@ -828,7 +828,8 @@ namespace GAME_Server {
 				//first do login or register
 				bool loginSuccess = false;
 				while (!loginSuccess) {		//while login is not succesful
-					loginSuccess = LoginOrRegister();
+					LoginResult loginResult = LoginOrRegister();
+					if (loginResult == LoginResult.LOGIN_SUCCESS) loginSuccess = true;
 				}
 				if(loginSuccess) {
 					SendSuccess();
@@ -846,12 +847,20 @@ namespace GAME_Server {
 			}
 		}
 
+		private enum LoginResult {
+			LOGIN_SUCCESS,
+			LOGIN_FAILED,
+			REGISTRATION_SUCCESS,
+			REGISTRATION_FAILED,
+			ERROR
+		}
+
 		#region login/register
 		/// <summary>
 		/// Checks if login or register is allowed for given player data and returns true if it is so. Receive 1 msg (typeof(packet) = Player), send 1 msg (opType = FAILURE/SUCCESS)
 		/// </summary>
 		/// <returns></returns>
-		private bool LoginOrRegister() {
+		private LoginResult LoginOrRegister() {
 			GamePacket packet = Client.GetReceivedPacket();
 			Player playerObject;
 			//cast to proper type
@@ -860,18 +869,18 @@ namespace GAME_Server {
 					playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
 				} catch (InvalidCastException) {
 					SendFailure(FailureReasons.INVALID_PACKET);
-					return false;
+					return LoginResult.ERROR;
 				}
 				//if type ok do login or register
 				if (packet.OperationType == OperationType.LOGIN) {
 					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
 						this.User = playerObject;
 						Server.Log("Succesfully logged in player: " + playerObject.Username);
-						return true;
+						return LoginResult.LOGIN_SUCCESS;
 					}
 					else {
 						SendFailure(FailureReasons.INCORRECT_LOGIN + playerObject.Username);
-						return false;
+						return LoginResult.LOGIN_FAILED;
 					}
 				}
 				else if (packet.OperationType == OperationType.REGISTER) {
@@ -879,14 +888,14 @@ namespace GAME_Server {
 						RegisterNewPlayer(playerObject);
 						Server.Log("Succesfully registered player: " + playerObject.Username);
 						this.User = playerObject;
-						return true;
+						return LoginResult.REGISTRATION_SUCCESS;
 					}
 					else {
 						SendFailure(FailureReasons.USERNAME_ALREADY_EXISTS + playerObject.Username);
-						return false;
+						return LoginResult.REGISTRATION_FAILED;
 					}
 				}
-				return false;
+				return LoginResult.ERROR;
 			}
 			else if(packet.OperationType == OperationType.DISCONNECT) {
 				string msg = "User disconnected before succesful login!";
@@ -895,7 +904,7 @@ namespace GAME_Server {
 			}
 			else {
 				SendFailure(FailureReasons.INVALID_PACKET_TYPE);
-				return false;
+				return LoginResult.ERROR;
 			}
 		}
 
