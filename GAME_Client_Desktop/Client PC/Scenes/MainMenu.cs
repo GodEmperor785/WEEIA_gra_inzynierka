@@ -72,7 +72,7 @@ namespace Client_PC.Scenes
         }
         public void ExitClick()
         {
-            Game1.self.Exit();
+            Game1.self.Quit();
         }
 
         public void GoToSettings()

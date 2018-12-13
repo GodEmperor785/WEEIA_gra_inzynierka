@@ -7,6 +7,7 @@ using Client_PC.UI;
 using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Input;
 
 namespace Client_PC.Scenes
 {
@@ -209,6 +210,8 @@ namespace Client_PC.Scenes
         {
             layout.Draw(Game1.self.spriteBatch);
         }
+
+        
 
     }
 }

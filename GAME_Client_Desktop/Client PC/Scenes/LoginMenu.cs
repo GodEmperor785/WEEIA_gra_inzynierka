@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
 using Client_PC.Utilities;
+using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -47,6 +48,7 @@ namespace Client_PC.Scenes
                 Text = "Exit"
             };
 
+            #region Popup
             popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5),(int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)),100,400,Game1.self.GraphicsDevice,Gui);
             Grid popupGrid = new Grid();
             Label lbl1 = new Label(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
@@ -65,6 +67,9 @@ namespace Client_PC.Scenes
             b1.clickEvent += onPopupExit;
             Clickable.Add(b1);
             popup.SetToGrid();
+            #endregion
+
+
 
             inputPassword.IsPassword = true;
             Clickable.Add(inputLogin);
@@ -127,20 +132,25 @@ namespace Client_PC.Scenes
         }
         public void ExitClick()
         {
-            Game1.self.Exit();
+            Game1.self.Quit();
         }
 
         public void LoginClick()
         {
-            if (inputLogin.Text == "1" && inputPassword.Text == "1")
+            Player player = new Player(inputLogin.Text,inputPassword.Text);
+            GamePacket packet = new GamePacket(OperationType.LOGIN, player);
+            Game1.self.Connection.Send(packet);
+            GamePacket packetReceived = Game1.self.Connection.GetReceivedPacket();
+
+
+            if (packetReceived.OperationType == OperationType.SUCCESS)
             {
                 Game1.self.state = Game1.State.MainMenu;
             }
             else
             {
                 popup.SetActive(true);
-                inputLogin.Text = "";
-                inputPassword.Text = "";
+                Clean();
                 Game1.self.popupToDraw = popup;
                 SetClickables(false);
             }

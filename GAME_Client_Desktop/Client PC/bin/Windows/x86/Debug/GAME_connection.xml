@@ -25,10 +25,45 @@
             <param name="type"></param>
             <returns></returns>
         </member>
+        <member name="M:GAME_connection.GameEnumUtils.GetValues``1">
+            <summary>
+            returns list af all values of given enum. Use like: GameEnumUtils.GetValues&lt;Rarity&gt;()
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
         <member name="T:GAME_connection.BaseModifiers">
             <summary>
             Used to send base modifiers to client (to calculate actual modifiers)
             </summary>
+        </member>
+        <member name="M:GAME_connection.CustomGameRoom.#ctor(System.String)">
+            <summary>
+            use to join openFoprAll rooms
+            </summary>
+            <param name="roomName"></param>
+        </member>
+        <member name="M:GAME_connection.CustomGameRoom.#ctor(System.String,System.String)">
+            <summary>
+            use to join room with a password
+            </summary>
+            <param name="roomName"></param>
+            <param name="password"></param>
+        </member>
+        <member name="M:GAME_connection.CustomGameRoom.#ctor(System.String,System.String,System.Boolean,System.String)">
+            <summary>
+            use to create new game room
+            </summary>
+            <param name="roomName"></param>
+            <param name="password"></param>
+            <param name="openForAll"></param>
+            <param name="creatorsUserName"></param>
+        </member>
+        <member name="M:GAME_connection.CustomGameRoom.#ctor(GAME_connection.CustomGameRoom)">
+            <summary>
+            used by server, unsets password
+            </summary>
+            <param name="room"></param>
         </member>
         <member name="P:GAME_connection.ConnectionEndedException.Orign">
             <summary>
@@ -40,6 +75,26 @@
             Maps  <see cref="T:GAME_connection.OperationType"/> to <see cref="T:System.Type"/> (class) of <see cref="P:GAME_connection.GamePacket.Packet"/> in <see cref="T:GAME_connection.GamePacket"/> object
             </summary>
         </member>
+        <member name="M:GAME_connection.SslUtils.ValidateServerCertificateNoImport(System.Object,System.Security.Cryptography.X509Certificates.X509Certificate,System.Security.Cryptography.X509Certificates.X509Chain,System.Net.Security.SslPolicyErrors)">
+            <summary>
+            compares received certificate public key with known public key of server. Does not require importing servers certificate to trusted root certificates via MMC
+            </summary>
+            <param name="sender"></param>
+            <param name="certificate"></param>
+            <param name="chain"></param>
+            <param name="sslPolicyErrors"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GAME_connection.SslUtils.ValidateServerCertificateWithTrustedRootCertificateCheck(System.Object,System.Security.Cryptography.X509Certificates.X509Certificate,System.Security.Cryptography.X509Certificates.X509Chain,System.Net.Security.SslPolicyErrors)">
+            <summary>
+            Checks validity of received server certificate, requires the client to import server certificate to trusted root certificates via MMC
+            </summary>
+            <param name="sender"></param>
+            <param name="certificate"></param>
+            <param name="chain"></param>
+            <param name="sslPolicyErrors"></param>
+            <returns></returns>
+        </member>
         <member name="T:GAME_connection.TcpConnection">
             <summary>
             Class used to send and receive GamePackets between server and client.
@@ -49,12 +104,21 @@
             <para>To disconnect from remote use <see cref="M:GAME_connection.TcpConnection.SendDisconnect"/>. To process remote disconnect use <see cref="M:GAME_connection.TcpConnection.Disconnect"/></para>
             </summary>
         </member>
-        <member name="M:GAME_connection.TcpConnection.#ctor(System.Net.Sockets.TcpClient,System.Boolean)">
+        <member name="E:GAME_connection.TcpConnection.ConnectionEnded">
+            <summary>
+            this event is used when sudden disconnect has taken place - disconnect that was not planned by client sending <see cref="F:GAME_connection.OperationType.DISCONNECT"/> message to server
+            </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.#ctor(System.Net.Sockets.TcpClient,System.Boolean,GAME_connection.TcpConnection.Logger,System.Boolean,System.Boolean,System.String)">
             <summary>
             Creates all necessary variables and threads for game connection, requires connected <see cref="T:System.Net.Sockets.TcpClient"/>.
             </summary>
             <param name="client">connected <see cref="T:System.Net.Sockets.TcpClient"/></param>
             <param name="isClient">true if used on the client side - clients send  <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/> packets to server</param>
+            <param name="logger">method to log messages in this object</param>
+            <param name="printDebugInfo">prints debug info to console if <see langword="true"/></param>
+            <param name="useSSL">if <see langword="true"/> uses <see cref="T:System.Net.Security.SslStream"/> instead of bare <see cref="T:System.Net.Sockets.NetworkStream"/>, defaults to <see langword="false"/></param>
+            <param name="sslCertificatePath"> specifies path to .cer file containing servers certificate</param>
         </member>
         <member name="M:GAME_connection.TcpConnection.Send(GAME_connection.GamePacket)">
             <summary>

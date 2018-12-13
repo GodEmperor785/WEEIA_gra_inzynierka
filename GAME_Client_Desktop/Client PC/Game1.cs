@@ -3,15 +3,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Mime;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Serialization;
 using Client_PC.Scenes;
 using Client_PC.UI;
 using Client_PC.Utilities;
+using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
 using GameWindow = Client_PC.Scenes.GameWindow;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
+using MainMenu = Client_PC.Scenes.MainMenu;
+using Menu = Client_PC.Scenes.Menu;
 
 namespace Client_PC
 {
@@ -46,12 +53,23 @@ namespace Client_PC
         public Effect Darker;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
         List<Menu> menus = new List<Menu>();
+        public GAME_connection.TcpConnection Connection;
+
+
+
+        private bool test = true; // false if dont connect with server
+
+
+
+
+
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            
+            setUpConnection();
         }
 
         /// <summary>
@@ -91,6 +109,25 @@ namespace Client_PC
             settingsMenu.SetMenus(menus);
             base.Initialize();
             
+        }
+
+        private void setUpConnection()
+        {
+            if (test)
+            {
+                string server = "212.191.92.88";
+                int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
+                TcpClient client = new TcpClient(server, port);
+                Console.WriteLine("tcpClient created");
+                Connection = new TcpConnection(client, true, null, false, true, null);
+                Console.WriteLine("Connection established");
+            }
+        }
+
+        public void Quit()
+        {
+            Connection.Disconnect();
+            this.Exit();
         }
 
         private void LoadConfig()
@@ -153,9 +190,16 @@ namespace Client_PC
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Darker = Content.Load<Effect>("Shaders/GrayScaleShader");
+
+            Form MyGameForm = (Form)Form.FromHandle(Window.Handle);
+            MyGameForm.Closing += ClosingFunction;
             // TODO: use this.Content to load your game content here
         }
-
+        public void ClosingFunction(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Connection.Disconnect();
+            
+        }
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.

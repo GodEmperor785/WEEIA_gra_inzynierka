@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.Utilities;
+using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
@@ -17,6 +18,8 @@ namespace Client_PC.Scenes
         private InputBox passwordInputBox;
         private InputBox passwordInputBox2;
         private InputBox loginInputBox;
+        private Popup popup;
+        private Label lbl1;
 
         public override void Initialize(ContentManager Content)
         {
@@ -71,6 +74,40 @@ namespace Client_PC.Scenes
             passwordInputBox2.Tooltip = tooltipPassword2;
             passwordInputBox.IsPassword = true;
             passwordInputBox2.IsPassword = true;
+
+
+            #region popup
+            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 100, 400, Game1.self.GraphicsDevice, Gui);
+            Grid popupGrid = new Grid();
+            lbl1 = new Label(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Both passwords must be the same"
+            };
+            Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Exit"
+            };
+            lbl1.DrawBackground = false;
+            b1.DrawBackground = false;
+            popup.grid = popupGrid;
+            popupGrid.AddChild(lbl1, 0, 0);
+            popupGrid.AddChild(b1, 1, 0);
+            b1.clickEvent += onPopupExit;
+            Clickable.Add(b1);
+            popup.SetToGrid();
+#endregion
+
+
+
+
+
+
+
+
+
+
+
+
             Clickable.Add(registerButton);
             Clickable.Add(backButton);
             Clickable.Add(loginInputBox);
@@ -91,6 +128,18 @@ namespace Client_PC.Scenes
             grid.UpdateP();
             grid.ResizeChildren();
             SetClickables(true);
+        }
+
+        public void onPopupExit()
+        {
+            popup.SetActive(false);
+            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            {
+                clickable.Active = true;
+            }
+
+            Game1.self.popupToDraw = null;
+
         }
 
         public override void Clean()
@@ -114,8 +163,36 @@ namespace Client_PC.Scenes
 
         public void registerClick()
         {
-            Game1.self.state = Game1.State.LoginMenu;
-            Game1.self.CleanLogin();
+            if (passwordInputBox.Text.Equals(passwordInputBox2.Text))
+            {
+                GAME_connection.Player player = new Player(loginInputBox.Text, passwordInputBox.Text);
+                GAME_connection.GamePacket packet = new GamePacket(GAME_connection.OperationType.REGISTER, player);
+                Game1.self.Connection.Send(packet);
+                GamePacket packetReceiver = Game1.self.Connection.GetReceivedPacket();
+                if (packetReceiver.OperationType == OperationType.SUCCESS)
+                {
+                    lbl1.Text = "Succesfully registered new user";
+                }
+                else
+                {
+                    lbl1.Text = "User already exists, change login";
+                }
+                popup.SetActive(true);
+                Clean();
+                Game1.self.popupToDraw = popup;
+                SetClickables(false);
+            }
+            else
+            {
+                lbl1.Text = "Both passwords must be the same";
+                popup.SetActive(true);
+                Clean();
+                Game1.self.popupToDraw = popup;
+                SetClickables(false);
+            }
+
+
+
         }
 
 
