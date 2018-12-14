@@ -832,7 +832,6 @@ namespace GAME_Server {
 					if (loginResult == LoginResult.LOGIN_SUCCESS) loginSuccess = true;
 				}
 				if (loginSuccess) {
-					SendSuccess();
 					//set and send user data
 					this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 					this.User.Password = "";
@@ -877,6 +876,7 @@ namespace GAME_Server {
 					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
 						this.User = playerObject;
 						Server.Log("Succesfully logged in player: " + playerObject.Username);
+						SendSuccess();
 						return LoginResult.LOGIN_SUCCESS;
 					}
 					else {
@@ -889,6 +889,7 @@ namespace GAME_Server {
 						RegisterNewPlayer(playerObject);
 						Server.Log("Succesfully registered player: " + playerObject.Username);
 						this.User = playerObject;
+						SendSuccess();
 						return LoginResult.REGISTRATION_SUCCESS;
 					}
 					else {
