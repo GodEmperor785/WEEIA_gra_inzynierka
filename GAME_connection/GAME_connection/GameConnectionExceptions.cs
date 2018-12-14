@@ -7,10 +7,15 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	public class ConnectionEndedException : Exception {
 		private string orign;
+		private int playerNumber;
 
 		public ConnectionEndedException() {}
 
 		public ConnectionEndedException(string message) : base(message) {}
+
+		public ConnectionEndedException(string message, int playerNumber) : base(message) {
+			PlayerNumber = playerNumber;
+		}
 
 		public ConnectionEndedException(string message, string origin) : this(message) {
 			this.Orign = origin;
@@ -20,6 +25,7 @@ namespace GAME_connection {
 		/// should specify whether exception occured on send or receive
 		/// </summary>
 		public string Orign { get => orign; set => orign = value; }
+		public int PlayerNumber { get => playerNumber; set => playerNumber = value; }
 	}
 
 	public class SendTimeoutException : Exception {

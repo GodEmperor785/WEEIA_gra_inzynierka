@@ -25,6 +25,7 @@ namespace GAME_connection {
 		MAKE_MOVE,
 		ABANDON_GAME,
 		SURRENDER,
+		GAME_END,
 
 		//login/register/logout
 		LOGIN,
@@ -66,6 +67,7 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.PLAY_CUSTOM_JOIN, typeof(CustomGameRoom));   //room with room name, creator name and password		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.PLAY_CUSTOM_CREATE, typeof(CustomGameRoom)); //room with all variables set							- important for server, server respons with S/F
 			operationMapping.Add(OperationType.GET_CUSTOM_ROOMS, typeof(List<CustomGameRoom>)); //list of available vustom rooms					- important for client
+			operationMapping.Add(OperationType.GAME_END, typeof(GameResult));				//result of game										- important for client
 			operationMapping.Add(OperationType.LOGIN, typeof(Player));                      //player object with password and username set			- important for server, server respons with S/F
 			operationMapping.Add(OperationType.REGISTER, typeof(Player));                   //player object with password and username set			- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DISCONNECT, typeof(object));                 //nothing - never used									- importnant for server, no server response
