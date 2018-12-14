@@ -209,7 +209,7 @@ namespace GAME_connection {
 			int queueCount;
 			messageReceivedEvent.WaitOne();     //wait until there is a message
 			queueCount = QueueCount;
-			if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
+			if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 			lock (queueLock) {
 				return receivedPackets.Dequeue();
 			}
@@ -230,7 +230,7 @@ namespace GAME_connection {
 					return receivedPackets.Dequeue();
 				}
 			}
-			else if (queueCount == 0 && connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive with timeout");
+			else if (queueCount == 0 && connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 			else throw new ReceiveTimeoutException(playerNumber);
 		}
 
@@ -285,7 +285,7 @@ namespace GAME_connection {
 		/// </summary>
 		/// <returns>received (deserialized) GamePacket</returns>
 		private GamePacket Receive() {
-			if (connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", "receive");
+			if (connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 			lock (receiveLock) {
 				return (GamePacket)serializer.Deserialize(netStream);
 			}

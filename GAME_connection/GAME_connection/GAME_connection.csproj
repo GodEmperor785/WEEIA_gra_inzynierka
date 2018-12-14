@@ -52,6 +52,7 @@
     <Compile Include="GameConnectionExceptions.cs" />
     <Compile Include="GameEventArgs.cs" />
     <Compile Include="GameHistory.cs" />
+    <Compile Include="GameResult.cs" />
     <Compile Include="LootBox.cs" />
     <Compile Include="Operations.cs" />
     <Compile Include="Player.cs" />
