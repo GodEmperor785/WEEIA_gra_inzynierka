@@ -19,7 +19,7 @@ namespace Client_PC.Scenes
         private Popup popup;
         private InputBox inputLogin;
         private InputBox inputPassword;
-
+        private Label lbl1;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -51,10 +51,7 @@ namespace Client_PC.Scenes
             #region Popup
             popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5),(int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)),100,400,Game1.self.GraphicsDevice,Gui);
             Grid popupGrid = new Grid();
-            Label lbl1 = new Label(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
-            {
-                Text = "Incorrect login or password"
-            };
+            lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
@@ -141,14 +138,75 @@ namespace Client_PC.Scenes
             GamePacket packet = new GamePacket(OperationType.LOGIN, player);
             Game1.self.Connection.Send(packet);
             GamePacket packetReceived = Game1.self.Connection.GetReceivedPacket();
-
+            bool errors = false;
 
             if (packetReceived.OperationType == OperationType.SUCCESS)
             {
-                Game1.self.state = Game1.State.MainMenu;
+                lbl1.Text = "";
+                packetReceived = Game1.self.Connection.GetReceivedPacket();
+                if (packetReceived.OperationType == OperationType.PLAYER_DATA)
+                {
+                    Game1.self.player = (Player) packetReceived.Packet;
+                    packetReceived = Game1.self.Connection.GetReceivedPacket();
+                    if (packetReceived.OperationType == OperationType.BASE_MODIFIERS)
+                    {
+                        Game1.self.Modifiers = (BaseModifiers) packetReceived.Packet;
+
+                    }
+                    else
+                    {
+                        errors = true;
+                        lbl1.Text += "\nError while getting modifiers";
+                    }
+                    packet = new GamePacket(OperationType.VIEW_FLEETS,null);
+                    Game1.self.Connection.Send(packet);
+                    packetReceived = Game1.self.Connection.GetReceivedPacket();
+                    if (packetReceived.OperationType == OperationType.VIEW_FLEETS)
+                    {
+                        Game1.self.Decks = (List<Fleet>) packetReceived.Packet;
+                    }
+                    else
+                    {
+                        errors = true;
+                        lbl1.Text += "\nError while getting fleets";
+                    }
+                    packet = new GamePacket(OperationType.VIEW_ALL_PLAYER_SHIPS, null);
+                    Game1.self.Connection.Send(packet);
+                    packetReceived = Game1.self.Connection.GetReceivedPacket();
+                    if (packetReceived.OperationType == OperationType.VIEW_ALL_PLAYER_SHIPS)
+                    {
+                        Game1.self.OwnedShips = (List<Ship>) packetReceived.Packet;
+                    }
+                    else
+                    {
+                        errors = true;
+                        lbl1.Text += "\nError while getting ships";
+                    }
+
+                    
+
+                }
+                else
+                {
+                    errors = true;
+                }
+
+                if (!errors)
+                {
+                    Game1.self.state = Game1.State.MainMenu;
+                }
+                else
+                {
+                    
+                    popup.SetActive(true);
+                    Clean();
+                    Game1.self.popupToDraw = popup;
+                    SetClickables(false);
+                }
             }
             else
             {
+                lbl1.Text = "Incorrect login or password";
                 popup.SetActive(true);
                 Clean();
                 Game1.self.popupToDraw = popup;

@@ -173,27 +173,7 @@ namespace Client_PC.Scenes
             layout.AddChild(gridRightBottom);
             layout.AddChild(gridCenter);
             layout.AddChild(rl);
-            ships = new List<Ship>();
-            Random rndRandom = new Random();
-            for (int i = 0; i < 30; i++)
-            {
-                Ship ship = new Ship();
-                ship.Armor = rndRandom.Next(1, 30);
-                ship.Hp = rndRandom.Next(1, 30);
-                ships.Add(ship);
-            }
 
-            List<Ship> Deck1Ships = ships.GetRange(1, 10);
-            Deck BasicDeck = new Deck(new Point(), 20, (int)(gridRight.Height * 0.1),
-                Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, "Basic" );
-            Deck1Ships.ForEach(p=> BasicDeck.AddShip(p));
-            BasicDeck.clickEvent += DeckClick;
-            gridRight.AddChild(BasicDeck);
-            Clickable.Add(BasicDeck);
-            gridRight.ResizeChildren();
-
-            
-            
             gridTopLeft.AllVisible = false;
             gridTopLeft.VisibleRows = 1;
 
@@ -214,6 +194,33 @@ namespace Client_PC.Scenes
             gridRight.ChildMaxAmount = 8;
             
             cardHeight = gridTopLeft.Height;
+
+
+            /*     //basic test
+
+            ships = new List<Ship>();
+            Random rndRandom = new Random();
+            for (int i = 0; i < 30; i++)
+            {
+                Ship ship = new Ship();
+                ship.Armor = rndRandom.Next(1, 30);
+                ship.Hp = rndRandom.Next(1, 30);
+                ships.Add(ship);
+            }
+
+            List<Ship> Deck1Ships = ships.GetRange(1, 10);
+            Deck BasicDeck = new Deck(new Point(), 20, (int)(gridRight.Height * 0.1),
+                Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, "Basic" );
+            Deck1Ships.ForEach(p=> BasicDeck.AddShip(p));
+            BasicDeck.clickEvent += DeckClick;
+            gridRight.AddChild(BasicDeck);
+            Clickable.Add(BasicDeck);
+            gridRight.ResizeChildren();
+
+
+            */
+            
+            
 
             FillBotShips(ships);
             FillBotGrid();
@@ -356,6 +363,7 @@ namespace Client_PC.Scenes
         }
         private void FillBotShips(List<Ship> ships)
         {
+            if(ships != null)
             foreach (var ship in ships)
             {
                 Card dc = new Card( cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);

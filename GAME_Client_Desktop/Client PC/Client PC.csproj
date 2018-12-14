@@ -70,6 +70,7 @@
     <Compile Include="Scenes\Menu.cs" />
     <Compile Include="Scenes\RegisterMenu.cs" />
     <Compile Include="Scenes\SettingsMenu.cs" />
+    <Compile Include="Scenes\ShopMenu.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="UI\Card.cs" />
     <Compile Include="UI\Deck.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="UI\InputBox.cs" />
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\Layout.cs" />
+    <Compile Include="UI\LootBox.cs" />
     <Compile Include="UI\Popup.cs" />
     <Compile Include="UI\RelativeLayout.cs" />
     <Compile Include="UI\Tooltip.cs" />

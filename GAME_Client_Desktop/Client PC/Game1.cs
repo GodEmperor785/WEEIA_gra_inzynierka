@@ -50,9 +50,13 @@ namespace Client_PC
         internal object graphicsDevice;
         internal IClickable FocusedElement;
         internal Texture2D Wallpaper;
+        public Player player;
+        public List<Fleet> Decks { get; set; }
+        public List<Ship> OwnedShips { get; set; }
         public Effect Darker;
         public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
         List<Menu> menus = new List<Menu>();
+        public BaseModifiers Modifiers;
         public GAME_connection.TcpConnection Connection;
 
 
@@ -119,7 +123,7 @@ namespace Client_PC
                 int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
                 TcpClient client = new TcpClient(server, port);
                 Console.WriteLine("tcpClient created");
-                Connection = new TcpConnection(client, true, null, false, true, null);
+                Connection = new TcpConnection(client, true, null, false, false, null);
                 Console.WriteLine("Connection established");
             }
         }

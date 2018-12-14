@@ -165,8 +165,8 @@ namespace Client_PC.Scenes
         {
             if (passwordInputBox.Text.Equals(passwordInputBox2.Text))
             {
-                GAME_connection.Player player = new Player(loginInputBox.Text, passwordInputBox.Text);
-                GAME_connection.GamePacket packet = new GamePacket(GAME_connection.OperationType.REGISTER, player);
+                Player player = new Player(loginInputBox.Text, passwordInputBox.Text);
+                GamePacket packet = new GamePacket(OperationType.REGISTER, player);
                 Game1.self.Connection.Send(packet);
                 GamePacket packetReceiver = Game1.self.Connection.GetReceivedPacket();
                 if (packetReceiver.OperationType == OperationType.SUCCESS)
