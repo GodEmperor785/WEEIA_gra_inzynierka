@@ -1210,6 +1210,8 @@ namespace GAME_Server {
 	internal class GameRoomThread {
 		#region properties attributes and constructors
 		public static readonly string SUDDEN_DISCONNED_GAME_RESULT = "Second player suddenly disconnected, you won";
+		public static readonly string SUDDEN_DISCONNECT_LOG_STRING = "disconnected before game end";
+		public static readonly string SURRENDER_LOG_STRING = "surrendered before game end";
 
 		private Player player1;     //host
 		private Player player2;
@@ -1241,6 +1243,8 @@ namespace GAME_Server {
 		private object matchmakinglock = new object();
 		private object continueGameLoopLock = new object();
 		private object gameEndLock = new object();
+		private object gameInProgressLock = new object();	//used to lock game progress and sudden game end
+		
 		private double matchmakingScore;
 
 		private AutoResetEvent roomFull;	//indicates that waiting for second player is over
@@ -1248,7 +1252,8 @@ namespace GAME_Server {
 
 		internal GameRoomThread(TcpConnection hostConnection, Player host, IGameDataBase player1DB, bool isCustom, UserThread player1ThreadObj, CustomGameRoom customGameObj = null) {
 			hostConnection.GameAbandoned += GameAbandonedHandler;   //add event that indicates that player abandoned game
-			hostConnection.ConnectionEnded += PlayerDisconnectedHandler;	//add event that indicates player disconnection
+			hostConnection.ConnectionEnded += PlayerDisconnectedHandler;    //add event that indicates player disconnection
+			hostConnection.Surrender += SurrenderHandler;	//add event that indicates player surrender
 			Player1 = host;
 			Player1Conn = hostConnection;
 			Player1Conn.PlayerNumber = 1;
@@ -1339,10 +1344,12 @@ namespace GAME_Server {
 					SendSuccess(Player1Conn);
 					SendSuccess(Player2Conn);
 
-					//TODO game logic
-					Thread.Sleep(2000);
-					//TODO GameResult when game ends normally
-					//---------------
+					//TODO this lock should be inside while loop
+					lock (gameInProgressLock) {
+						//TODO game logic
+						Thread.Sleep(2000);
+						//TODO GameResult when game ends normally
+					}
 
 					Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
 					EndGameThread();
@@ -1350,21 +1357,7 @@ namespace GAME_Server {
 			}
 			catch(ConnectionEndedException ex) {
 				Server.Log(UsernamesOfPlayers + ": player with number " + ex.PlayerNumber + " suddenly disconnected");
-				if(IsFull) {
-					if(ex.PlayerNumber == 1) {
-						Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, SUDDEN_DISCONNED_GAME_RESULT)));
-						Player1ThreadObj.ClientConnected = false;   //tell user thread that player is no longer connected
-						HandleSuddenDisconnect(Player1);
-					}
-					else if(ex.PlayerNumber == 2) {
-						Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, SUDDEN_DISCONNED_GAME_RESULT)));
-						Player2ThreadObj.ClientConnected = false;
-						HandleSuddenDisconnect(Player2);
-					}
-					else {
-						Server.Log(UsernamesOfPlayers + ": ex.PlayerNumber is set wrong, is: " + ex.PlayerNumber + " should be 1 or 2", true);
-					}
-				}
+				EndGameBeforeProperEnd(ex.PlayerNumber, SUDDEN_DISCONNECT_LOG_STRING);
 			}
 		}
 		#endregion
@@ -1396,9 +1389,9 @@ namespace GAME_Server {
 			}
 		}
 
-		private void HandleSuddenDisconnect(Player disconnectedPlayer) {
+		private void HandleSuddenGameEnd(Player disconnectedPlayer, string reasonToLog) {
 			if(IsFull) {    //all players were connected - need to set that disconnected player lost
-				Server.Log(disconnectedPlayer.Username + ": disconnected before game end");
+				Server.Log(disconnectedPlayer.Username + ": " + reasonToLog);
 				if (disconnectedPlayer.Username == Player1.Username) UpdateLoserAndWiner(Player1, Player2);
 				else UpdateLoserAndWiner(Player2, Player1);
 				EndGameThread();
@@ -1422,15 +1415,29 @@ namespace GAME_Server {
 		}
 
 		private void PlayerDisconnectedHandler(object sender, GameEventArgs e) {
-			if (e.PlayerNumber == 1) {
-				Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, SUDDEN_DISCONNED_GAME_RESULT)));
-				Player1ThreadObj.ClientConnected = false;	//tell user thread that player is no longer connected
-				HandleSuddenDisconnect(Player1);
-			}
-			else if(e.PlayerNumber == 2) {
-				Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, SUDDEN_DISCONNED_GAME_RESULT)));
-				Player2ThreadObj.ClientConnected = false;
-				HandleSuddenDisconnect(Player2);
+			EndGameBeforeProperEnd(e.PlayerNumber, SUDDEN_DISCONNECT_LOG_STRING);
+		}
+
+		private void SurrenderHandler(object sender, GameEventArgs e) {
+			EndGameBeforeProperEnd(e.PlayerNumber, SURRENDER_LOG_STRING);
+		}
+
+		private void EndGameBeforeProperEnd(int numberOfPlayerThatEndedGame, string reasonToLog) {
+			lock (gameInProgressLock) {
+				if (IsFull) {
+					if (numberOfPlayerThatEndedGame == 1) {
+						Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, reasonToLog)));
+						Player1ThreadObj.ClientConnected = false;   //tell user thread that player is no longer connected
+						HandleSuddenGameEnd(Player1, SUDDEN_DISCONNECT_LOG_STRING);
+					}
+					else if (numberOfPlayerThatEndedGame == 2) {
+						Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, reasonToLog)));
+						Player2ThreadObj.ClientConnected = false;
+						HandleSuddenGameEnd(Player2, SUDDEN_DISCONNECT_LOG_STRING);
+					}
+					else Server.Log("Invalid player number in sudden game end handler! Actual: " + numberOfPlayerThatEndedGame + ", should be 1 or 2", true);
+				}
+				else Server.Log("Sudden game begore room was full");
 			}
 		}
 		#endregion

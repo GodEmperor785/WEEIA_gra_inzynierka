@@ -68,7 +68,9 @@ namespace GAME_connection {
 		/// this event is used when sudden disconnect has taken place - disconnect that was not planned by client sending <see cref="OperationType.DISCONNECT"/> message to server
 		/// </summary>
 		public event EventHandler<GameEventArgs> ConnectionEnded;
+		public event EventHandler<GameEventArgs> Surrender;
 		public event EventHandler ConnectionTestReceived;
+		public event EventHandler GameOver;			//might be used for client when other player suddenly ends game
 
 		#region Constructor
 		/// <summary>
@@ -181,7 +183,7 @@ namespace GAME_connection {
 		/// </summary>
 		/// <param name="packet">instance of <see cref="GamePacket"/> object to send</param>
 		public void Send(GamePacket packet) {
-			if (connectionEnded) throw new ConnectionEndedException("Trying to send when connection is closed", "send");
+			if (connectionEnded) throw new ConnectionEndedException("Trying to send when connection is closed", PlayerNumber);
 			try {
 				lock (sendLock) {
 					serializer.Serialize(netStream, packet);
@@ -255,12 +257,12 @@ namespace GAME_connection {
 					GamePacket receivedPacket = Receive();
 					if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) OnConnectionTestReceived(EventArgs.Empty);
 					else if (receivedPacket.OperationType == OperationType.ABANDON_GAME) OnGameAbandoned(EventArgs.Empty);
-					else {
-						lock (queueLock) {
-							receivedPackets.Enqueue(receivedPacket);
-							messageReceivedEvent.Set();
-						}
+					else if (receivedPacket.OperationType == OperationType.GAME_END) {
+						EnqueuePacket(receivedPacket);
+						OnGameOver(EventArgs.Empty);
 					}
+					else if (receivedPacket.OperationType == OperationType.SURRENDER) OnSurrender(new GameEventArgs(PlayerNumber));
+					else EnqueuePacket(receivedPacket);
 					if (receivedPacket.OperationType == OperationType.DISCONNECT) KeepReceiving = false;        //stop receiving if disconnect
 				} catch(IOException ex) {
 					if (debug) tcpConnectionLogger("Connection ended - on read");
@@ -278,6 +280,13 @@ namespace GAME_connection {
 				//than block on another read operation
 			}
 			if(AlreadyDisconnected) this.Disconnect();
+		}
+
+		private void EnqueuePacket(GamePacket packet) {
+			lock (queueLock) {
+				receivedPackets.Enqueue(packet);
+				messageReceivedEvent.Set();
+			}
 		}
 
 		/// <summary>
@@ -306,8 +315,22 @@ namespace GAME_connection {
 			}
 		}
 
+		protected virtual void OnSurrender(GameEventArgs e) {
+			EventHandler<GameEventArgs> handler = Surrender;
+			if (handler != null) {
+				handler(this, e);
+			}
+		}
+
 		protected virtual void OnConnectionTestReceived(EventArgs e) {
 			EventHandler handler = ConnectionTestReceived;
+			if (handler != null) {
+				handler(this, e);
+			}
+		}
+
+		protected virtual void OnGameOver(EventArgs e) {
+			EventHandler handler = GameOver;
 			if (handler != null) {
 				handler(this, e);
 			}
