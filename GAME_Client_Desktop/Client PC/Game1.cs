@@ -251,6 +251,11 @@ namespace Client_PC
             deckMenu.Clean();
         }
 
+
+        public void SetDecks(List<Fleet> fleets)
+        {
+            deckMenu.LoadDecksAndShips(fleets, OwnedShips);
+        }
         public void CleanLogin()
         {
             loginMenu.Clean();

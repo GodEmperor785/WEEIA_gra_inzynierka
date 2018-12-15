@@ -22,11 +22,12 @@ namespace Client_PC.UI
         public bool TextWrappable { get; set; }
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }
+        public bool RecentlyAdded { get; set; }
         private bool focused;
         private bool lastStateOfFocus;
         public object Parent { get; set; }
         public Tooltip Tooltip { get; set; }
-        private List<Ship> ships;
+        private Fleet fleet;
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
         public Rectangle GetBoundary()
@@ -40,13 +41,18 @@ namespace Client_PC.UI
             focused = true;
         }
 
-        public void SetShips(List<Ship> newShips)
+        public void SetFleet(Fleet fleet)
         {
-            ships = newShips;
+            this.fleet = fleet;
         }
         public List<Ship> GetShips()
         {
-            return ships;
+            return fleet.Ships;
+        }
+
+        public Fleet GetFleet()
+        {
+            return fleet;
         }
 
         public override void Update()
@@ -72,7 +78,7 @@ namespace Client_PC.UI
 
         public void AddShip(Ship s)
         {
-            ships.Add(s);
+            fleet.Ships.Add(s);
         }
 
         public Deck(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable,string name) 
@@ -81,7 +87,9 @@ namespace Client_PC.UI
             Font = font;
             TextWrappable = wrapable;
             Text = name;
-            ships = new List<Ship>();
+            fleet = new Fleet();
+            fleet.Ships = new List<Ship>();
+            focused = true;
         }
 
         public override void Draw(SpriteBatch sp)

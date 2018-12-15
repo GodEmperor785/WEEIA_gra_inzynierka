@@ -28,12 +28,12 @@ namespace Client_PC.Scenes
         private List<Card> ShipsInTop;
         private List<Card> ShipsInBot;
         private List<Ship> ships;
-        private List<Deck> decks;
+        private Popup popup;
+        private Label lbl1;
         public override void Initialize(ContentManager Content)
         {
             ShipsInTop = new List<Card>();
             ShipsInBot = new List<Card>();
-            decks = new List<Deck>();
             layout = new RelativeLayout();
             Gui = new GUI(Content);
             Decks = new List<Deck>();
@@ -219,8 +219,28 @@ namespace Client_PC.Scenes
 
 
             */
-            
-            
+
+            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 100, 400, Game1.self.GraphicsDevice, Gui);
+            Grid popupGrid = new Grid();
+            lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Exit"
+            };
+            lbl1.DrawBackground = false;
+            b1.DrawBackground = false;
+            popup.grid = popupGrid;
+            popupGrid.AddChild(lbl1, 0, 0);
+            popupGrid.AddChild(b1, 1, 0);
+            b1.clickEvent += onPopupExit;
+            Clickable.Add(b1);
+            popup.SetToGrid();
+
+
+
+
+
+
 
             FillBotShips(ships);
             FillBotGrid();
@@ -234,6 +254,31 @@ namespace Client_PC.Scenes
             gridCenter.UpdateP();
             gridTopLeft.UpdateP();
 
+        }
+        public void onPopupExit()
+        {
+            popup.SetActive(false);
+            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            {
+                clickable.Active = true;
+            }
+
+            Game1.self.popupToDraw = null;
+
+        }
+        public void LoadDecksAndShips(List<Fleet> fleets, List<Ship> ships)
+        {
+            Decks.Clear();
+            fleets.ForEach(p=>
+            {
+                Deck z = FleetToDeck(p);
+                z.clickEvent += DeckClick;
+                Clickable.Add(z);
+                Decks.Add(z);
+                RefreshRightGrid();
+
+            });
+            this.ships = ships;
         }
 
         public override void Clean()
@@ -311,7 +356,21 @@ namespace Client_PC.Scenes
             FillTopGrid();
             ClearBotGrid();
             ShipsInBot.Clear();
-            FillBotShips(ships.Except(d.GetShips()).ToList());
+            List<Ship> shipsToFill = new List<Ship>();
+            ships.ForEach(p =>
+            {
+                bool add = true;
+                ChosenDeck.GetShips().ForEach(a =>
+                {
+                    if (p.Id == a.Id)
+                        add = false;
+                });
+                if (add)
+                {
+                    shipsToFill.Add(p);
+                }
+            });
+            FillBotShips(shipsToFill);
             FillBotGrid();
         }
         
@@ -379,7 +438,7 @@ namespace Client_PC.Scenes
             {
                 Deck newDeck = new Deck(new Point(), 20, (int)(gridRight.Height * 0.1),
                     Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, DeckInputBox.Text);
-                decks.Add(newDeck);
+                Decks.Add(newDeck);
                 newDeck.clickEvent += DeckClick;
                 gridRight.AddChild(newDeck);
                 DeckInputBox.Text = "";
@@ -392,7 +451,7 @@ namespace Client_PC.Scenes
         private void RefreshRightGrid()
         {
             gridRight.RemoveChildren();
-            decks.ForEach(p=> gridRight.AddChild(p));
+            Decks.ForEach(p=> gridRight.AddChild(p));
             gridRight.ResizeChildren();
         }
 
@@ -417,21 +476,67 @@ namespace Client_PC.Scenes
 
                 List<Ship> newShips = new List<Ship>();
                 ShipsInTop.ForEach(p => newShips.Add(p.GetShip()));
-                ChosenDeck.SetShips(newShips);
+                Fleet fleet = new Fleet(ChosenDeck.Text,Game1.self.player,newShips);
+                ChosenDeck.SetFleet(fleet);
+                GamePacket packet;
+                if (ChosenDeck.RecentlyAdded)
+                {
+                    packet = new GamePacket(OperationType.ADD_FLEET,fleet);
+                }
+                else
+                {
+                    packet = new GamePacket(OperationType.UPDATE_FLEET, fleet);
+                }
+                Game1.self.Connection.Send(packet);
+                GamePacket packetReceived = Game1.self.Connection.GetReceivedPacket();
+                if (packetReceived.OperationType != OperationType.SUCCESS)
+                {
+                    lbl1.Text = "Problem with adding fleet";
+                    popup.SetActive(true);
+                    Clean();
+                    Game1.self.popupToDraw = popup;
+                    SetClickables(false);
+                }
+                packet = new GamePacket(OperationType.VIEW_FLEETS, Game1.self.player);
+                Game1.self.Connection.Send(packet);
+                packetReceived = Game1.self.Connection.GetReceivedPacket();
+                if (packetReceived.OperationType == OperationType.VIEW_FLEETS)
+                {
+                    Game1.self.Decks = (List<Fleet>)packetReceived.Packet;
+                }
+                Game1.self.SetDecks(Game1.self.Decks);
+                ChosenDeck = null;
+                
             }
         }
 
         private void OnRemove()
         {
-            decks.Remove(ChosenDeck);
-            Clickable.Remove(ChosenDeck);
-            RefreshRightGrid();
-            ClearTopGrid();
-            ShipsInTop.Clear();
-            ClearBotGrid();
-            ShipsInBot.Clear();
-            FillBotShips(ships);
-            FillBotGrid();
+            GamePacket packet = new GamePacket(OperationType.DELETE_FLEET, ChosenDeck.GetFleet());
+            Game1.self.Connection.Send(packet);
+            GamePacket packetReceived = Game1.self.Connection.GetReceivedPacket();
+            if (packetReceived.OperationType == OperationType.SUCCESS)
+            {
+                Decks.Remove(ChosenDeck);
+                Clickable.Remove(ChosenDeck);
+                RefreshRightGrid();
+                ClearTopGrid();
+                ShipsInTop.Clear();
+                ClearBotGrid();
+                ShipsInBot.Clear();
+                FillBotShips(ships);
+                FillBotGrid();
+
+            }
+        }
+
+        private Deck FleetToDeck(Fleet fleet)
+        {
+            Deck deck = new Deck(new Point(), 100,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,fleet.Name );
+            deck.SetFleet(fleet);
+
+
+            return deck;
         }
         private void OnExit()
         {

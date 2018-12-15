@@ -68,6 +68,7 @@ namespace Client_PC.Scenes
         public void GoToDeck()
         {
             Game1.self.state = Game1.State.DeckMenu;
+            Game1.self.SetDecks(Game1.self.Decks);
             Game1.self.CleanDeck();
         }
         public void ExitClick()
