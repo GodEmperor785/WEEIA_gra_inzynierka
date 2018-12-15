@@ -279,6 +279,7 @@ namespace Client_PC.Scenes
 
             });
             this.ships = ships;
+            Decks.ForEach(p => p.RecentlyAdded = false);
         }
 
         public override void Clean()
@@ -439,6 +440,7 @@ namespace Client_PC.Scenes
                 Deck newDeck = new Deck(new Point(), 20, (int)(gridRight.Height * 0.1),
                     Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, DeckInputBox.Text);
                 Decks.Add(newDeck);
+                newDeck.RecentlyAdded = true;
                 newDeck.clickEvent += DeckClick;
                 gridRight.AddChild(newDeck);
                 DeckInputBox.Text = "";
@@ -505,6 +507,7 @@ namespace Client_PC.Scenes
                     Game1.self.Decks = (List<Fleet>)packetReceived.Packet;
                 }
                 Game1.self.SetDecks(Game1.self.Decks);
+                
                 ChosenDeck = null;
                 
             }
