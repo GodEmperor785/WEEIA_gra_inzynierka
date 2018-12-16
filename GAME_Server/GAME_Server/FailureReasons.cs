@@ -26,5 +26,8 @@ namespace GAME_Server {
 		public static readonly string ROOM_FULL = "Room is already full";
 		public static readonly string CANT_ABANDON = "Cannot abandon room that is already full";
 		public static readonly string NO_FLEET_SELECTED = "No fleet selected for game";
+		public static readonly string TOO_MANY_SHIPS_IN_LINE = "Too many ships in line";
+		public static readonly string RECEIVE_TIMEOUT = "Timeout";
+		public static readonly string INVALID_FLEET_SETUP = "Invalid fleet setup";
 	}
 }

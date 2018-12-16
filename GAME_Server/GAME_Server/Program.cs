@@ -738,12 +738,12 @@ namespace GAME_Server {
 				string msg = "server test msg";
 				client.Send(new GamePacket(OperationType.LOGIN, msg));
 
-				Console.WriteLine("Trying to receive with timeout...");
+				/*Console.WriteLine("Trying to receive with timeout...");
 				try {
-					client.GetReceivedPacket(2000, 1);
+					client.GetReceivedPacket(2000);
 				} catch (ReceiveTimeoutException e) {
 					Console.WriteLine("Failed to receive with timeout. Disconnected player number: " + e.PlayerNumber);
-				}
+				}*/
 
 				Console.WriteLine("Trying to receive complex packet...");
 				packet = client.GetReceivedPacket();
@@ -1069,6 +1069,7 @@ namespace GAME_Server {
 								Server.Log(User.Username + ": wants to create a new custom game with name: " + roomToCreate.RoomName);
 								GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true, this, roomToCreate);
 								Server.CreateCustomRoom(roomToCreate, customGameRoomToCreate);
+								SendSuccess();
 								Thread newCustomGameThread = new Thread(new ThreadStart(customGameRoomToCreate.RunGameThread));
 								newCustomGameThread.Start();
 								//newCustomGameThread.Join();
@@ -1091,6 +1092,7 @@ namespace GAME_Server {
 								else {      //join succeeded - thread removed from available and JoinThisRoom can be called
 									bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase, this);
 									if (joinSuccess) {
+										SendSuccess();
 										Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
 										customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
 										Server.Log(User.Username + ": has ended his game, user thread continues");
@@ -1122,6 +1124,7 @@ namespace GAME_Server {
 								else {      //join successful - GameRoomThread removed from available and JoinThisThread can be called
 									bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase, this);
 									if (joinSuccess) {
+										SendSuccess();
 										Server.Log(User.Username + ": join game room successful, user thread blocks");
 										rankedGame.gameEnded.WaitOne();   //block until end of the game
 										Server.Log(User.Username + ": has ended his game, user thread continues");
@@ -1212,6 +1215,7 @@ namespace GAME_Server {
 		public static readonly string SUDDEN_DISCONNED_GAME_RESULT = "Second player suddenly disconnected, you won";
 		public static readonly string SUDDEN_DISCONNECT_LOG_STRING = "disconnected before game end";
 		public static readonly string SURRENDER_LOG_STRING = "surrendered before game end";
+		public static readonly int SETUP_FLEET_TIMEOUT = 60000;
 
 		private Player player1;     //host
 		private Player player2;
@@ -1225,8 +1229,13 @@ namespace GAME_Server {
 		private UserThread player1ThreadObj;
 		private UserThread player2ThreadObj;
 
+		PlayerGameBoard player1GameBoard;
+		PlayerGameBoard player2GameBoard;
+
 		private Fleet player1Fleet;
 		private Fleet player2Fleet;
+
+		private GameState gameBoard;
 
 		private CustomGameRoom customRoomDescriptor;
 
@@ -1236,6 +1245,7 @@ namespace GAME_Server {
 		private bool isFull;
 		private bool isAbandoned;
 		private bool continueGameLoop;
+		private bool fleetSetupOk;
 
 		private object joinLock = new object();
 		private object isFullLock = new object();
@@ -1325,13 +1335,16 @@ namespace GAME_Server {
 		internal UserThread Player2ThreadObj { get => player2ThreadObj; set => player2ThreadObj = value; }
 		public Fleet Player1Fleet { get => player1Fleet; set => player1Fleet = value; }
 		public Fleet Player2Fleet { get => player2Fleet; set => player2Fleet = value; }
+		public GameState GameBoard { get => gameBoard; set => gameBoard = value; }
+		public PlayerGameBoard Player1GameBoard { get => player1GameBoard; set => player1GameBoard = value; }
+		public PlayerGameBoard Player2GameBoard { get => player2GameBoard; set => player2GameBoard = value; }
 		#endregion
 
 		#region main logic
 		/// <summary>
 		/// main function of <see cref="GameRoomThread"/>
 		/// </summary>
-		internal void RunGameThread() {
+		internal async void RunGameThread() {
 			Server.Log("Game room started by: " + Player1.Username + " is custom: " + IsCustom + ", waiting for second player...");
 			try {
 				roomFull.WaitOne();
@@ -1344,23 +1357,73 @@ namespace GAME_Server {
 					SendSuccess(Player1Conn);
 					SendSuccess(Player2Conn);
 
-					//TODO this lock should be inside while loop
-					lock (gameInProgressLock) {
-						//TODO game logic
-						Thread.Sleep(2000);
-						//TODO GameResult when game ends normally
+					string validateResult;
+					fleetSetupOk = true;
+					GamePacket player1Packet, player2Packet;
+
+					//first get, process and validate players fleet setups
+					Task<GamePacket> player1Task = GetPlayersPacket(Player1Conn, SETUP_FLEET_TIMEOUT);
+					Task<GamePacket> player2Task = GetPlayersPacket(Player2Conn, SETUP_FLEET_TIMEOUT);
+					player1Packet = await player1Task;
+					player2Packet = await player2Task;
+					if (player1Packet != null) {
+						try {
+							Player1GameBoard = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
+							validateResult = GameValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
+							if (validateResult != GameValidator.OK) {
+								EndGameOnError(1, validateResult);
+							}
+							else SendSuccess(Player1Conn);	//if setup OK send success
+						}
+						catch (InvalidCastException) {
+							EndGameOnError(1, FailureReasons.INVALID_PACKET);
+						}
+					}
+					else EndGameOnError(1, FailureReasons.RECEIVE_TIMEOUT);
+					if (player2Packet != null) {
+						try {
+							Player2GameBoard = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
+							validateResult = GameValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
+							if (validateResult != GameValidator.OK) {
+								EndGameOnError(2, validateResult);
+							}
+							else SendSuccess(Player2Conn);  //if setup OK send success
+						}
+						catch (InvalidCastException) {
+							EndGameOnError(2, FailureReasons.INVALID_PACKET);
+						}
+					}
+					else EndGameOnError(2, FailureReasons.RECEIVE_TIMEOUT);
+
+					if (fleetSetupOk) {
+						//TODO this lock should be inside while loop
+						lock (gameInProgressLock) {
+							//TODO game logic
+							Thread.Sleep(2000);
+							//TODO GameResult when game ends normally
+						}
 					}
 
 					Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
 					EndGameThread();
 				}
 			}
-			catch(ConnectionEndedException ex) {
+			catch (ConnectionEndedException ex) {
 				Server.Log(UsernamesOfPlayers + ": player with number " + ex.PlayerNumber + " suddenly disconnected");
 				EndGameBeforeProperEnd(ex.PlayerNumber, SUDDEN_DISCONNECT_LOG_STRING);
 			}
 		}
 		#endregion
+
+		/// <summary>
+		/// async method to get players packet in parallel with second call of this method
+		/// </summary>
+		/// <param name="playerConection"></param>
+		/// <returns></returns>
+		private async Task<GamePacket> GetPlayersPacket(TcpConnection playerConection, int timeout) {
+			Task<GamePacket> receivedPacket = Task.Run(() => playerConection.GetReceivedPacket(timeout));
+			return await receivedPacket;
+		}
 
 		#region game room utils
 		internal bool JoinThisRoom(TcpConnection joinerConnection, Player joiner, IGameDataBase player2DB, UserThread player2ThreadObj) {
@@ -1439,6 +1502,13 @@ namespace GAME_Server {
 				}
 				else Server.Log("Sudden game begore room was full");
 			}
+		}
+
+		private void EndGameOnError(int numberOfPlayerThatEndedGame, string reason) {
+			if (numberOfPlayerThatEndedGame == 1) SendFailure(Player1Conn, reason);
+			else if (numberOfPlayerThatEndedGame == 1) SendFailure(Player2Conn, reason);
+			fleetSetupOk = false;
+			EndGameBeforeProperEnd(numberOfPlayerThatEndedGame, reason);
 		}
 		#endregion
 

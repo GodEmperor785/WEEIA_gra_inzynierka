@@ -218,12 +218,11 @@ namespace GAME_connection {
 		}
 
 		/// <summary>
-		/// Waits and gets oldest unprocessed received packet with timeout in miliseconds, on timeout throws exception
+		/// Waits and gets oldest unprocessed received packet with timeout in miliseconds, on timeout returns null
 		/// </summary>
 		/// <param name="timeoutMilis">timeout in miliseconds for receive operation</param>
-		/// <param name="playerNumber">number of player that had timeout</param>
 		/// <returns></returns>
-		public GamePacket GetReceivedPacket(int timeoutMilis, int playerNumber) {
+		public GamePacket GetReceivedPacket(int timeoutMilis) {
 			int queueCount;
 			messageReceivedEvent.WaitOne(timeoutMilis);     //wait until there is a message with timeout
 			queueCount = QueueCount;
@@ -233,7 +232,7 @@ namespace GAME_connection {
 				}
 			}
 			else if (queueCount == 0 && connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
-			else throw new ReceiveTimeoutException(playerNumber);
+			else return null;
 		}
 
 		private int QueueCount {

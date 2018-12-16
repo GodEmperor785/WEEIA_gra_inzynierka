@@ -23,6 +23,8 @@ namespace GAME_connection {
 		PLAY_CUSTOM_CREATE,
 		GET_CUSTOM_ROOMS,
 		MAKE_MOVE,
+		GAME_STATE,
+		SETUP_FLEET,
 		ABANDON_GAME,
 		SURRENDER,
 		GAME_END,
@@ -75,7 +77,9 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.BASE_MODIFIERS, typeof(BaseModifiers));      //base modifiers for client								- important for client
 			operationMapping.Add(OperationType.GET_PLAYER_STATS, typeof(List<GameHistory>)); //list of game history entries for given player		- important for client
 			operationMapping.Add(OperationType.GET_PLAYER_STATS_ENTRY, typeof(GameHistory)); //full game history entry with given id				- important for client
-			operationMapping.Add(OperationType.MAKE_MOVE, typeof(string));                  //TODO <---------------------------------------------	- 
+			operationMapping.Add(OperationType.MAKE_MOVE, typeof(Move));                    //Move the client wants to make							- important for server, server respons with S/F
+			operationMapping.Add(OperationType.GAME_STATE, typeof(GameState));              //GameState object										- important for client
+			operationMapping.Add(OperationType.SETUP_FLEET, typeof(PlayerGameBoard));       //PlayerGameBoard object with initial setup in 3 lines	- important for server, server respons with S/F
 			operationMapping.Add(OperationType.SUCCESS, typeof(object));                    //nothing - never used									- null
 			operationMapping.Add(OperationType.FAILURE, typeof(string));                    //reason for failure									- important for client
 			operationMapping.Add(OperationType.GET_LOOTBOXES, typeof(List<LootBox>));       //list of available lootboxes							- important for client
@@ -96,6 +100,18 @@ namespace GAME_connection {
 			//4. server sends PLAYER_DATA to client
 			//5. server sends BASE_MODIFIERS to client
 			//6. normal menu operations, client sends request and server responds accordingly, requests to get something usually have no S/F conformation, modification requests have S/F response
+
+			//order of packet in game room
+			//1. client sends PLAY_RANKED or PLAY_CUSTOM_JOIN or PLAY_CUSTOM_CREATE
+			//2. server sends SUCCESS or FAILURE
+			//3. client waits for second player
+			//4. a> if ABANDON no server response
+			//5. b> else server sends SUCCESS after second player joins
+			//6. client sends SETUP_FLEET
+			//7. server sends SUCCESS or FAILURE on validating fleet setup
+			//8. a> if fail game ends and back to menu for client
+			//9. b> else proper game starts
+			//10. TODO order in game loop
 		}
 
 		public static Dictionary<OperationType, Type> OperationMapping => operationMapping;

@@ -48,6 +48,21 @@ namespace GAME_Server {
 			return OK;
 		}
 
+		internal static string ValidatePlayerBoard(PlayerGameBoard playerGameBoard, Fleet selectedFleet) {
+			List<Ship> allShipsOnBoard = new List<Ship>();
+			allShipsOnBoard.AddRange(playerGameBoard.ShortRange);
+			allShipsOnBoard.AddRange(playerGameBoard.MediumRange);
+			allShipsOnBoard.AddRange(playerGameBoard.LongRange);
+			foreach(Ship ship in allShipsOnBoard) {
+				if(!selectedFleet.Ships.Any(fleetShip => fleetShip.Id == ship.Id)) return FailureReasons.INVALID_ID;        //ship on board must be in selected fleet
+			}
+			int maxShipsInLine = Server.BaseModifiers.MaxShipsInLine;
+			if (playerGameBoard.ShortRange.Count > maxShipsInLine || playerGameBoard.MediumRange.Count > maxShipsInLine || playerGameBoard.LongRange.Count > maxShipsInLine)
+				return FailureReasons.TOO_MANY_SHIPS_IN_LINE;		//too many ships in line
+
+			return OK;
+		}
+
 	}
 
 }

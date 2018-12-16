@@ -53,9 +53,12 @@
     <Compile Include="GameEventArgs.cs" />
     <Compile Include="GameHistory.cs" />
     <Compile Include="GameResult.cs" />
+    <Compile Include="GameState.cs" />
     <Compile Include="LootBox.cs" />
+    <Compile Include="Move.cs" />
     <Compile Include="Operations.cs" />
     <Compile Include="Player.cs" />
+    <Compile Include="PlayerGameBoard.cs" />
     <Compile Include="PublicKeys.cs" />
     <Compile Include="Ship.cs" />
     <Compile Include="SslUtils.cs" />
