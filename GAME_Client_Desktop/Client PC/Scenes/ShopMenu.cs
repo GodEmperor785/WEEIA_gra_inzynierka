@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
 using GAME_connection;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
 namespace Client_PC.Scenes
@@ -15,20 +16,26 @@ namespace Client_PC.Scenes
         private Popup popup;
 
         private Grid BoxesGrid;
-        private LootBoxElement common;
-        private LootBoxElement uncommon;
-        private LootBoxElement rare;
+        private List<LootBoxElement> Lootboxes;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-
+            BoxesGrid = new Grid(3,1, (int)(Game1.self.graphics.PreferredBackBufferWidth* 0.25),(int)(Game1.self.graphics.PreferredBackBufferWidth* 0.4));
             BoxesGrid.DrawBackground = false;
-
-            Button exitButton = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            BoxesGrid.WitdhAndHeightColumnDependant = false;
+            BoxesGrid.ConstantRowsAndColumns = true;
+            grid = new Grid();
+            grid.DrawBackground = true;
+            grid.Origin = new Point((Game1.self.graphics.PreferredBackBufferWidth - 200) / 2, Game1.self.graphics.PreferredBackBufferWidth - 300);
+            //Game1.self.graphics.PreferredBackBufferWidth
+            BoxesGrid.Origin = new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.1), (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.1));
+            Button exitButton = new Button(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "Back"
             };
-            
+            grid.AddChild(exitButton,0,0);
+            Clickable.Add(exitButton);
+            exitButton.clickEvent += Exit;
         }
 
         public override void Clean()
@@ -37,12 +44,37 @@ namespace Client_PC.Scenes
             
         }
 
+        private void Exit()
+        {
+            Game1.self.state = Game1.State.MainMenu;
+        }
         public void Reinitialize(List<LootBox> loots)
         {
-            int cost = 0;
-            common = new LootBoxElement(200, 200, Game1.self.GraphicsDevice, Gui, "common", commonCost);
-            uncommon = new LootBoxElement(200, 200, Game1.self.GraphicsDevice, Gui, "uncommon", uncommonCost);
-            rare = new LootBoxElement(200, 200, Game1.self.GraphicsDevice, Gui, "rare", rareCost);
+            int column = 0;
+            loots.ForEach(p=>
+            {
+                LootBoxElement lb = new LootBoxElement(200, 200, Game1.self.GraphicsDevice, Gui, GetRarity(p), p);
+                BoxesGrid.AddChild(lb,0,column);
+                column++;
+            });
+        }
+
+        public string GetRarity(LootBox loot)
+        {
+            string result = "0";
+            if (loot.Name.Equals("basic lootbox"))
+                result = "common";
+            if (loot.Name.Equals("better lootbox"))
+                result = "uncommon";
+            if (loot.Name.Equals("supreme lootbox"))
+                result = "rare";
+            return result;
+        }
+
+        public void Draw(GameTime gameTime)
+        {
+            //BoxesGrid.Draw(Game1.self.spriteBatch);
+            grid.Draw(Game1.self.spriteBatch);
         }
     }
 }

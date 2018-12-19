@@ -41,9 +41,9 @@ namespace Client_PC.UI
                 this.rarity = Rarity.uncommon;
             else if (rarity.Equals("rare"))
                 this.rarity = Rarity.rare;
-
-
-            Tooltip.Text = "Name:\t" + Lootbox.Name + "\nRarity:\t" + rarity + "\nCost:\t" + Lootbox.Cost;
+            Tooltip = new Tooltip(400,300, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true);
+            
+            Tooltip.Text = "Name:" + Lootbox.Name + "Rarity:" + rarity + "Cost:" + Lootbox.Cost;
 
         }
 

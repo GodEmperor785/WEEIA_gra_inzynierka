@@ -29,7 +29,7 @@ namespace Client_PC
     {
         public enum State
         {
-            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu
+            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu
         }
         public static Game1 self;
         public State state = State.LoginMenu;
@@ -42,6 +42,7 @@ namespace Client_PC
         private RegisterMenu registerMenu;
         private DeckMenu deckMenu;
         private GameWindow gameWindow;
+        private ShopMenu shopMenu;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
@@ -102,13 +103,15 @@ namespace Client_PC
             deckMenu.Initialize(Content);
             gameWindow = new GameWindow();
             gameWindow.Initialize(Content);
-
+            shopMenu = new ShopMenu();
+            shopMenu.Initialize(Content);
             menus.Add(mainMenu);
             menus.Add(settingsMenu);
             menus.Add(loginMenu);
             menus.Add(registerMenu);
             menus.Add(deckMenu);
             menus.Add(gameWindow);
+            menus.Add(shopMenu);
 
             settingsMenu.SetMenus(menus);
             base.Initialize();
@@ -242,6 +245,9 @@ namespace Client_PC
                 case State.GameWindow:
                     gameWindow.Update(gameTime);
                     break;
+                case State.ShopMenu:
+                    shopMenu.Update(gameTime);
+                    break;
             }
             base.Update(gameTime);
         }
@@ -261,6 +267,10 @@ namespace Client_PC
             loginMenu.Clean();
         }
 
+        public void SetShop(List<LootBox> loots)
+        {
+            shopMenu.Reinitialize(loots);
+        }
         public void CleanRegister()
         {
             registerMenu.Clean();
@@ -392,6 +402,9 @@ namespace Client_PC
                     break;
                 case State.GameWindow:
                     gameWindow.Draw(gameTime);
+                    break;
+                case State.ShopMenu:
+                    shopMenu.Draw(gameTime);
                     break;
             }
 
