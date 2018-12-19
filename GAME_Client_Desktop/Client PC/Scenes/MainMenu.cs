@@ -71,6 +71,11 @@ namespace Client_PC.Scenes
             Game1.self.SetDecks(Game1.self.Decks);
             Game1.self.CleanDeck();
         }
+
+        public void GoToShop()
+        {
+
+        }
         public void ExitClick()
         {
             Game1.self.Quit();

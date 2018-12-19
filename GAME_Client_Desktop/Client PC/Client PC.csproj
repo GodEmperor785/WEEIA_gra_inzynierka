@@ -84,7 +84,7 @@
     <Compile Include="UI\InputBox.cs" />
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\Layout.cs" />
-    <Compile Include="UI\LootBox.cs" />
+    <Compile Include="UI\LootBoxElement.cs" />
     <Compile Include="UI\Popup.cs" />
     <Compile Include="UI\RelativeLayout.cs" />
     <Compile Include="UI\Tooltip.cs" />
@@ -94,7 +94,8 @@
     <Compile Include="Utilities\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="GAME_connection">
+    <Reference Include="GAME_connection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\GAME_connection\GAME_connection\bin\Debug\GAME_connection.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Framework">
