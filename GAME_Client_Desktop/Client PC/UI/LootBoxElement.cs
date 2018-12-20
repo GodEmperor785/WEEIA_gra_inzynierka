@@ -23,6 +23,8 @@ namespace Client_PC.UI
         public LootBox Lootbox { get; set; }
         private Vector2 Scale;
         public int Cost { get; set; }
+        public delegate void ElementClicked(object sender);
+        public event ElementClicked clickEvent;
         public LootBoxElement( int width, int height, GraphicsDevice device, GUI gui, string rarity, LootBox loot) : base( width,
             height, device, gui)
         {
@@ -59,7 +61,8 @@ namespace Client_PC.UI
 
         public void OnClick()
         {
-            throw new NotImplementedException();
+            if (Active)
+                clickEvent(this);
         }
     }
 }
