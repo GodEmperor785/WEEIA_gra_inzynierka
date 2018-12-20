@@ -868,7 +868,7 @@ namespace GAME_Server {
 				try {
 					playerObject = Server.CastPacketToProperType(packet.Packet, OperationsMap.OperationMapping[packet.OperationType]);
 				} catch (InvalidCastException) {
-					SendFailure(FailureReasons.INVALID_PACKET);
+					SendFailure(FailureReasons.INVALID_PACKET + " got " + packet.Packet.GetType());
 					return LoginResult.ERROR;
 				}
 				//if type ok do login or register

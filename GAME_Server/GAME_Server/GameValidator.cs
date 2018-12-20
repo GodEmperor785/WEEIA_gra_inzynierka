@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GAME_connection;
 
 namespace GAME_Server {
-	internal static class GameValidator {
+	public static class GameValidator {
 
 		public static readonly string OK = "validation_ok";
 
@@ -18,7 +18,7 @@ namespace GAME_Server {
 		/// <param name="fleet"></param>
 		/// <param name="database"></param>
 		/// <returns></returns>
-		internal static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database, bool isNew) {
+		public static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database, bool isNew) {
 			if (isNew) {	//if fleet is added, not modified check if player can have one more fleet
 				if (database.GetPlayerFleetCount(player) >= Server.BaseModifiers.MaxFleetsPerPlayer) return FailureReasons.TOO_MANY_FLEETS;
 				if (!database.FleetNameIsUnique(player, fleet.Name)) return FailureReasons.FLEET_NAME_NOT_UNIQUE;
@@ -39,7 +39,8 @@ namespace GAME_Server {
 				if (shipsIds.Contains(fleetShip.Id)) return FailureReasons.DUPLICATES_NOT_ALLOWED;  //no duplicates
 				shipsIds.Add(fleetShip.Id);
 				DbShip dbShip = database.GetShipWithId(fleetShip.Id);
-				if (dbShip == null) throw new NullReferenceException("Ship does not exist!");		//invalid ship id!
+				if (dbShip == null) throw new NullReferenceException("Ship does not exist!");       //invalid ship id!
+				if (!dbShip.IsActive) return FailureReasons.ELEMENT_NOT_ACTIVE;
 				fleetSize += dbShip.ShipBaseStats.Cost;
 				if (!dbShip.ShipBaseStats.Faction.Equals(fleetFaction)) return FailureReasons.FACTION_MUST_BE_SAME;		//all ships must belong to the same faction
 				if (dbShip.Owner.Id != player.Id) return FailureReasons.INVALID_ID;		//ship must belong to player
@@ -48,7 +49,7 @@ namespace GAME_Server {
 			return OK;
 		}
 
-		internal static string ValidatePlayerBoard(PlayerGameBoard playerGameBoard, Fleet selectedFleet) {
+		public static string ValidatePlayerBoard(PlayerGameBoard playerGameBoard, Fleet selectedFleet) {
 			List<Ship> allShipsOnBoard = new List<Ship>();
 			allShipsOnBoard.AddRange(playerGameBoard.ShortRange);
 			allShipsOnBoard.AddRange(playerGameBoard.MediumRange);

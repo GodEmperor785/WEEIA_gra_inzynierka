@@ -20,6 +20,8 @@ namespace GAME_Server {
 			GamesWon = gamesWon;
 			OwnedShips = new List<DbShip>();
 			Money = money;
+			IsActive = true;
+			IsAdmin = false;
 		}
 
 		public DbPlayer(int id, string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) 
@@ -51,6 +53,8 @@ namespace GAME_Server {
 		public int GamesPlayed { get; set; }
 		public int GamesWon { get; set; }
 		public int Money { get; set; }
+		public bool IsActive { get; set; }
+		public bool IsAdmin { get; set; }
 
 		public List<DbShip> OwnedShips { get; set; }
 
@@ -219,6 +223,7 @@ namespace GAME_Server {
 			ShipExp = shipExp;
 			ShipBaseStats = shipBaseStats;
 			Fleets = new List<DbFleet>();
+			IsActive = true;
 		}
 
 		public DbShip(int id, DbPlayer owner, int shipExp, DbShipTemplate shipBaseStats)
@@ -230,6 +235,7 @@ namespace GAME_Server {
 		public DbPlayer Owner { get; set; }
 		public int ShipExp { get; set; }
 		public DbShipTemplate ShipBaseStats { get; set; }
+		public bool IsActive { get; set; }
 
 		public List<DbFleet> Fleets { get; set; }
 
@@ -256,6 +262,7 @@ namespace GAME_Server {
 			Owner = owner;
 			Ships = ships;
 			Name = name;
+			IsActive = true;
 		}
 
 		public DbFleet(int id, DbPlayer owner, List<DbShip> ships, string name) : this(owner, ships, name) {
@@ -266,6 +273,7 @@ namespace GAME_Server {
 		public List<DbShip> Ships { get; set; }
 		public string Name { get; set; }
 		public int Id { get; set; }
+		public bool IsActive { get; set; }
 
 		public Fleet ToFleet() {
 			List<Ship> nonDbShips = new List<Ship>();

@@ -33,3 +33,5 @@ SHOW PROCESSLIST;
 show status like '%onn%';
 -- Connection to suma wszystkich kiedykolwiek
 -- Threads_connected to otwarte
+
+select VERSION();

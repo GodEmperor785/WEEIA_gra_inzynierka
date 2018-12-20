@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GAME_connection;
 
 namespace GAME_Server {
-	interface IGameDataBase : IDisposable {
+	public interface IGameDataBase : IDisposable {
 		DbFleet GetFleetWithId(int id);
 
 		DbShip GetShipWithId(int id);

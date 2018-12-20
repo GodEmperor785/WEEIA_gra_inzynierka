@@ -243,9 +243,9 @@ namespace GAME_Server {
 			var weps = q2.ToList();
 			var defs = q3.ToList();
 			return basic;*/
-			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id).ToList();
-			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id).ToList();
-			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id).ToList();
+			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
+			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
+			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			return q1;
 		}
 
@@ -395,7 +395,7 @@ namespace GAME_Server {
 		}
 
 		public List<DbShip> GetPlayersShips(Player player) {
-			var query = BasicShipQuery.Where(ship => ship.Owner.Id == player.Id);
+			var query = BasicShipQuery.Where(ship => ship.Owner.Id == player.Id && ship.IsActive);
 			return query.ToList();
 		}
 
@@ -477,7 +477,8 @@ namespace GAME_Server {
 			var shipToDelete = GetShipWithId(id);
 			if (!isAdmin && shipToDelete.Owner.Id != playerId) return false; //user cant delete ship he does not own!
 
-			DbContext.Ships.Remove(shipToDelete);
+			//DbContext.Ships.Remove(shipToDelete);
+			shipToDelete.IsActive = false;
 			SaveChanges();
 			return true;
 		}
@@ -493,7 +494,8 @@ namespace GAME_Server {
 			var fleetToDelete = GetFleetWithId(id);
 			if (!isAdmin && fleetToDelete.Owner.Id != playerId) return false; //user cant delete fleet he does not own!
 
-			DbContext.Fleets.Remove(fleetToDelete);
+			//DbContext.Fleets.Remove(fleetToDelete);
+			fleetToDelete.IsActive = false;
 			SaveChanges();
 			return true;
 		}
@@ -501,24 +503,24 @@ namespace GAME_Server {
 
 		#region Checks
 		public bool PlayerExists(Player player) {
-			return DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username);
+			return DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username && dbPlayer.IsActive);
 		}
 
 		public bool PlayerNameIsUnique(Player player) {
-			if (DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username)) return false;
+			if (DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username && dbPlayer.IsActive)) return false;
 			else return true;
 		}
 
 		public bool ValidateUser(Player player) {
 			var playerFromDb = (from players in DbContext.Players
-								where players.Username == player.Username
+								where players.Username == player.Username && players.IsActive
 								select players).First();
 			if (playerFromDb.Password == player.Password) return true;
 			else return false;
 		}
 
 		public bool FleetNameIsUnique(Player player, string fleetName) {
-			if (DbContext.Fleets.Any(fleet => fleet.Name == fleetName && fleet.Owner.Id == player.Id)) return false;
+			if (DbContext.Fleets.Any(fleet => fleet.Name == fleetName && fleet.Owner.Id == player.Id && fleet.IsActive)) return false;
 			else return true;
 		}
 
