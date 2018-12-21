@@ -64,7 +64,7 @@ namespace Client_PC.UI
             texture.SetData(data);
             return texture;
         }
-        public static Texture2D CreateTextureHollow(GraphicsDevice device, int width, int height, Func<int, Color> paint, Color brighter, Color darker, int bordersize = 10, int alpha = 255)
+        public static Texture2D CreateTextureHollow(GraphicsDevice device, int width, int height, Color brighter, Color darker, int bordersize = 10, int alpha = 255)
         {
             //initialize a texture
             Texture2D texture = new Texture2D(device, width, height);

@@ -100,7 +100,11 @@ namespace Client_PC.Scenes
             {
                 Text = "Exit"
             };
-
+            Button b5 = new Button(new Point(0, 0), (int)(gridRightBottom.Width), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
+                Gui, Gui.mediumFont, true)
+            {
+                Text = "Organize"
+            };
 
             Button up = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width) - 60, gridTopLeft.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
             Gui, Gui.mediumFont, true)
@@ -155,14 +159,17 @@ namespace Client_PC.Scenes
             b.clickEvent += OnAdd;
             b2.clickEvent += OnSave;
             b3.clickEvent += OnRemove;
+            b5.clickEvent += onOrganize;
+            Clickable.Add(b5);
             Clickable.Add(b2);
             Clickable.Add(b);
             Clickable.Add(b3);
             gridRightBottom.AddChild(DeckInputBox,0,0,3);
-            gridRightBottom.AddChild(b,1,1);
-            gridRightBottom.AddChild(b2, 1, 2);
-            gridRightBottom.AddChild(b3, 2, 1);
-            gridRightBottom.AddChild(b4, 2, 2);
+            gridRightBottom.AddChild(b5,1,0,3);
+            gridRightBottom.AddChild(b,2,1);
+            gridRightBottom.AddChild(b2, 2, 2);
+            gridRightBottom.AddChild(b3, 3, 1);
+            gridRightBottom.AddChild(b4, 3, 2);
             gridRightBottom.ResizeChildren();
             DeckInputBox.Update();
 
@@ -254,6 +261,11 @@ namespace Client_PC.Scenes
             gridCenter.UpdateP();
             gridTopLeft.UpdateP();
 
+        }
+
+        public void onOrganize()
+        {
+            Game1.self.SetFleetMenu(ChosenDeck.GetFleet());
         }
         public void onPopupExit()
         {

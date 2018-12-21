@@ -6,6 +6,7 @@ using System.Net.Mime;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Xml.Serialization;
 using Client_PC.Scenes;
 using Client_PC.UI;
@@ -29,7 +30,7 @@ namespace Client_PC
     {
         public enum State
         {
-            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu
+            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu, FleetMenu
         }
         public static Game1 self;
         public State state = State.LoginMenu;
@@ -43,6 +44,7 @@ namespace Client_PC
         private DeckMenu deckMenu;
         private GameWindow gameWindow;
         private ShopMenu shopMenu;
+        private FleetMenu fleetMenu;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
@@ -105,6 +107,8 @@ namespace Client_PC
             gameWindow.Initialize(Content);
             shopMenu = new ShopMenu();
             shopMenu.Initialize(Content);
+            fleetMenu = new FleetMenu();
+            fleetMenu.Initialize(Content);
             menus.Add(mainMenu);
             menus.Add(settingsMenu);
             menus.Add(loginMenu);
@@ -112,6 +116,7 @@ namespace Client_PC
             menus.Add(deckMenu);
             menus.Add(gameWindow);
             menus.Add(shopMenu);
+            menus.Add(fleetMenu);
 
             settingsMenu.SetMenus(menus);
             base.Initialize();
@@ -248,6 +253,9 @@ namespace Client_PC
                 case State.ShopMenu:
                     shopMenu.Update(gameTime);
                     break;
+                case State.FleetMenu:
+                    fleetMenu.Update(gameTime);
+                    break;
             }
             base.Update(gameTime);
         }
@@ -270,6 +278,12 @@ namespace Client_PC
         public void SetShop(List<LootBox> loots)
         {
             shopMenu.Reinitialize(loots);
+        }
+
+        public void SetFleetMenu(Fleet fleet)
+        {
+            fleetMenu.setFleet(fleet);
+            fleetMenu.Fill();
         }
         public void CleanRegister()
         {
@@ -405,6 +419,9 @@ namespace Client_PC
                     break;
                 case State.ShopMenu:
                     shopMenu.Draw(gameTime);
+                    break;
+                case State.FleetMenu:
+                    fleetMenu.Draw(gameTime);
                     break;
             }
 
