@@ -30,5 +30,8 @@ namespace GAME_Server {
 		public static readonly string RECEIVE_TIMEOUT = "Timeout";
 		public static readonly string INVALID_FLEET_SETUP = "Invalid fleet setup";
 		public static readonly string ELEMENT_NOT_ACTIVE = "Invalid ID - element not active";
+		public static readonly string INDEX_IN_LINE_OUT_OF_RANGE = "Index out of range in ShipIndex";
+		public static readonly string ONE_SHIP_MANY_MOVES = "Ship cannot make many moves in the same time";
+		public static readonly string MOVE_DISTANCE_TOO_LONG = "Ship cannot move more than 1 line a turn";
 	}
 }
