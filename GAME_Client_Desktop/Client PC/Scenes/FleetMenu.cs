@@ -29,6 +29,10 @@ namespace Client_PC.Scenes
         {
             Gui = new GUI(Content);
             layout = new RelativeLayout();
+            grid = new Grid();
+            buttonsGrid = new Grid();
+            cardsGrid = new Grid(5, 3, CardWidth, CardHeight);
+            slots = new List<CardSlot>();
             for (int row = 0; row < 3; row++)
             {
                 for (int column = 0; column < 5; column++)
@@ -57,16 +61,15 @@ namespace Client_PC.Scenes
                 Text = "down"
             };
             down.clickEvent += downClick;
-            Button exit = new Button(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
-            {
-                text = "Back"
-            };
-            exit.clickEvent += onExit;
+
             Button save = new Button(200,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 text = "Save"
             };
             save.clickEvent += onSave;
+            buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
+            cardsGrid.Origin = new Point(200, buttonsGrid.Origin.Y - 200);
+            buttonsGrid.AddChild(save,0,0);
             layout.AddChild(up);
             layout.AddChild(down);
             Clickable.Add(up);
@@ -74,17 +77,15 @@ namespace Client_PC.Scenes
             cardsGrid.AllVisible = false;
             cardsGrid.VisibleRows = 1;
             cardsGrid.ConstantRowsAndColumns = true;
+            cardsGrid.MaxChildren = true;
+            cardsGrid.ChildMaxAmount = 15;
             cardsGrid.UpdateP();
-        }
-
-        public void onExit()
-        {
-            Game1.self.state = Game1.State.DeckMenu;
+            buttonsGrid.UpdateP();
         }
 
         public void onSave()
         {
-            fleet.
+            
         }
         public void setFleet(Fleet fleet)
         {
@@ -118,7 +119,13 @@ namespace Client_PC.Scenes
         public void CardClick(object sender)
         {
             CurrentCard = (Card)sender;
+            CurrentCard.Status = Card.status.clicked;
             slots.ForEach(p => p.CardClicked = true);
+        }
+
+        public override void UpdateButtonNull()
+        {
+            slots.ForEach(p=> p.CardClicked = false);
         }
 
         public void CardSlotClick(object sender)
@@ -126,6 +133,7 @@ namespace Client_PC.Scenes
             if (CurrentCard != null)
             {
                 CardSlot c = (CardSlot) sender;
+                cardsGrid.RemoveChild(CurrentCard);
                 c.SetCard(CurrentCard);
                 slots.ForEach(p => p.CardClicked = false);
             }

@@ -37,7 +37,7 @@ namespace Client_PC.UI
         public override void Update()
         {
             if (NeedNewTexture)
-                Texture = Util.CreateTextureHollow(Device, Width, Height, new Color(10, 10, 10), new Color(10, 10, 10), 5, 255);
+                Texture = Util.CreateTextureHollow(Device, Width, Height, new Color(10, 10, 10), new Color(10, 10, 10), 5, 1);
         }
         public void OnClick()
         {
@@ -49,6 +49,9 @@ namespace Client_PC.UI
         {
             Card = card;
             Card.Position = Position;
+            Card.Origin = Origin;
+            Card.Update();
+            hasCard = true;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
