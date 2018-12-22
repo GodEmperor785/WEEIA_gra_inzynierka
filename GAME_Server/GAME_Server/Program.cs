@@ -1565,11 +1565,11 @@ namespace GAME_Server {
 							if(player2MoveOK) {
 								//TODO game logic
 							}
-							//na poczatku dla ruchu statku zrobic tymczasowa liste par <statek,linia_docelowa> zeby nie bylo problemow z indexami
+							//na poczatku dla ruchu statku zrobic tymczasowa liste par <statek,linia_docelowa> zeby nie bylo problemow z indexami i nullami
 							//przed przetwarzaniem zrobic refernecyjna liste tych par i na jej podstawie brac statki i wstawiac na nowy PlayerGameBoard
+							//docelowo obiekty zwracane do klienta to te property w tym obiekcie, ta lista par tylko dla referencji
 							//klient moze wrzuca null na miejsce startowe zeby sie nie pogubil
 
-							//TODO game logic
 							Thread.Sleep(2000);
 							//TODO GameResult when game ends normally
 							//}
@@ -1577,7 +1577,7 @@ namespace GAME_Server {
 					}
 
 					Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
-					EndGameThread();
+					if(!GameAlreadyEnded) EndGameThread();
 				}
 			}
 			catch (ConnectionEndedException ex) {
@@ -1624,21 +1624,29 @@ namespace GAME_Server {
 
 		private void UpdateLoserAndWiner(Player loser, Player winner) {
 			Server.Log(UsernamesOfPlayers + ": Game ended - result: winner " + winner.Username + " loser: " + loser.Username);
-			using (IGameDataBase tempDB = new MySqlDataBase()) {
-				DbPlayer dbWinner = tempDB.GetPlayerWithUsername(winner.Username);
-				dbWinner.Experience += Server.BaseModifiers.ExpForVictory;
-				dbWinner.GamesWon += 1;
-				dbWinner.GamesPlayed += 1;
-				dbWinner.Money += Server.BaseModifiers.MoneyForVictory;
-				tempDB.UpdatePlayer(dbWinner);
-
-				DbPlayer dbLoser = tempDB.GetPlayerWithUsername(loser.Username);
-				dbLoser.Experience += Server.BaseModifiers.ExpForLoss;
-				dbLoser.GamesWon += 1;
-				dbLoser.GamesPlayed += 1;
-				dbLoser.Money += Server.BaseModifiers.MoneyForLoss;
-				tempDB.UpdatePlayer(dbLoser);
+			IGameDataBase winnerDB;
+			IGameDataBase loserDB;
+			if(winner.Username == Player1.Username) {
+				winnerDB = Player1DB;
+				loserDB = Player2DB;
 			}
+			else {
+				winnerDB = Player2DB;
+				loserDB = Player1DB;
+			}
+			DbPlayer dbWinner = winnerDB.GetPlayerWithUsername(winner.Username);
+			dbWinner.Experience += Server.BaseModifiers.ExpForVictory;
+			dbWinner.GamesWon += 1;
+			dbWinner.GamesPlayed += 1;
+			dbWinner.Money += Server.BaseModifiers.MoneyForVictory;
+			winnerDB.UpdatePlayer(dbWinner);
+
+			DbPlayer dbLoser = loserDB.GetPlayerWithUsername(loser.Username);
+			dbLoser.Experience += Server.BaseModifiers.ExpForLoss;
+			dbLoser.GamesWon += 1;
+			dbLoser.GamesPlayed += 1;
+			dbLoser.Money += Server.BaseModifiers.MoneyForLoss;
+			loserDB.UpdatePlayer(dbLoser);
 		}
 
 		private void HandleSuddenGameEnd(Player disconnectedPlayer, string reasonToLog) {

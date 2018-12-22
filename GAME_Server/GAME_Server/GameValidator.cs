@@ -89,9 +89,6 @@ namespace GAME_Server {
 				movingShips.Add(playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id);
 				shipsThatAlreadyMadeMove.Add(playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id);
 
-				/*if (move.Item1.Line == Line.SHORT) movingShips.Add(playerBoard.ShortRange[move.Item1.ShipIndex].Id);
-				else if (move.Item1.Line == Line.MEDIUM) movingShips.Add(playerBoard.MediumRange[move.Item1.ShipIndex].Id);
-				else movingShips.Add(playerBoard.LongRange[move.Item1.ShipIndex].Id);*/
 				numberOfShipsInLine[move.Item2] += 1;		//add one ship to destination
 				numberOfShipsInLine[move.Item1.Line] -= 1;	//remove one ship from origin
 			}
@@ -108,23 +105,10 @@ namespace GAME_Server {
 			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {  //check if idexes of ships are ok
 				if(move.Item1.ShipIndex >= playerBoard.Board[move.Item1.Line].Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
 				if (move.Item2.ShipIndex >= playerBoard.Board[move.Item2.Line].Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;
-
-				/*if (move.Item1.Line == Line.SHORT && move.Item1.ShipIndex >= playerBoard.ShortRange.Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
-				else if (move.Item1.Line == Line.MEDIUM && move.Item1.ShipIndex >= playerBoard.MediumRange.Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
-				else if (move.Item1.Line == Line.LONG && move.Item1.ShipIndex >= playerBoard.LongRange.Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
-
-				if (move.Item2.Line == Line.SHORT && move.Item2.ShipIndex >= enemyBoard.ShortRange.Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;
-				else if (move.Item2.Line == Line.MEDIUM && move.Item2.ShipIndex >= enemyBoard.MediumRange.Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;
-				else if (move.Item2.Line == Line.LONG && move.Item2.ShipIndex >= enemyBoard.LongRange.Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;*/
 			}
 			//than check if attacking ships are not in moving ships
 			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {
 				shipsThatAlreadyMadeMove.Add(playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id);
-				//if (movingShips.Any(shipID => shipID == playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id)) return FailureReasons.ONE_SHIP_MANY_MOVES;
-
-				/*if (move.Item1.Line == Line.SHORT && movingShips.Any(shipID => shipID == playerBoard.ShortRange[move.Item1.ShipIndex].Id)) return FailureReasons.ATTACK_AND_MOVE_AT_ONCE;
-				else if (move.Item1.Line == Line.MEDIUM && movingShips.Any(shipID => shipID == playerBoard.MediumRange[move.Item1.ShipIndex].Id)) return FailureReasons.ATTACK_AND_MOVE_AT_ONCE;
-				else if (move.Item1.Line == Line.LONG && movingShips.Any(shipID => shipID == playerBoard.LongRange[move.Item1.ShipIndex].Id)) return FailureReasons.ATTACK_AND_MOVE_AT_ONCE;*/
 			}
 			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {
 				if (shipsThatAlreadyMadeMove.Where(id => id == playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id).Count() > 1) return FailureReasons.ONE_SHIP_MANY_MOVES;
