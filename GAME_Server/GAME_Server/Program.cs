@@ -76,6 +76,8 @@ namespace GAME_Server {
 				bool useSsl = Convert.ToBoolean(useSslVar);
 				Log("Server use SSL: " + useSsl);
 
+				//doGameBoardValidationTest();
+				
 				InitilizeGameDataFromDB(false, true);       //change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
 				//IPAddress ipAddress = IPAddress.Parse(ip);
@@ -770,6 +772,101 @@ namespace GAME_Server {
 			Console.WriteLine("Test end");
 		}
 
+		private static void doGameBoardValidationTest() {
+			//game board test
+			baseModifiers = (new DbBaseModifiers() {
+				Id = 1,
+				KineticRange = 4,
+				LaserRange = 3,
+				MissileRange = 1,
+				KineticPD = 2,
+				KineticShield = 5,
+				KineticIF = 1.2,
+				LaserPD = 0,
+				LaserShield = 0.5,
+				LaserIF = 2,
+				MissilePD = 8,
+				MissileShield = 1,
+				MissileIF = 1.2,
+				BaseShipStatsExpModifier = 0.01,
+				MaxShipsPerPlayer = 150,
+				StartingMoney = 1000,
+				ExpForVictory = 20,
+				ExpForLoss = 10,
+				FleetSizeExpModifier = 0.5,
+				BaseFleetMaxSize = 1000,
+				MaxAbsoluteFleetSize = 5000,
+				MaxShipExp = 1000,
+				MaxShipsInLine = 5,
+				MaxFleetsPerPlayer = 8
+			}).ToBaseModifiers();
+
+			Ship p1s1 = new Ship() { Id = 1 };
+			Ship p1s2 = new Ship() { Id = 2 };
+			Ship p1s3 = new Ship() { Id = 3 };
+			Ship p1s4 = new Ship() { Id = 4 };
+			Ship p1s5 = new Ship() { Id = 5 };
+			Ship p1s6 = new Ship() { Id = 6 };
+			Ship p1s7 = new Ship() { Id = 7 };
+			Ship p1s8 = new Ship() { Id = 8 };
+
+			Ship p2s1 = new Ship() { Id = 11 };
+			Ship p2s2 = new Ship() { Id = 12 };
+			Ship p2s3 = new Ship() { Id = 13 };
+			Ship p2s4 = new Ship() { Id = 14 };
+			Ship p2s5 = new Ship() { Id = 15 };
+			Ship p2s6 = new Ship() { Id = 16 };
+			Ship p2s7 = new Ship() { Id = 17 };
+			Ship p2s8 = new Ship() { Id = 18 };
+
+			List<Ship> p1s = new List<Ship> { p1s1, p1s2, p1s3, p1s4, };
+			List<Ship> p1m = new List<Ship> { p1s6, p1s7, p1s5 };
+			List<Ship> p1l = new List<Ship> { p1s8 };
+			List<Ship> p1all = new List<Ship> { p1s1, p1s2, p1s3, p1s4, p1s5, p1s6, p1s7, p1s8 };
+			Fleet p1fleet = new Fleet("p1fleet", new Player(), p1all);
+			PlayerGameBoard p1gameBoard = new PlayerGameBoard(p1s, p1m, p1l);
+
+			List<Ship> p2s = new List<Ship> { p2s1, p2s2 };
+			List<Ship> p2m = new List<Ship> { p2s3, p2s4, p2s5, p2s8 };
+			List<Ship> p2l = new List<Ship> { p2s6, p2s7 };
+			List<Ship> p2all = new List<Ship> { p2s1, p2s2, p2s3, p2s4, p2s5, p2s6, p2s7, p2s8 };
+			Fleet p2fleet = new Fleet("p2fleet", new Player(), p2all);
+			PlayerGameBoard p2gameBoard = new PlayerGameBoard(p2s, p2m, p2l);
+
+			string p1validate = GameValidator.ValidatePlayerBoard(p1gameBoard, p1fleet);
+			string p2validate = GameValidator.ValidatePlayerBoard(p2gameBoard, p2fleet);
+			Console.WriteLine("p1: " + p1validate);
+			Console.WriteLine("p2: " + p2validate);
+
+			Console.WriteLine("p1 game board");
+			foreach (var line in p1gameBoard.Board) {
+				Console.Write(line.Key + " :   \t");
+				foreach (Ship s in line.Value) Console.Write(s.Id + "\t");
+				Console.Write(Environment.NewLine);
+			}
+			Console.WriteLine("p2 game board");
+			foreach (var line in p2gameBoard.Board) {
+				Console.Write(line.Key + " :   \t");
+				foreach (Ship s in line.Value) Console.Write(s.Id + "\t");
+				Console.Write(Environment.NewLine);
+			}
+
+			Tuple<ShipPosition, Line> p1mm1 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.LONG, 0), Line.MEDIUM);
+			Tuple<ShipPosition, Line> p1mm2 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.MEDIUM, 0), Line.SHORT);
+			Tuple<ShipPosition, ShipPosition> p1ma1 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.SHORT, 0), new ShipPosition(Line.SHORT, 0));
+			Tuple<ShipPosition, ShipPosition> p1ma2 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.MEDIUM, 2), new ShipPosition(Line.MEDIUM, 1));
+			Move p1move = new Move();
+			p1move.MoveList.Add(p1mm1);
+			p1move.MoveList.Add(p1mm2);
+			p1move.AttackList.Add(p1ma1);
+			p1move.AttackList.Add(p1ma2);
+
+			p1validate = GameValidator.ValidateMove(p1move, p1gameBoard, p2gameBoard);
+			Console.WriteLine("p1 move: " + p1validate);
+
+			Console.ReadKey();
+		}
+
 	}
 
 	#region User Thread
@@ -1215,7 +1312,8 @@ namespace GAME_Server {
 		public static readonly string SUDDEN_DISCONNED_GAME_RESULT = "Second player suddenly disconnected, you won";
 		public static readonly string SUDDEN_DISCONNECT_LOG_STRING = "disconnected before game end";
 		public static readonly string SURRENDER_LOG_STRING = "surrendered before game end";
-		public static readonly int SETUP_FLEET_TIMEOUT = 60000;
+		public static readonly int SETUP_FLEET_TIMEOUT = 120000;    //in miliseconds
+		public static readonly int MAKE_MOVE_TIMEOUT = 60000;	//in miliseconds
 
 		private Player player1;     //host
 		private Player player2;
@@ -1246,6 +1344,8 @@ namespace GAME_Server {
 		private bool isAbandoned;
 		private bool continueGameLoop;
 		private bool fleetSetupOk;
+		private bool gameAlreadyEnded;
+		private bool player1MoveOK, player2MoveOK = true;
 
 		private object joinLock = new object();
 		private object isFullLock = new object();
@@ -1253,7 +1353,8 @@ namespace GAME_Server {
 		private object matchmakinglock = new object();
 		private object continueGameLoopLock = new object();
 		private object gameEndLock = new object();
-		private object gameInProgressLock = new object();	//used to lock game progress and sudden game end
+		private object gameInProgressLock = new object();   //used to lock game progress and sudden game end
+		private object gameAlredyEndedLock = new object();
 		
 		private double matchmakingScore;
 
@@ -1330,6 +1431,20 @@ namespace GAME_Server {
 				}
 			}
 		}
+		public bool GameAlreadyEnded {
+			get {
+				bool localGameAlreadyEnded;
+				lock (gameAlredyEndedLock) {
+					localGameAlreadyEnded = gameAlreadyEnded;
+				}
+				return localGameAlreadyEnded;
+			}
+			set {
+				lock (gameAlredyEndedLock) {
+					gameAlreadyEnded = value;
+				}
+			}
+		}
 		public string UsernamesOfPlayers { get => usernamesOfPlayers; set => usernamesOfPlayers = value; }
 		internal UserThread Player1ThreadObj { get => player1ThreadObj; set => player1ThreadObj = value; }
 		internal UserThread Player2ThreadObj { get => player2ThreadObj; set => player2ThreadObj = value; }
@@ -1395,17 +1510,74 @@ namespace GAME_Server {
 					}
 					else EndGameOnError(2, FailureReasons.RECEIVE_TIMEOUT);
 
+					Move player1Move, player2Move;
 					if (fleetSetupOk) {
-						//TODO this lock should be inside while loop
-						lock (gameInProgressLock) {
-							//TODO game logic
+						ContinueGameLoop = true;
+						GameAlreadyEnded = false;
+						while (ContinueGameLoop) {
+							//lock (gameInProgressLock) {	//cant do this with await
+							player1MoveOK = true;
+							player2MoveOK = true;
+							//first send gamestate to players (yourBoard, enemyBoard)
+							Player1Conn.Send(new GamePacket(OperationType.GAME_STATE, new GameState(Player1GameBoard, Player2GameBoard)));
+							Player2Conn.Send(new GamePacket(OperationType.GAME_STATE, new GameState(Player2GameBoard, Player1GameBoard)));
+							//than wait for moves
+							Task<GamePacket> player1MoveTask = GetPlayersPacket(Player1Conn, MAKE_MOVE_TIMEOUT);
+							Task<GamePacket> player2MoveTask = GetPlayersPacket(Player2Conn, MAKE_MOVE_TIMEOUT);
+							player1Packet = await player1MoveTask;
+							player2Packet = await player2MoveTask;
+							if (player1Packet != null) {
+								try {
+									player1Move = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
+									validateResult = GameValidator.ValidateMove(player1Move, Player1GameBoard, Player2GameBoard);
+									if (validateResult != GameValidator.OK) {
+										SkipMove(Player1Conn, "invalid move: " + validateResult);
+									}
+									else SendSuccess(Player1Conn);  //if move OK send success
+								}
+								catch (InvalidCastException) {
+									EndGameOnError(1, FailureReasons.INVALID_PACKET);
+								}
+							}
+							else {
+								SkipMove(Player1Conn, "make move timeout");
+							}
+							if (player2Packet != null) {
+								try {
+									player2Move = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
+									validateResult = GameValidator.ValidateMove(player2Move, Player2GameBoard, Player1GameBoard);
+									if (validateResult != GameValidator.OK) {
+										SkipMove(Player2Conn, "invalid move: " + validateResult);
+									}
+									else SendSuccess(Player1Conn);  //if move OK send success
+								}
+								catch (InvalidCastException) {
+									EndGameOnError(2, FailureReasons.INVALID_PACKET);
+								}
+							}
+							else {
+								SkipMove(Player1Conn, "make move timeout");
+							}
+
+							if(player1MoveOK) {
+								//TODO game logic
+							}
+							if(player2MoveOK) {
+								//TODO game logic
+							}
+							//na poczatku dla ruchu statku zrobic tymczasowa liste par <statek,linia_docelowa> zeby nie bylo problemow z indexami i nullami
+							//przed przetwarzaniem zrobic refernecyjna liste tych par i na jej podstawie brac statki i wstawiac na nowy PlayerGameBoard
+							//docelowo obiekty zwracane do klienta to te property w tym obiekcie, ta lista par tylko dla referencji
+							//klient moze wrzuca null na miejsce startowe zeby sie nie pogubil
+
 							Thread.Sleep(2000);
 							//TODO GameResult when game ends normally
+							//}
 						}
 					}
 
 					Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
-					EndGameThread();
+					if(!GameAlreadyEnded) EndGameThread();
 				}
 			}
 			catch (ConnectionEndedException ex) {
@@ -1423,6 +1595,13 @@ namespace GAME_Server {
 		private async Task<GamePacket> GetPlayersPacket(TcpConnection playerConection, int timeout) {
 			Task<GamePacket> receivedPacket = Task.Run(() => playerConection.GetReceivedPacket(timeout));
 			return await receivedPacket;
+		}
+
+		private void SkipMove(TcpConnection playerConnThatTiemouted, string reason) {
+			SendFailure(playerConnThatTiemouted, reason);
+			if (playerConnThatTiemouted.PlayerNumber == 1) player1MoveOK = false;
+			else if (playerConnThatTiemouted.PlayerNumber == 2) player2MoveOK = false;
+			else Server.Log(UsernamesOfPlayers + ": Invalid player number in sudden game end handler! Actual: " + playerConnThatTiemouted.PlayerNumber + ", should be 1 or 2", true);
 		}
 
 		#region game room utils
@@ -1444,12 +1623,30 @@ namespace GAME_Server {
 		}
 
 		private void UpdateLoserAndWiner(Player loser, Player winner) {
+			Server.Log(UsernamesOfPlayers + ": Game ended - result: winner " + winner.Username + " loser: " + loser.Username);
+			IGameDataBase winnerDB;
+			IGameDataBase loserDB;
 			if(winner.Username == Player1.Username) {
-				//TODO player victory/loss
+				winnerDB = Player1DB;
+				loserDB = Player2DB;
 			}
 			else {
-
+				winnerDB = Player2DB;
+				loserDB = Player1DB;
 			}
+			DbPlayer dbWinner = winnerDB.GetPlayerWithUsername(winner.Username);
+			dbWinner.Experience += Server.BaseModifiers.ExpForVictory;
+			dbWinner.GamesWon += 1;
+			dbWinner.GamesPlayed += 1;
+			dbWinner.Money += Server.BaseModifiers.MoneyForVictory;
+			winnerDB.UpdatePlayer(dbWinner);
+
+			DbPlayer dbLoser = loserDB.GetPlayerWithUsername(loser.Username);
+			dbLoser.Experience += Server.BaseModifiers.ExpForLoss;
+			dbLoser.GamesWon += 1;
+			dbLoser.GamesPlayed += 1;
+			dbLoser.Money += Server.BaseModifiers.MoneyForLoss;
+			loserDB.UpdatePlayer(dbLoser);
 		}
 
 		private void HandleSuddenGameEnd(Player disconnectedPlayer, string reasonToLog) {
@@ -1487,20 +1684,23 @@ namespace GAME_Server {
 
 		private void EndGameBeforeProperEnd(int numberOfPlayerThatEndedGame, string reasonToLog) {
 			lock (gameInProgressLock) {
-				if (IsFull) {
-					if (numberOfPlayerThatEndedGame == 1) {
-						Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, reasonToLog)));
-						Player1ThreadObj.ClientConnected = false;   //tell user thread that player is no longer connected
-						HandleSuddenGameEnd(Player1, SUDDEN_DISCONNECT_LOG_STRING);
+				if (!GameAlreadyEnded) {
+					GameAlreadyEnded = true;
+					if (IsFull) {
+						if (numberOfPlayerThatEndedGame == 1) {
+							Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, reasonToLog)));
+							Player1ThreadObj.ClientConnected = false;   //tell user thread that player is no longer connected
+							HandleSuddenGameEnd(Player1, SUDDEN_DISCONNECT_LOG_STRING);
+						}
+						else if (numberOfPlayerThatEndedGame == 2) {
+							Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, reasonToLog)));
+							Player2ThreadObj.ClientConnected = false;
+							HandleSuddenGameEnd(Player2, SUDDEN_DISCONNECT_LOG_STRING);
+						}
+						else Server.Log(UsernamesOfPlayers + ": Invalid player number in sudden game end handler! Actual: " + numberOfPlayerThatEndedGame + ", should be 1 or 2", true);
 					}
-					else if (numberOfPlayerThatEndedGame == 2) {
-						Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, reasonToLog)));
-						Player2ThreadObj.ClientConnected = false;
-						HandleSuddenGameEnd(Player2, SUDDEN_DISCONNECT_LOG_STRING);
-					}
-					else Server.Log("Invalid player number in sudden game end handler! Actual: " + numberOfPlayerThatEndedGame + ", should be 1 or 2", true);
+					else Server.Log(UsernamesOfPlayers + ": Sudden game begore room was full");
 				}
-				else Server.Log("Sudden game begore room was full");
 			}
 		}
 

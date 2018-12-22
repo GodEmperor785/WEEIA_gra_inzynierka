@@ -403,6 +403,10 @@ namespace GAME_Server {
 		public int ExpForVictory { get; set; }
 		public int ExpForLoss { get; set; }
 
+		//money gain values
+		public int MoneyForVictory { get; set; }
+		public int MoneyForLoss {get; set; }
+
 
 
 
@@ -426,7 +430,7 @@ namespace GAME_Server {
 				{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), MissileIF }
 			};
 			return new BaseModifiers(weaponTypeRangeMultMap, defTypeToWepTypeMap, BaseShipStatsExpModifier, MaxShipsPerPlayer, StartingMoney, ExpForVictory, ExpForLoss, 
-				FleetSizeExpModifier, MaxAbsoluteFleetSize, MaxShipExp, BaseFleetMaxSize, MaxShipsInLine, MaxFleetsPerPlayer);
+				FleetSizeExpModifier, MaxAbsoluteFleetSize, MaxShipExp, BaseFleetMaxSize, MaxShipsInLine, MaxFleetsPerPlayer, MoneyForVictory, MoneyForLoss);
 		}
 	}
 

@@ -18,7 +18,7 @@ namespace GAME_Server {
 		/// <param name="fleet"></param>
 		/// <param name="database"></param>
 		/// <returns></returns>
-		public static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database, bool isNew) {
+		public static string ValidateFleet(Player player, Fleet fleet, IGameDataBase database, bool isNew) {	//tested - OK
 			if (isNew) {	//if fleet is added, not modified check if player can have one more fleet
 				if (database.GetPlayerFleetCount(player) >= Server.BaseModifiers.MaxFleetsPerPlayer) return FailureReasons.TOO_MANY_FLEETS;
 				if (!database.FleetNameIsUnique(player, fleet.Name)) return FailureReasons.FLEET_NAME_NOT_UNIQUE;
@@ -49,17 +49,70 @@ namespace GAME_Server {
 			return OK;
 		}
 
-		public static string ValidatePlayerBoard(PlayerGameBoard playerGameBoard, Fleet selectedFleet) {
+		public static string ValidatePlayerBoard(PlayerGameBoard playerGameBoard, Fleet selectedFleet) {		//tested - OK
 			List<Ship> allShipsOnBoard = new List<Ship>();
-			allShipsOnBoard.AddRange(playerGameBoard.ShortRange);
-			allShipsOnBoard.AddRange(playerGameBoard.MediumRange);
-			allShipsOnBoard.AddRange(playerGameBoard.LongRange);
+			allShipsOnBoard.AddRange(playerGameBoard.Board[Line.SHORT]);
+			allShipsOnBoard.AddRange(playerGameBoard.Board[Line.MEDIUM]);
+			allShipsOnBoard.AddRange(playerGameBoard.Board[Line.LONG]);
 			foreach(Ship ship in allShipsOnBoard) {
 				if(!selectedFleet.Ships.Any(fleetShip => fleetShip.Id == ship.Id)) return FailureReasons.INVALID_ID;        //ship on board must be in selected fleet
 			}
+			foreach(Ship ship in allShipsOnBoard) {
+				int checkedId = ship.Id;
+				int count = 0;
+				foreach(Ship ship2 in allShipsOnBoard) {
+					if (ship2.Id == checkedId) count++;
+				}
+				if (count > 1) return FailureReasons.DUPLICATES_NOT_ALLOWED;
+			}
 			int maxShipsInLine = Server.BaseModifiers.MaxShipsInLine;
-			if (playerGameBoard.ShortRange.Count > maxShipsInLine || playerGameBoard.MediumRange.Count > maxShipsInLine || playerGameBoard.LongRange.Count > maxShipsInLine)
+			if (playerGameBoard.Board[Line.SHORT].Count > maxShipsInLine || playerGameBoard.Board[Line.MEDIUM].Count > maxShipsInLine || playerGameBoard.Board[Line.LONG].Count > maxShipsInLine)
 				return FailureReasons.TOO_MANY_SHIPS_IN_LINE;		//too many ships in line
+
+			return OK;
+		}
+
+		public static string ValidateMove(Move playerMove, PlayerGameBoard playerBoard, PlayerGameBoard enemyBoard) {
+			Dictionary<Line, int> numberOfShipsInLine = new Dictionary<Line, int> {
+				{ Line.SHORT, playerBoard.Board[Line.SHORT].Count },		//start with number of ship that already are on board in given lines
+				{ Line.MEDIUM, playerBoard.Board[Line.MEDIUM].Count },
+				{ Line.LONG, playerBoard.Board[Line.LONG].Count }
+			};
+			List<int> movingShips = new List<int>();
+			List<int> shipsThatAlreadyMadeMove = new List<int>();
+			//first check if ShipPosition index is ok
+			foreach(Tuple<ShipPosition, Line> move in playerMove.MoveList) {	//check if index of ship out of range in origin line
+				if (move.Item1.ShipIndex >= numberOfShipsInLine[move.Item1.Line]) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " move from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
+			}
+			//check if there line capacity is ok
+			foreach(Tuple<ShipPosition, Line> move in playerMove.MoveList) {
+				movingShips.Add(playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id);
+				shipsThatAlreadyMadeMove.Add(playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id);
+
+				numberOfShipsInLine[move.Item2] += 1;		//add one ship to destination
+				numberOfShipsInLine[move.Item1.Line] -= 1;	//remove one ship from origin
+			}
+			foreach(var move in playerMove.MoveList) {
+				if (Math.Abs(move.Item2 - move.Item1.Line) > 1) return FailureReasons.MOVE_DISTANCE_TOO_LONG;
+			}
+			foreach(var line in numberOfShipsInLine) {
+				if (line.Value > Server.BaseModifiers.MaxShipsInLine) return FailureReasons.TOO_MANY_SHIPS_IN_LINE  + " " + line.Key;
+			}
+			foreach(var move in playerMove.MoveList) {
+				if (shipsThatAlreadyMadeMove.Where(id => id == playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id).Count() > 1) return FailureReasons.ONE_SHIP_MANY_MOVES;
+			} 
+
+			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {  //check if idexes of ships are ok
+				if(move.Item1.ShipIndex >= playerBoard.Board[move.Item1.Line].Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
+				if (move.Item2.ShipIndex >= playerBoard.Board[move.Item2.Line].Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;
+			}
+			//than check if attacking ships are not in moving ships
+			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {
+				shipsThatAlreadyMadeMove.Add(playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id);
+			}
+			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {
+				if (shipsThatAlreadyMadeMove.Where(id => id == playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id).Count() > 1) return FailureReasons.ONE_SHIP_MANY_MOVES;
+			}
 
 			return OK;
 		}

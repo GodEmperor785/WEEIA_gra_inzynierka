@@ -5,10 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace GAME_connection {
+	/// <summary>
+	/// you can use Line x = (Line)someINTvalue;
+	/// </summary>
 	[Serializable]
 	public enum Line {
+		/// <summary>
+		/// equal to 0
+		/// </summary>
 		SHORT,
+		/// <summary>
+		/// equal to 1
+		/// </summary>
 		MEDIUM,
+		/// <summary>
+		/// equal to 2
+		/// </summary>
 		LONG
 	}
 
