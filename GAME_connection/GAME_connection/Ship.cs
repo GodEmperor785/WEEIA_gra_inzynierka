@@ -6,14 +6,23 @@ using System.Threading.Tasks;
 
 namespace GAME_connection {
 	[Serializable]
+	public enum ShipState {
+		MOVING,
+		ATTACKING,
+		DEFENDING	//ship does not make a move, provides bonus to defence
+	}
+
+	[Serializable]
 	public class Ship {
+		public static readonly double MAX_MULTIPLIER = 1.0;
+
 		private int id;
 		private string name;
 		private Faction faction;
 		private int cost;
-		private double evasion;
+		private double evasion;		// from 0 to 1, indicates how good is given ship at evading
 		private double hp;
-		private double size;
+		private double size;		//from 1 to 10
 		private double armor;
 		private List<Weapon> weapons;
 		private List<DefenceSystem> defences;
@@ -21,6 +30,7 @@ namespace GAME_connection {
 		private int shipExp;    //this ships exp
 		private Rarity rarity;
 		private double shipExpModifier;     //applies to: evasion, weapon-chanceToHit, defenceSystem-defenceValue, weapon-dmg (and maybe to armor and hp). Used like: realStats = baseStats + baseStats*(BaseModifiers.baseShipStatsExpModifier * shipExp) where shis in () is this modifier
+		private ShipState state;    //for use in game processing in server, client does not use it
 
 		public Ship() { }
 
@@ -39,6 +49,8 @@ namespace GAME_connection {
 			this.shipExp = shipExp;
 			this.rarity = rarity;
 			this.shipExpModifier = shipExpModifier;
+
+			this.CalculateExpBonuses();
 		}
 
 		public string Name { get => name; set => name = value; }
@@ -55,5 +67,17 @@ namespace GAME_connection {
 		public int ShipExp { get => shipExp; set => shipExp = value; }
 		public Rarity Rarity { get => rarity; set => rarity = value; }
 		public double ShipExpModifier { get => shipExpModifier; set => shipExpModifier = value; }
+		public ShipState State { get => state; set => state = value; }
+
+		private void CalculateExpBonuses() {
+			Evasion = Math.Min(MAX_MULTIPLIER, Evasion + Evasion * ShipExpModifier);
+			foreach(Weapon wep in Weapons) {
+				wep.ChanceToHit = Math.Min(MAX_MULTIPLIER, wep.ChanceToHit + wep.ChanceToHit * ShipExpModifier);
+				wep.Damage = wep.Damage + wep.Damage * ShipExpModifier;
+			}
+			foreach(DefenceSystem def in Defences) {
+				def.DefenceValue = def.DefenceValue + def.DefenceValue * ShipExpModifier;
+			}
+		}
 	}
 }

@@ -14,8 +14,8 @@ namespace GAME_connection {
 		private int numberOfProjectiles;
 		private WeaponType weaponType;
 		private double apEffectivity;	//effectivity against armor (dmg after armor calculation * this multiplier, dmg cant be bigger than before armor calculation)
-		private double rangeMultiplier; //bigger multiplier - less damage, added to base weapontype multiplier(stored in DB)
-		private double chanceToHit;	//of one projectile (maybe from 0 to 100?)
+		private double rangeMultiplier; //indicates how important is range for this specific weapon - from 0 to 1
+		private double chanceToHit; //of one projectile (from 0.0 to 1.0) - this is the base chance to hit of this weapon, it is later used against distance, weapon type to range mult and this weapons rangeMultiplier
 
 		public Weapon() { }
 

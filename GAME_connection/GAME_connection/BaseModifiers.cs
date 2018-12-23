@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace GAME_connection {
 	[Serializable]
 	public enum WeaponType {
-		KINETIC = 1,
-		LASER = 2,
+		LASER = 1,
+		KINETIC = 2,
 		MISSILE = 3
 	}
 

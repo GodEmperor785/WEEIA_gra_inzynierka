@@ -249,7 +249,7 @@ namespace GAME_Server {
 				nonDbDefenceSystems.Add(defSystem.ToDefenceSystem());
 			}
 			return new Ship(Id, ShipBaseStats.Name, ShipBaseStats.Faction, ShipBaseStats.Cost, ShipBaseStats.Evasion, ShipBaseStats.Hp, ShipBaseStats.Size,
-				ShipBaseStats.Armor, nonDbWeapons, nonDbDefenceSystems, ShipBaseStats.ExpUnlock, ShipExp, ShipBaseStats.ShipRarity, Server.BaseModifiers.BaseShipStatsExpModifier*ShipExp);	//this may not work for now... needs working BaseModifiers
+				ShipBaseStats.Armor, nonDbWeapons, nonDbDefenceSystems, ShipBaseStats.ExpUnlock, ShipExp, ShipBaseStats.ShipRarity, Server.BaseModifiers.BaseShipStatsExpModifier*ShipExp);
 		}
 	}
 

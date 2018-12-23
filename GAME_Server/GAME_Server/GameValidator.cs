@@ -72,7 +72,7 @@ namespace GAME_Server {
 			return OK;
 		}
 
-		public static string ValidateMove(Move playerMove, PlayerGameBoard playerBoard, PlayerGameBoard enemyBoard) {
+		public static string ValidateMove(Move playerMove, PlayerGameBoard playerBoard, PlayerGameBoard enemyBoard) {       //tested - OK
 			Dictionary<Line, int> numberOfShipsInLine = new Dictionary<Line, int> {
 				{ Line.SHORT, playerBoard.Board[Line.SHORT].Count },		//start with number of ship that already are on board in given lines
 				{ Line.MEDIUM, playerBoard.Board[Line.MEDIUM].Count },
@@ -100,8 +100,7 @@ namespace GAME_Server {
 			}
 			foreach(var move in playerMove.MoveList) {
 				if (shipsThatAlreadyMadeMove.Where(id => id == playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id).Count() > 1) return FailureReasons.ONE_SHIP_MANY_MOVES;
-			} 
-
+			}
 			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {  //check if idexes of ships are ok
 				if(move.Item1.ShipIndex >= playerBoard.Board[move.Item1.Line].Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
 				if (move.Item2.ShipIndex >= playerBoard.Board[move.Item2.Line].Count) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;

@@ -37,5 +37,9 @@ namespace GAME_Server {
 			return Rarity.COMMON;
 		}
 
+		public double GEtRandomDouble() {
+			return RNG.NextDouble();
+		}
+
 	}
 }

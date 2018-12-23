@@ -109,9 +109,15 @@ namespace GAME_connection {
 			//5. b> else server sends SUCCESS after second player joins
 			//6. client sends SETUP_FLEET
 			//7. server sends SUCCESS or FAILURE on validating fleet setup
-			//8. a> if fail game ends and back to menu for client
-			//9. b> else proper game starts
-			//10. TODO order in game loop
+			//8. a> if fail game ends and back to menu for client (server sends FAILURE to client)
+			//9. b> else proper game starts (server sends SUCCESS to client)
+			//     game loop (while client does not receive GAME_END)
+			//1. server sends GAME_STATE to client
+			//2. client sends MAKE_MOVE
+			//3. server sends SUCCESS or FAILURE on validating move
+			//4. a> if validation failed move is skipped (server sends FAILURE to client)
+			//5. b> if validation success move is processed (server sends SUCCESS to client)
+			//6. loop continues until GAME_END
 		}
 
 		public static Dictionary<OperationType, Type> OperationMapping => operationMapping;

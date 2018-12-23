@@ -13,6 +13,7 @@ namespace GAME_connection {
 		private double defenceValue;    //how much damage can be blocked (base value modified by modifers)
 		private DefenceSystemType systemType;
 		private Dictionary<WeaponType, double> defMultAgainstWepTypeMap;    //added to base modifers (stored in DB)
+		private double defenceValueLeft;		//used by server for calculation how much defence value is left in this turn, *= ship.Size
 
 		public DefenceSystem() { }
 
@@ -35,5 +36,6 @@ namespace GAME_connection {
 		public DefenceSystemType SystemType { get => systemType; set => systemType = value; }
 		public Dictionary<WeaponType, double> DefMultAgainstWepTypeMap { get => defMultAgainstWepTypeMap; set => defMultAgainstWepTypeMap = value; }
 		public int Id { get => id; set => id = value; }
+		public double DefenceValueLeft { get => defenceValueLeft; set => defenceValueLeft = value; }
 	}
 }
