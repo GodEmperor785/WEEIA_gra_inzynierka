@@ -70,6 +70,26 @@
             should specify whether exception occured on send or receive
             </summary>
         </member>
+        <member name="T:GAME_connection.Line">
+            <summary>
+            you can use Line x = (Line)someINTvalue;
+            </summary>
+        </member>
+        <member name="F:GAME_connection.Line.SHORT">
+            <summary>
+            equal to 0
+            </summary>
+        </member>
+        <member name="F:GAME_connection.Line.MEDIUM">
+            <summary>
+            equal to 1
+            </summary>
+        </member>
+        <member name="F:GAME_connection.Line.LONG">
+            <summary>
+            equal to 2
+            </summary>
+        </member>
         <member name="T:GAME_connection.OperationsMap">
             <summary>
             Maps  <see cref="T:GAME_connection.OperationType"/> to <see cref="T:System.Type"/> (class) of <see cref="P:GAME_connection.GamePacket.Packet"/> in <see cref="T:GAME_connection.GamePacket"/> object

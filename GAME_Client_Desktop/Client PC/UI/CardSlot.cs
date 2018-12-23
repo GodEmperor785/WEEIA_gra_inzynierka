@@ -14,7 +14,7 @@ namespace Client_PC.UI
         public bool ActiveChangeable { get; set; }
         public Tooltip Tooltip { get; set; }
         public Card Card { get; set; }
-        private bool hasCard;
+        public bool HasCard { get; set; }
         public bool CardClicked;
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
@@ -29,7 +29,7 @@ namespace Client_PC.UI
 
         public CardSlot(int width, int height, GraphicsDevice device, GUI gui) : base(width, height, device, gui)
         {
-            hasCard = false;
+            HasCard = false;
             CardClicked = false;
             Card = null;
         }
@@ -51,12 +51,19 @@ namespace Client_PC.UI
             Card.Position = Position;
             Card.Origin = Origin;
             Card.Update();
-            hasCard = true;
+            HasCard = true;
         }
 
+        public void RemoveCard()
+        {
+            Card = null;
+            HasCard = false;
+
+
+        }
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if(hasCard)
+            if(HasCard)
                 Card.Draw(spriteBatch);
             else
             {

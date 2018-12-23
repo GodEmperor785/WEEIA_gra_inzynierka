@@ -120,7 +120,12 @@ namespace Client_PC.Scenes
         {
             CurrentCard = (Card)sender;
             CurrentCard.Status = Card.status.clicked;
-            slots.ForEach(p => p.CardClicked = true);
+            var list =  slots.Where(p => p.Card == CurrentCard).ToList();
+            if (list.Count > 0)
+            {
+                var c = list.First();
+            }
+            slots.Where(p=> p.Card == null).ToList().ForEach(p => p.CardClicked = true);
         }
 
         public override void UpdateButtonNull()
@@ -130,12 +135,30 @@ namespace Client_PC.Scenes
 
         public void CardSlotClick(object sender)
         {
+            CardSlot c = (CardSlot)sender;
             if (CurrentCard != null)
             {
-                CardSlot c = (CardSlot) sender;
-                cardsGrid.RemoveChild(CurrentCard);
-                c.SetCard(CurrentCard);
-                slots.ForEach(p => p.CardClicked = false);
+                if (c.Card == null)
+                {
+                    cardsGrid.RemoveChild(CurrentCard);
+                    CurrentCard.Status = Card.status.clear;
+                    var list = slots.Where(p => p.Card == CurrentCard).ToList();
+                    if (list.Count > 0)
+                    {
+                        slots.Where(p => p.Card == CurrentCard).ToList().ForEach(p => { p.RemoveCard(); });
+                    }
+
+                    c.SetCard(CurrentCard);
+                    slots.ForEach(p => p.CardClicked = false);
+                    CurrentCard = null;
+                }
+            }
+            else
+            {
+                if (c.HasCard)
+                {
+                    c.Card.OnClick();
+                }
             }
         }
         public void Draw(GameTime gameTime)

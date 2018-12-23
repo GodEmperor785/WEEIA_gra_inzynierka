@@ -265,8 +265,11 @@ namespace Client_PC.Scenes
 
         public void onOrganize()
         {
-            Game1.self.SetFleetMenu(ChosenDeck.GetFleet());
-            Game1.self.state = Game1.State.FleetMenu;
+            if (ChosenDeck != null)
+            {
+                Game1.self.SetFleetMenu(ChosenDeck.GetFleet());
+                Game1.self.state = Game1.State.FleetMenu;
+            }
         }
         public void onPopupExit()
         {
