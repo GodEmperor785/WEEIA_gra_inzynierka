@@ -121,7 +121,7 @@ namespace GAME_Server {
 								}
 							}
 						}
-						//if ship destroyed exit the weapon loop
+						//if ship destroyed exit the weapon loop for this attack
 						if (shipDestroyed) break;
 					}
 					//if ship was destroyed set it to null
@@ -142,9 +142,10 @@ namespace GAME_Server {
 			//all mults and evasion indicate how important they are - 0 not at all, 1 - maximally
 			//ex. missiles have mults at 0 because they track targets, kinetics have high mults because they are slow and unguided, lasers have medium mults because they are fastest but unguided
 			//evasion indicates how good a ship is at evading attacks
+			//possibly replace Math.Sqrt(distance) with Math.Pow(distance, 1.0 / 3.0) - then distance will have lower impact
 			double chanceToHit = (weapon.ChanceToHit - ( (Math.Sqrt(distance)/MAX_DISTANCE) * Server.BaseModifiers.WeaponTypeRangeMultMap[weapon.WeaponType] * weapon.RangeMultiplier * targetShip.Evasion));
 
-			//chanceToHit has to be at least this
+			//chanceToHit has to be at least this - to prevent negative valueso f chanceToHit
 			double minChanceToHit = 0.01;
 			chanceToHit = Math.Max(chanceToHit, minChanceToHit);
 			//finally roll to determine if projectile hit its target

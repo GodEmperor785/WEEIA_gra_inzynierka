@@ -329,7 +329,7 @@ namespace GAME_Server {
 				foreach (DbPlayer p in playersList) Server.Log(p.Username);
 
 				Server.Log(">>> Some lootboxes");
-				DbLootBox l1 = new DbLootBox(100, "basic lootbox", 0.5, 0.3, 0.15, 0.05, 2);
+				DbLootBox l1 = new DbLootBox(100, "basic lootbox", 0.5, 0.3, 0.15, 0.05, 2);		//lootbox names hardcoded in client - better not change it...
 				DbLootBox l2 = new DbLootBox(300, "better lootbox", 0.4, 0.4, 0.15, 0.05, 4);
 				DbLootBox l3 = new DbLootBox(1000, "supreme lootbox", 0.1, 0.3, 0.4, 0.2, 4);
 				GameDataBase.AddLootBox(l1);
@@ -342,10 +342,10 @@ namespace GAME_Server {
 				Server.Log(">>> Some weapons and defences");
 				DbWeapon w1 = new DbWeapon("kinetic 100mm", empire, 40, 6, WeaponType.KINETIC, 0.5, 0.5, 10);
 				DbWeapon w2 = new DbWeapon("kinetic 5mm", alliance, 2.5, 80, WeaponType.KINETIC, 1, 0.2, 2);
-				DbWeapon w3 = new DbWeapon("axial UV laser", alliance, 250, 1, WeaponType.LASER, 1, 0.85, 55);
-				DbWeapon w4 = new DbWeapon("IR laser turret", empire, 20, 4, WeaponType.LASER, 1, 0.7, 2);
-				DbWeapon w5 = new DbWeapon("imperial cruise missile", empire, 200, 1, WeaponType.MISSILE, 1, 0.999, 45);
-				DbWeapon w6 = new DbWeapon("alliance swarm missile", alliance, 20, 10, WeaponType.MISSILE, 1, 0.999, 5);
+				DbWeapon w3 = new DbWeapon("axial UV laser", alliance, 250, 1, WeaponType.LASER, 0.2, 0.85, 55);
+				DbWeapon w4 = new DbWeapon("IR laser turret", empire, 20, 4, WeaponType.LASER, 0.5, 0.7, 15);
+				DbWeapon w5 = new DbWeapon("imperial cruise missile", empire, 200, 1, WeaponType.MISSILE, 0, 0.999, 45);
+				DbWeapon w6 = new DbWeapon("alliance swarm missile", alliance, 20, 10, WeaponType.MISSILE, 0, 0.99, 5);
 				gameDataBase.AddWeapon(w1);
 				gameDataBase.AddWeapon(w2);
 				gameDataBase.AddWeapon(w3);
@@ -408,10 +408,10 @@ namespace GAME_Server {
 					defs[0],
 					defs[4]
 				};
-				DbShipTemplate imp1 = new DbShipTemplate("Class Warrior Imperial Cruiser", empire, 90, 10, 500, 3, 75, imp1wep, imp1def, 0, Rarity.RARE);
-				DbShipTemplate imp2 = new DbShipTemplate("Class Dagger Imperial Destroyer", empire, 30, 30, 150, 1, 25, imp2wep, imp2def, 0, Rarity.COMMON);
-				DbShipTemplate al1 = new DbShipTemplate("Class Hammer Alliance Cruiser", alliance, 95, 10, 550, 3, 80, al1wep, al1def, 0, Rarity.RARE);
-				DbShipTemplate al2 = new DbShipTemplate("Class Ferret Alliance Destroyer", alliance, 30, 28, 175, 1, 28, al2wep, al2def, 0, Rarity.COMMON);
+				DbShipTemplate imp1 = new DbShipTemplate("Class Warrior Imperial Cruiser", empire, 90, 0.5, 500, 3, 75, imp1wep, imp1def, 0, Rarity.RARE);
+				DbShipTemplate imp2 = new DbShipTemplate("Class Dagger Imperial Destroyer", empire, 30, 0.9, 150, 1, 25, imp2wep, imp2def, 0, Rarity.COMMON);
+				DbShipTemplate al1 = new DbShipTemplate("Class Hammer Alliance Cruiser", alliance, 95, 0.5, 550, 3, 80, al1wep, al1def, 0, Rarity.RARE);
+				DbShipTemplate al2 = new DbShipTemplate("Class Ferret Alliance Destroyer", alliance, 30, 0.88, 175, 1, 28, al2wep, al2def, 0, Rarity.COMMON);
 				gameDataBase.AddShipTemplate(imp1);
 				gameDataBase.AddShipTemplate(imp2);
 				gameDataBase.AddShipTemplate(al1);
@@ -476,10 +476,10 @@ namespace GAME_Server {
 
 				Server.Log(">>> Additional ship templates and weapons for application testing - so the DB is more or less complete");
 				Server.Log(">>> first more weapons and defences");
-				DbWeapon w7 = new DbWeapon("kinetic 100mm x4", empire, 40, 6 * 4, WeaponType.KINETIC, 1.4, 0.4, 10);
-				DbWeapon w8 = new DbWeapon("axial HE UV femtosecond laser", empire, 2000, 1, WeaponType.LASER, 1, 0.9, 100);
-				DbWeapon w9 = new DbWeapon("neutron warhead missiles x8", alliance, 50, 8, WeaponType.MISSILE, 1, 0.99, 900);
-				DbWeapon w10 = new DbWeapon("Marauder cruise missile launchers x10", alliance, 210, 10, WeaponType.MISSILE, 1, 0.999, 70);
+				DbWeapon w7 = new DbWeapon("kinetic 100mm x4", empire, 40, 6 * 4, WeaponType.KINETIC, 0.5, 0.5, 10);
+				DbWeapon w8 = new DbWeapon("axial HE UV femtosecond laser", empire, 2000, 1, WeaponType.LASER, 0.25, 0.9, 100);
+				DbWeapon w9 = new DbWeapon("neutron warhead missiles x8", alliance, 50, 8, WeaponType.MISSILE, 0, 0.995, 900);
+				DbWeapon w10 = new DbWeapon("Marauder cruise missile launchers x10", alliance, 210, 10, WeaponType.MISSILE, 0, 0.999, 70);
 				gameDataBase.AddWeapon(w7);
 				gameDataBase.AddWeapon(w8);
 				gameDataBase.AddWeapon(w9);
@@ -526,8 +526,8 @@ namespace GAME_Server {
 					defs[9],
 					defs[11]
 				};
-				DbShipTemplate impRare = new DbShipTemplate("Class Master Imperial Battleship", empire, 300, 3, 2500, 8, 220, impRareWep, ImpRareDef, 0, Rarity.LEGENDARY);
-				DbShipTemplate alRare = new DbShipTemplate("Class Apocalypse Alliance Missile Ship", alliance, 250, 4, 1200, 6.5, 140, AlRareWep, AlRareDef, 0, Rarity.VERY_RARE);
+				DbShipTemplate impRare = new DbShipTemplate("Class Master Imperial Battleship", empire, 300, 0.1, 2500, 8, 220, impRareWep, ImpRareDef, 0, Rarity.LEGENDARY);
+				DbShipTemplate alRare = new DbShipTemplate("Class Apocalypse Alliance Missile Ship", alliance, 250, 0.15, 1200, 6.5, 140, AlRareWep, AlRareDef, 0, Rarity.VERY_RARE);
 				gameDataBase.AddShipTemplate(impRare);
 				gameDataBase.AddShipTemplate(alRare);
 				shipTemplates = GameDataBase.GetAllShipTemplates();
@@ -778,9 +778,10 @@ namespace GAME_Server {
 			//game board test
 			baseModifiers = (new DbBaseModifiers() {
 				Id = 1,
-				KineticRange = 0.1,
-				LaserRange = 0.03,
-				MissileRange = 0.0,
+				KineticRange = 1,           //each of range mults has to be from 0.0 to 1.0
+				LaserRange = 0.5,           //they indicate how important is range for given WeaponType to hit its target, look in Game.cs at chanceToHit calculations for more
+				MissileRange = 0.0,         //missile are invulnerable to range
+
 				KineticPD = 2,
 				KineticShield = 5,
 				KineticIF = 1.2,
@@ -790,6 +791,7 @@ namespace GAME_Server {
 				MissilePD = 8,
 				MissileShield = 1,
 				MissileIF = 1.2,
+
 				BaseShipStatsExpModifier = 0.01,
 				MaxShipsPerPlayer = 150,
 				StartingMoney = 1000,

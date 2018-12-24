@@ -103,7 +103,13 @@ namespace GAME_Server {
 		public double Damage { get; set; }
 		public int NumberOfProjectiles { get; set; }
 		public WeaponType WeaponType { get; set; }
+		/// <summary>
+		///  Has to be between 0.0 and 1.0. Bigger <see cref="RangeMultiplier"/> - bigger impact of distance on <see cref="ChanceToHit"/>. Lower <see cref="RangeMultiplier"/> - bigger <see cref="ChanceToHit"/>
+		/// </summary>
 		public double RangeMultiplier { get; set; }
+		/// <summary>
+		/// Has to be between 0.0 and 1.0. Missiles have highest <see cref="ChanceToHit"/> - close to 1.0
+		/// </summary>
 		public double ChanceToHit { get; set; }
 		public double ApEffectivity { get; set; }
 		public int Id { get; set; }
@@ -192,6 +198,9 @@ namespace GAME_Server {
 		public string Name { get; set; }
 		public Faction Faction { get; set; }
 		public int Cost { get; set; }
+		/// <summary>
+		/// Has to be higher than 0.0 and lower or equal to 1.0. Indicates how big impact has ships evasion on incoming attacks' <see cref="DbWeapon.ChanceToHit"/>. Bigger ships have lower evasion - smaller have higher
+		/// </summary>
 		public double Evasion { get; set; }
 		public double Hp { get; set; }
 		public List<DbWeapon> Weapons { get; set; }
