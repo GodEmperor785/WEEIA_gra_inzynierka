@@ -110,6 +110,7 @@ namespace Client_PC.Scenes
                     Card c = new Card(CardWidth,CardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,p);
                     cardsGrid.AddChild(c);
                     Clickable.Add(c);
+                    c.Status = Card.status.clear;
                     c.clickEvent += CardClick;
                 });
             }
@@ -118,13 +119,10 @@ namespace Client_PC.Scenes
 
         public void CardClick(object sender)
         {
-            CurrentCard = (Card)sender;
-            CurrentCard.Status = Card.status.clicked;
-            var list =  slots.Where(p => p.Card == CurrentCard).ToList();
-            if (list.Count > 0)
-            {
-                var c = list.First();
-            }
+            Card c = (Card)sender;
+            c.Status = Card.status.clicked;
+            CurrentCard = c;
+            CurrentCard.Update();
             slots.Where(p=> p.Card == null).ToList().ForEach(p => p.CardClicked = true);
         }
 

@@ -106,10 +106,10 @@ namespace Client_PC.UI
         public override void Update()
         {
             Graphic hpIcon = (Graphic) overlay.GetChild("hpIcon");
-            hpIcon.Position= new Vector2(Origin.X + 0.02f * Width, Origin.Y + Height - 0.10f * Height);
+            hpIcon.Position= new Vector2(Origin.X + 0.01f * Width, Origin.Y + Height - 0.10f * Height);
 
             Graphic armorIcon = (Graphic) overlay.GetChild("armorIcon");
-            armorIcon.Position = new Vector2(Origin.X + 0.42f * Width, Origin.Y + Height - 0.10f * Height);
+            armorIcon.Position = new Vector2(Origin.X + 0.58f * Width, Origin.Y + Height - 0.10f * Height);
 
             Graphic hpText = (Graphic) overlay.GetChild("hpText");
             hpText.Position = hpIcon.Position + new Vector2(0.175f * Width, - 0.025f * Height);

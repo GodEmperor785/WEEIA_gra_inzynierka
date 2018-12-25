@@ -207,7 +207,8 @@ namespace Client_PC.UI
             {
                 if (hollow)
                 {
-                    return new Color(240, 240, 240, alpha);
+                    return new Color(100, 100, 100, alpha);
+                   
                 }
                 else
                 {
