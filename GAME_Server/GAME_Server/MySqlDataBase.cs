@@ -246,6 +246,9 @@ namespace GAME_Server {
 			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
+			foreach(DbFleet fleet in q1) fleet.Ships.RemoveAll(ship => ship.IsActive == false);
+			foreach (DbFleet fleet in q2) fleet.Ships.RemoveAll(ship => ship.IsActive == false);
+			foreach (DbFleet fleet in q3) fleet.Ships.RemoveAll(ship => ship.IsActive == false);
 			return q1;
 		}
 
@@ -265,6 +268,9 @@ namespace GAME_Server {
 			var q1 = BasicFleetQueryPt1.Where(x => x.Id == id).FirstOrDefault();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Id == id).FirstOrDefault();
 			var q3 = BasicFleetQueryPt3.Where(x => x.Id == id).FirstOrDefault();
+			q1.Ships.RemoveAll(ship => ship.IsActive == false);
+			q2.Ships.RemoveAll(ship => ship.IsActive == false);
+			q3.Ships.RemoveAll(ship => ship.IsActive == false);
 			return q1;
 			//var query = BasicFleetQuery.Where(fleet => fleet.Id == id);
 			//return query.FirstOrDefault();

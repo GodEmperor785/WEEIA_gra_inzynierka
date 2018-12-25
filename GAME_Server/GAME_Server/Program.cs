@@ -116,20 +116,22 @@ namespace GAME_Server {
 		}
 
 		private static void ServerCLI() {
-			string cmd = Console.ReadLine();
-			switch(cmd) {
-				case "exit":
-					Log("exiting...");
-					continueAcceptingConnections = false;
-					foreach(UserThread t in userThreadObjects) {
-						t.ClientConnected = false;
-						t.EndThread();
-					}
-					Environment.Exit(EXIT_STATUS_MANUAL_SHUTDOWN);
-					break;
-				default:
-					Log("ERROR: unknown command - " + cmd);
-					break;
+			while (true) {
+				string cmd = Console.ReadLine();
+				switch (cmd) {
+					case "exit":
+						Log("exiting...");
+						continueAcceptingConnections = false;
+						foreach (UserThread t in userThreadObjects) {
+							t.ClientConnected = false;
+							t.EndThread();
+						}
+						Environment.Exit(EXIT_STATUS_MANUAL_SHUTDOWN);
+						break;
+					default:
+						Log("ERROR: unknown command - " + cmd);
+						break;
+				}
 			}
 		}
 
@@ -282,13 +284,13 @@ namespace GAME_Server {
 					KineticShield = 5,
 					KineticIF = 1.2,
 					LaserPD = 0,
-					LaserShield = 0.5,
+					LaserShield = 1.5,
 					LaserIF = 2,
 					MissilePD = 8,
 					MissileShield = 1,
 					MissileIF = 1.2,
 
-					BaseShipStatsExpModifier = 0.01,
+					BaseShipStatsExpModifier = 0.002,
 					MaxShipsPerPlayer = 150,
 					StartingMoney = 1000,
 					ExpForVictory = 20,
@@ -535,6 +537,28 @@ namespace GAME_Server {
 				shipTemplates = GameDataBase.GetAllShipTemplates();
 				Server.Log("Ship Templates in DB are:");
 				foreach (var p in shipTemplates) Server.Log(p.Name + " weapon count=" + p.Weapons.Count);
+
+				Server.Log("########################################################################################################");
+				fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
+				fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
+				Server.Log("Fleets in DB are:");
+				foreach (var p in fleetsP1) Server.Log(p.Id + " fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				foreach (var p in fleetsP2) Server.Log(p.Id + " fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				ships = GameDataBase.GetAllShips();
+				Server.Log("Ships in DB are:");
+				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
+
+				GameDataBase.RemoveShipWithId(fleetsP1.First().Ships.First().Id, true);
+				Server.Log("----------");
+
+				fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
+				fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
+				Server.Log("Fleets in DB are:");
+				foreach (var p in fleetsP1) Server.Log(p.Id + " fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				foreach (var p in fleetsP2) Server.Log(p.Id + " fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
+				ships = GameDataBase.GetAllShips();
+				Server.Log("Ships in DB are:");
+				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
 
 				//place for future testing
 
@@ -1641,6 +1665,8 @@ namespace GAME_Server {
 							//finalize move by updating the PlayerGameBoards in ThisGame
 							ThisGame.FinalizeMove();
 							*/
+
+							//TODO add GameHistory entry
 
 							//check game result and possibly end the game
 							Victory gameResultAfterThisTurn = ThisGame.CheckGameEndResult();

@@ -150,6 +150,9 @@ namespace GAME_Server {
 			//possibly replace Math.Sqrt(distance) with Math.Pow(distance, 1.0 / 3.0) - then distance will have lower impact
 			double chanceToHit = (weapon.ChanceToHit - ( (Math.Sqrt(distance)/MAX_DISTANCE) * Server.BaseModifiers.WeaponTypeRangeMultMap[weapon.WeaponType] * weapon.RangeMultiplier * targetShip.Evasion));
 
+			//equation 3:
+			//like above but remove evasion and if weapon.WeaponType != MISSILE than divide chanceToHit by evasion
+
 			//chanceToHit has to be at least this - to prevent negative valueso f chanceToHit
 			double minChanceToHit = 0.01;
 			chanceToHit = Math.Max(chanceToHit, minChanceToHit);
