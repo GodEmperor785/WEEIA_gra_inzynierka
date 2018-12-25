@@ -15,7 +15,9 @@ namespace GAME_connection {
 		private Dictionary<WeaponType, double> defMultAgainstWepTypeMap;    //added to base modifers (stored in DB)
 		private double defenceValueLeft;		//used by server for calculation how much defence value is left in this turn, *= ship.Size
 
-		public DefenceSystem() { }
+		public DefenceSystem() {
+			DefMultAgainstWepTypeMap = new Dictionary<WeaponType, double>();
+		}
 
 		public DefenceSystem(int id, string name, Faction faction, double defenceValue, DefenceSystemType systemType, double kineticDefMult, double laserDefMult, double missileDefMult) {
 			this.Id = id;

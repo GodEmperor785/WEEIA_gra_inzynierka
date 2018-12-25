@@ -32,7 +32,10 @@ namespace GAME_connection {
 		private double shipExpModifier;     //applies to: evasion, weapon-chanceToHit, defenceSystem-defenceValue, weapon-dmg (and maybe to armor and hp). Used like: realStats = baseStats + baseStats*(BaseModifiers.baseShipStatsExpModifier * shipExp) where shis in () is this modifier
 		private ShipState state;    //for use in game processing in server, client does not use it
 
-		public Ship() { }
+		public Ship() {
+			Weapons = new List<Weapon>();
+			Defences = new List<DefenceSystem>();
+		}
 
 		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock, int shipExp, Rarity rarity, double shipExpModifier) {
 			this.id = id;

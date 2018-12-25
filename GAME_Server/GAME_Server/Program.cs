@@ -76,7 +76,7 @@ namespace GAME_Server {
 				bool useSsl = Convert.ToBoolean(useSslVar);
 				Log("Server use SSL: " + useSsl);
 
-				//doGameBoardValidationTest();
+				//DoGameBoardValidationTest();
 				
 				InitilizeGameDataFromDB(false, true);       //change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
@@ -298,7 +298,9 @@ namespace GAME_Server {
 					MaxAbsoluteFleetSize = 5000,
 					MaxShipExp = 1000,
 					MaxShipsInLine = 5,
-					MaxFleetsPerPlayer = 8
+					MaxFleetsPerPlayer = 8,
+					MoneyForVictory = 80,
+					MoneyForLoss = 40
 				};
 				GameDataBase.AddBaseModifiers(mods);
 				Server.baseModifiers = GameDataBase.GetBaseModifiers();
@@ -695,7 +697,7 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// To ne used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. Appends date at the beginning of message
+		/// To be used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. Appends date at the beginning of message
 		/// </summary>
 		/// <param name="message"></param>
 		internal static void Log(string message) {
@@ -706,7 +708,17 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// To ne used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. This overload also logs caller line
+		/// To be used instead of <see cref="Console.Write"/>, prints message without new line to chosen log - console, text area etc.
+		/// </summary>
+		/// <param name="message"></param>
+		internal static void LogNoNewLine(string message) {
+			lock (logLock) {
+				Console.Write(message);
+			}
+		}
+
+		/// <summary>
+		/// To be used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. This overload also logs caller line
 		/// </summary>
 		internal static void Log(string message, bool isCritical, [CallerLineNumber] int callerLine = 0) {
 			string msg = "";
@@ -774,7 +786,7 @@ namespace GAME_Server {
 			Console.WriteLine("Test end");
 		}
 
-		private static void doGameBoardValidationTest() {
+		private static void DoGameBoardValidationTest() {
 			//game board test
 			baseModifiers = (new DbBaseModifiers() {
 				Id = 1,
@@ -802,26 +814,37 @@ namespace GAME_Server {
 				MaxAbsoluteFleetSize = 5000,
 				MaxShipExp = 1000,
 				MaxShipsInLine = 5,
-				MaxFleetsPerPlayer = 8
+				MaxFleetsPerPlayer = 8,
+				MoneyForVictory = 80,
+				MoneyForLoss = 40
 			}).ToBaseModifiers();
 
-			Ship p1s1 = new Ship() { Id = 1 };
-			Ship p1s2 = new Ship() { Id = 2 };
-			Ship p1s3 = new Ship() { Id = 3 };
-			Ship p1s4 = new Ship() { Id = 4 };
-			Ship p1s5 = new Ship() { Id = 5 };
-			Ship p1s6 = new Ship() { Id = 6 };
-			Ship p1s7 = new Ship() { Id = 7 };
-			Ship p1s8 = new Ship() { Id = 8 };
+			Weapon chaff = new Weapon(1, "chaff", new Faction(), 5, 100, WeaponType.KINETIC, 3, 0.9, 0.3);
+			Weapon oneHitKiller = new Weapon(2, "one hit killer", new Faction(), 50000, 1, WeaponType.LASER, 10000, 0, 1);
+			DefenceSystem d1 = new DefenceSystem(1, "d1", new Faction(), 10, DefenceSystemType.POINT_DEFENCE, 2, 0, 2);
+			DefenceSystem superDef = new DefenceSystem(2, "superDef", new Faction(), 4000, DefenceSystemType.SHIELD, 2, 2, 2);
+			List<Weapon> weakWeapons = new List<Weapon> { chaff };
+			List<Weapon> allWeapons = new List<Weapon> { chaff, oneHitKiller };
+			List<DefenceSystem> weakDef = new List<DefenceSystem> { d1 };
+			List<DefenceSystem> allDefs = new List<DefenceSystem> { d1, superDef };
 
-			Ship p2s1 = new Ship() { Id = 11 };
-			Ship p2s2 = new Ship() { Id = 12 };
-			Ship p2s3 = new Ship() { Id = 13 };
-			Ship p2s4 = new Ship() { Id = 14 };
-			Ship p2s5 = new Ship() { Id = 15 };
-			Ship p2s6 = new Ship() { Id = 16 };
-			Ship p2s7 = new Ship() { Id = 17 };
-			Ship p2s8 = new Ship() { Id = 18 };
+			Ship p1s1 = new Ship() { Id = 1, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s2 = new Ship() { Id = 2, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s3 = new Ship() { Id = 3, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s4 = new Ship() { Id = 4, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s5 = new Ship() { Id = 5, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s6 = new Ship() { Id = 6, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s7 = new Ship() { Id = 7, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p1s8 = new Ship() { Id = 8, Evasion = 0.1, Armor = 200, Hp = 1500, Size = 9, Defences = CloneList(allDefs), Weapons = CloneList(allWeapons) };
+
+			Ship p2s1 = new Ship() { Id = 11, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s2 = new Ship() { Id = 12, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s3 = new Ship() { Id = 13, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s4 = new Ship() { Id = 14, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s5 = new Ship() { Id = 15, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s6 = new Ship() { Id = 16, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s7 = new Ship() { Id = 17, Evasion = 0.5, Armor = 20, Hp = 100, Size = 2, Defences = CloneList(weakDef), Weapons = CloneList(weakWeapons) };
+			Ship p2s8 = new Ship() { Id = 18, Evasion = 0.1, Armor = 800, Hp = 500, Size = 8, Defences = CloneList(allDefs), Weapons = CloneList(allWeapons) };
 
 			List<Ship> p1s = new List<Ship> { p1s1, p1s2, p1s3, p1s4, };
 			List<Ship> p1m = new List<Ship> { p1s6, p1s7, p1s5 };
@@ -844,10 +867,10 @@ namespace GAME_Server {
 
 			PrintGameBoards(p1gameBoard, p2gameBoard);
 
-			Tuple<ShipPosition, Line> p1mm1 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.LONG, 0), Line.MEDIUM);
+			Tuple<ShipPosition, Line> p1mm1 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.SHORT, 0), Line.MEDIUM);
 			Tuple<ShipPosition, Line> p1mm2 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.MEDIUM, 0), Line.SHORT);
-			Tuple<ShipPosition, ShipPosition> p1ma1 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.SHORT, 0), new ShipPosition(Line.SHORT, 0));
-			Tuple<ShipPosition, ShipPosition> p1ma2 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.MEDIUM, 2), new ShipPosition(Line.MEDIUM, 1));
+			Tuple<ShipPosition, ShipPosition> p1ma1 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.SHORT, 1), new ShipPosition(Line.SHORT, 1));
+			Tuple<ShipPosition, ShipPosition> p1ma2 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.LONG, 0), new ShipPosition(Line.SHORT, 0));	//destroy this ship
 			Move p1move = new Move();
 			p1move.MoveList.Add(p1mm1);
 			p1move.MoveList.Add(p1mm2);
@@ -856,8 +879,28 @@ namespace GAME_Server {
 
 			p1validate = GameValidator.ValidateMove(p1move, p1gameBoard, p2gameBoard);
 			Console.WriteLine("p1 move validate: " + p1validate);
+			Console.WriteLine("press any key to contine with game test");
+			Console.ReadKey();
+
+			Console.WriteLine("======== Game test =========");
+			Game game = new Game(p1gameBoard, p2gameBoard);
+			game.SetShipStatesForPlayer1(p1move);
+			game.SetShipStatesForPlayer2(game.EmptyMove);
+			game.ProcessPlayer1MoveOrders(p1move);
+			game.ProcessPlayer1AttackMove(p1move);
+			game.FinalizeMove();
+
+			PrintGameBoards(p1gameBoard, p2gameBoard);
 
 			Console.ReadKey();
+
+			Environment.Exit(0);
+		}
+
+		private static List<T> CloneList<T>(List<T> src) {
+			List<T> ret = new List<T>();
+			foreach (var def in src) ret.Add(CloneObject(def));
+			return ret;
 		}
 
 		private static void PrintGameBoards(PlayerGameBoard p1gameBoard, PlayerGameBoard p2gameBoard) {
@@ -1320,9 +1363,9 @@ namespace GAME_Server {
 		public static readonly string SUDDEN_DISCONNED_GAME_RESULT = "Second player suddenly disconnected, you won";
 		public static readonly string SUDDEN_DISCONNECT_LOG_STRING = "disconnected before game end";
 		public static readonly string SURRENDER_LOG_STRING = "surrendered before game end";
-		public static readonly string YOU_WON_MESSAGE = "You won!";
-		public static readonly string YOU_LOST_MESSAGE = "You lost!";
-		public static readonly string DRAW_MESSAGE = "Draw!";
+		public readonly string YOU_WON_MESSAGE;// = "You won!";
+		public readonly string YOU_LOST_MESSAGE;// = "You lost!";
+		public readonly string DRAW_MESSAGE;// = "Draw!";
 		public static readonly int SETUP_FLEET_TIMEOUT = 120000;    //in miliseconds
 		public static readonly int MAKE_MOVE_TIMEOUT = 60000;	//in miliseconds
 
@@ -1392,6 +1435,10 @@ namespace GAME_Server {
 			if(isCustom) {
 				customRoomDescriptor = customGameObj;
 			}
+
+			YOU_WON_MESSAGE = "You won! You gained " + Server.BaseModifiers.MoneyForVictory + " money and " + Server.BaseModifiers.ExpForVictory + " experience points";
+			YOU_LOST_MESSAGE = "You lost! You gained " + Server.BaseModifiers.MoneyForLoss + " money and " + Server.BaseModifiers.ExpForLoss + " experience points";
+			DRAW_MESSAGE = "Draw! You gained " + (int)((Server.BaseModifiers.MoneyForVictory + Server.BaseModifiers.MoneyForLoss) / 2) + " money and " + Server.BaseModifiers.ExpForDraw + " experience points";
 		}
 
 		public Player Player1 { get => player1;set => player1 = value; }
@@ -1575,14 +1622,13 @@ namespace GAME_Server {
 								SkipMove(Player2Conn, "make move timeout");
 							}
 
+							ThisGame.MakeTurn(player1Move, player1MoveOK, player2Move, player2MoveOK);
+							/*
 							//set ship states according to moves
 							if (player1MoveOK) ThisGame.SetShipStatesForPlayer1(player1Move);
 							else ThisGame.SetShipStatesForPlayer1(ThisGame.EmptyMove);
 							if (player2MoveOK) ThisGame.SetShipStatesForPlayer2(player2Move);
 							else ThisGame.SetShipStatesForPlayer2(ThisGame.EmptyMove);
-
-							//open move for processing - save game boards before move as reference for positions
-							ThisGame.OpenTurn();
 
 							//first process attack orders
 							if (player1MoveOK) ThisGame.ProcessPlayer1AttackMove(player1Move);
@@ -1594,6 +1640,7 @@ namespace GAME_Server {
 
 							//finalize move by updating the PlayerGameBoards in ThisGame
 							ThisGame.FinalizeMove();
+							*/
 
 							//check game result and possibly end the game
 							Victory gameResultAfterThisTurn = ThisGame.CheckGameEndResult();
@@ -1616,12 +1663,11 @@ namespace GAME_Server {
 								SetGameEnded();
 							}
 							//else if Victory.NOT_YET and game continues
-							//TODO add ship exp after game ends - UpdateShip method, add exp, check if exp not too high etc.
 
 							//na poczatku dla ruchu statku zrobic tymczasowa liste par <statek,linia_docelowa> zeby nie bylo problemow z indexami i nullami
 							//przed przetwarzaniem zrobic refernecyjna liste tych par i na jej podstawie brac statki i wstawiac na nowy PlayerGameBoard
 							//docelowo obiekty zwracane do klienta to te property w tym obiekcie, ta lista par tylko dla referencji
-							//klient moze wrzuca null na miejsce startowe zeby sie nie pogubil
+							//klient moze wrzuca null na miejsce startowe ruchu zeby sie nie pogubil
 
 							//}
 						}
@@ -1673,18 +1719,30 @@ namespace GAME_Server {
 			}
 		}
 
+		private void UpdateFleetShipsExp(IGameDataBase playerDB, int amountOfExp, Fleet fleetToUpdate) {
+			foreach(Ship ship in fleetToUpdate.Ships) {
+				playerDB.UpdateShipExp(ship, amountOfExp);
+			}
+		}
+
 		private void UpdateLoserAndWiner(Player loser, Player winner) {
 			Server.Log(UsernamesOfPlayers + ": Game ended - result: winner " + winner.Username + " loser: " + loser.Username);
 
 			IGameDataBase winnerDB;
 			IGameDataBase loserDB;
+			Fleet winnerFleet;
+			Fleet loserFleet;
 			if(winner.Username == Player1.Username) {
 				winnerDB = Player1DB;
+				winnerFleet = Player1Fleet;
 				loserDB = Player2DB;
+				loserFleet = Player2Fleet;
 			}
 			else {
 				winnerDB = Player2DB;
+				winnerFleet = Player2Fleet;
 				loserDB = Player1DB;
+				loserFleet = Player1Fleet;
 			}
 			DbPlayer dbWinner = winnerDB.GetPlayerWithUsername(winner.Username);
 			dbWinner.Experience += Server.BaseModifiers.ExpForVictory;
@@ -1692,28 +1750,32 @@ namespace GAME_Server {
 			dbWinner.GamesPlayed += 1;
 			dbWinner.Money += Server.BaseModifiers.MoneyForVictory;
 			winnerDB.UpdatePlayer(dbWinner);
+			UpdateFleetShipsExp(winnerDB, Server.BaseModifiers.ExpForVictory, winnerFleet);
 
 			DbPlayer dbLoser = loserDB.GetPlayerWithUsername(loser.Username);
 			dbLoser.Experience += Server.BaseModifiers.ExpForLoss;
 			dbLoser.GamesPlayed += 1;
 			dbLoser.Money += Server.BaseModifiers.MoneyForLoss;
 			loserDB.UpdatePlayer(dbLoser);
+			UpdateFleetShipsExp(loserDB, Server.BaseModifiers.ExpForLoss, loserFleet);
 		}
 
 		private void UpdateDraw() {
 			Server.Log(UsernamesOfPlayers + ": Game ended - result: DRAW!");
 
 			DbPlayer dbPlayer1 = Player1DB.GetPlayerWithUsername(Player1.Username);
-			dbPlayer1.Experience += (int)((Server.BaseModifiers.ExpForVictory + Server.BaseModifiers.ExpForLoss) / 2);
+			dbPlayer1.Experience += Server.BaseModifiers.ExpForDraw;
 			dbPlayer1.GamesPlayed += 1;
 			dbPlayer1.Money += (int)((Server.BaseModifiers.MoneyForVictory + Server.BaseModifiers.MoneyForLoss) / 2);
 			Player1DB.UpdatePlayer(dbPlayer1);
+			UpdateFleetShipsExp(Player1DB, Server.BaseModifiers.ExpForDraw, Player1Fleet);
 
 			DbPlayer dbPlayer2 = Player2DB.GetPlayerWithUsername(Player2.Username);
-			dbPlayer2.Experience += (int)((Server.BaseModifiers.ExpForVictory + Server.BaseModifiers.ExpForLoss) / 2);
+			dbPlayer2.Experience += Server.BaseModifiers.ExpForDraw;
 			dbPlayer2.GamesPlayed += 1;
 			dbPlayer2.Money += (int)((Server.BaseModifiers.MoneyForVictory + Server.BaseModifiers.MoneyForLoss) / 2);
 			Player2DB.UpdatePlayer(dbPlayer2);
+			UpdateFleetShipsExp(Player2DB, Server.BaseModifiers.ExpForDraw, Player2Fleet);
 		}
 
 		private void HandleSuddenGameEnd(Player disconnectedPlayer, string reasonToLog) {

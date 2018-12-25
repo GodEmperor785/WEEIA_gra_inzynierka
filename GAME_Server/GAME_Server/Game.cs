@@ -19,6 +19,8 @@ namespace GAME_Server {
 
 		private GameRNG RNG;
 
+		private bool enableDebug;
+
 		public PlayerGameBoard Player1GameBoard { get; set; }
 		public PlayerGameBoard Player2GameBoard { get; set; }
 		public GameState Player1GameState {
@@ -36,8 +38,8 @@ namespace GAME_Server {
 				return new Move();
 			}
 		}
-		public PlayerGameBoard Player1GameBoardReference { get; set; }  //references are used to process move - they hold the state before modification
-		public PlayerGameBoard Player2GameBoardReference { get; set; }
+
+		public bool EnableDebug { get => enableDebug; set => enableDebug = value; }
 
 		public Game() {
 			Player1GameBoard = new PlayerGameBoard();
@@ -53,11 +55,11 @@ namespace GAME_Server {
 
 		#region player move processing
 		public void ProcessPlayer1AttackMove(Move playersMove) {
-			this.ProcessAttackMove(playersMove, Player1GameBoardReference, Player2GameBoardReference);
+			this.ProcessAttackMove(playersMove, Player1GameBoard, Player2GameBoard);
 		}
 
 		public void ProcessPlayer2AttackMove(Move playersMove) {
-			this.ProcessAttackMove(playersMove, Player2GameBoardReference, Player1GameBoardReference);
+			this.ProcessAttackMove(playersMove, Player2GameBoard, Player1GameBoard);
 		}
 
 		/// <summary>
@@ -69,7 +71,7 @@ namespace GAME_Server {
 		/// <param name="enemyBoard"></param>
 		private void ProcessAttackMove(Move move, PlayerGameBoard yourBoard, PlayerGameBoard enemyBoard) {
 			foreach(var attackOrder in move.AttackList) {
-				Server.Log("Attack from: " + attackOrder.Item1.Line + " " + attackOrder.Item1.ShipIndex + "  to: " + attackOrder.Item2.Line + " " + attackOrder.Item2.ShipIndex);
+				Log("Attack from: " + attackOrder.Item1.Line + " " + attackOrder.Item1.ShipIndex + "  to: " + attackOrder.Item2.Line + " " + attackOrder.Item2.ShipIndex);
 				//get affected ships
 				Ship attackingShip = yourBoard.Board[attackOrder.Item1.Line][attackOrder.Item1.ShipIndex];
 				Ship defendingShip = enemyBoard.Board[attackOrder.Item2.Line][attackOrder.Item2.ShipIndex];
@@ -115,6 +117,7 @@ namespace GAME_Server {
 									defendingShip.Hp -= dmg;
 									//if ship destroyed stop calculations for this move and mark it as destroyed
 									if (defendingShip.Hp <= 0) {
+										Log(defendingShip.Id + " destroyed hp = " + defendingShip.Hp);
 										shipDestroyed = true;
 										break;
 									}
@@ -148,16 +151,17 @@ namespace GAME_Server {
 			//chanceToHit has to be at least this - to prevent negative valueso f chanceToHit
 			double minChanceToHit = 0.01;
 			chanceToHit = Math.Max(chanceToHit, minChanceToHit);
+			Log("Chance to hit: " + chanceToHit + " distance " + distance);
 			//finally roll to determine if projectile hit its target
 			return RNG.RollWithChance(chanceToHit);
 		}
 
 		public void ProcessPlayer1MoveOrders(Move playersMove) {
-			this.ProcessMoveOrders(playersMove, Player1GameBoardReference);
+			this.ProcessMoveOrders(playersMove, Player1GameBoard);
 		}
 
 		public void ProcessPlayer2MoveOrders(Move playersMove) {
-			this.ProcessMoveOrders(playersMove, Player2GameBoardReference);
+			this.ProcessMoveOrders(playersMove, Player2GameBoard);
 		}
 
 		/// <summary>
@@ -169,13 +173,13 @@ namespace GAME_Server {
 		private void ProcessMoveOrders(Move move, PlayerGameBoard yourBoard) {
 			foreach (var moveOrder in move.MoveList) {
 				if (yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex] != null) {
-					Server.Log("Move from: " + moveOrder.Item1.Line + " " + moveOrder.Item1.ShipIndex + "  to: " + moveOrder.Item2 + "  ship_id: " + yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex].Id);
+					Log("Move from: " + moveOrder.Item1.Line + " " + moveOrder.Item1.ShipIndex + "  to: " + moveOrder.Item2 + "  ship_id: " + yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex].Id);
 					//first add ship to destination line
 					yourBoard.Board[moveOrder.Item2].Add(yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex]);
 					//than remove ship from origin line
 					yourBoard.Board[moveOrder.Item1.Line].RemoveAt(moveOrder.Item1.ShipIndex);
 				}
-				else Server.Log("Ship at: " + moveOrder.Item1.Line + " " + moveOrder.Item1.ShipIndex + "  was destroyed");
+				else Log("Ship at: " + moveOrder.Item1.Line + " " + moveOrder.Item1.ShipIndex + "  was destroyed");
 			}
 		}
 		#endregion
@@ -199,10 +203,12 @@ namespace GAME_Server {
 			//than set states accordingly to players move - start with MoveList
 			foreach (var moveOrder in move.MoveList) {
 				processedBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex].State = ShipState.MOVING;
+				Log("setting " + processedBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex].Id + " to MOVING state");
 			}
 			//than process AttackList
 			foreach (var attackOrder in move.AttackList) {
 				processedBoard.Board[attackOrder.Item1.Line][attackOrder.Item1.ShipIndex].State = ShipState.ATTACKING;
+				Log("setting " + processedBoard.Board[attackOrder.Item1.Line][attackOrder.Item1.ShipIndex].Id + " to ATTACKING state");
 			}
 
 			//add defenceValueLeft (in this turn) to defences of ships
@@ -210,11 +216,13 @@ namespace GAME_Server {
 			foreach (var line in processedBoard.Board) {
 				foreach (var ship in line.Value) {
 					foreach (var def in ship.Defences) {
+						double tempDefValue = def.DefenceValue;
 						//if ship is in DEFENDING state it has better defence value
 						if (ship.State == ShipState.DEFENDING) def.DefenceValueLeft = stateDefMult * def.DefenceValue;
 						else def.DefenceValueLeft = def.DefenceValue;
 						//bigger ships have better defences
 						def.DefenceValueLeft *= ship.Size;
+						Log("Ship " + ship.Id + " defence value: " + tempDefValue + " -> " + def.DefenceValueLeft + " state: " + ship.State + " ship size: " + ship.Size);
 					}
 				}
 			}
@@ -231,22 +239,58 @@ namespace GAME_Server {
 		#endregion
 
 		#region open and finalize move
-		public void OpenTurn() {
-			//clone current player game boards to references
-			this.Player1GameBoardReference = Server.CloneObject(Player1GameBoard);
-			this.Player2GameBoardReference = Server.CloneObject(Player2GameBoard);
+		public void MakeTurn(Move player1Move, bool player1MoveOK, Move player2Move, bool player2MoveOK) {
+			if (player1MoveOK) SetShipStatesForPlayer1(player1Move);
+			else SetShipStatesForPlayer1(EmptyMove);
+			if (player2MoveOK) SetShipStatesForPlayer2(player2Move);
+			else SetShipStatesForPlayer2(EmptyMove);
+
+			//first process attack orders - need to calculate if moving ship even survive this turn
+			if (player1MoveOK) ProcessPlayer1AttackMove(player1Move);
+			if (player2MoveOK) ProcessPlayer2AttackMove(player2Move);
+
+			//first process move orders - move the surviving ships
+			if (player1MoveOK) ProcessPlayer1MoveOrders(player1Move);
+			if (player2MoveOK) ProcessPlayer2MoveOrders(player2Move);
+
+			//finalize move by updating the PlayerGameBoards in ThisGame
+			FinalizeMove();
 		}
 
+		/// <summary>
+		/// removes null ships from game board - they were destroyed in this turn
+		/// </summary>
 		public void FinalizeMove() {
 			//first remove ships that are nulls - they were destroyed by other players attacks
-			foreach(var line in Player1GameBoardReference.Board) {
+			foreach(var line in Player1GameBoard.Board) {
 				line.Value.RemoveAll(ship => ship == null);
 			}
-			foreach (var line in Player2GameBoardReference.Board) {
+			foreach (var line in Player2GameBoard.Board) {
 				line.Value.RemoveAll(ship => ship == null);
 			}
-			this.Player1GameBoard = Player1GameBoardReference;
-			this.Player2GameBoard = Player2GameBoardReference;
+		}
+		#endregion
+
+		#region debug logging
+		private void Log(string msg) {
+			if (EnableDebug) Server.Log(msg);
+		}
+
+		private void PrintGameBoards(PlayerGameBoard p1gameBoard, PlayerGameBoard p2gameBoard) {
+			if (EnableDebug) {
+				Server.Log("Player 1 game board:");
+				foreach (var line in p1gameBoard.Board) {
+					Server.LogNoNewLine(line.Key + " :   \t");
+					foreach (Ship s in line.Value) Server.LogNoNewLine(s.Id + "\t");
+					Server.LogNoNewLine(Environment.NewLine);
+				}
+				Server.Log("Player 2 game board:");
+				foreach (var line in p2gameBoard.Board) {
+					Server.LogNoNewLine(line.Key + " :   \t");
+					foreach (Ship s in line.Value) Server.LogNoNewLine(s.Id + "\t");
+					Server.LogNoNewLine(Environment.NewLine);
+				}
+			}
 		}
 		#endregion
 

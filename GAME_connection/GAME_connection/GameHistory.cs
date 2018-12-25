@@ -15,7 +15,7 @@ namespace GAME_connection {
 		private bool wasDraw;
 		private DateTime gameDate;
 
-		public GameHistory() { }
+		public GameHistory() {}
 
 		public GameHistory(int id, Player winner, Player loser, Fleet winnerFleet, Fleet loserFleet, bool wasDraw, DateTime gameDate) {
 			Id = id;

@@ -12,7 +12,9 @@ namespace GAME_connection {
 		private Player owner;
 		private List<Ship> ships;
 
-		public Fleet() {}
+		public Fleet() {
+			Ships = new List<Ship>();
+		}
 
 		public Fleet(string name, Player owner, List<Ship> ships) {
 			this.Owner = owner;
