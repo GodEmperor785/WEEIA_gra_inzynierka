@@ -446,6 +446,12 @@ namespace GAME_Server {
 			//fleetToUpdate.Owner = newData.Owner;
 			SaveChanges();
 		}
+
+		public void UpdateShipExp(Ship ship, int expToAdd) {
+			var shipToUpdate = GetShipWithId(ship.Id);
+			shipToUpdate.ShipExp = Math.Min(shipToUpdate.ShipExp + expToAdd, Server.BaseModifiers.MaxShipExp);	//exp cant be greater than max
+			SaveChanges();
+		}
 		#endregion
 
 		#region DELETE

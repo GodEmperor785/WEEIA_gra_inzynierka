@@ -92,5 +92,7 @@ namespace GAME_Server {
 		int GetPlayerFleetCount(Player player);
 
 		DbGameHistory GetGameHistoryEntry(int id);
+
+		void UpdateShipExp(Ship ship, int expToAdd);
 	}
 }
