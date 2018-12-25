@@ -56,6 +56,8 @@ namespace GAME_Server {
 
 		//aplikacja admina nie powinna dzialac podczas dzialania serwera gry - serwer powinien byc wylaczany na czas potrzebny adminowi do zmian!
 
+		//https://pl.wikipedia.org/wiki/Kolekcjonerska_gra_karciana
+
 		internal static IGameDataBase GameDataBase { get => gameDataBase; }
 		public static BaseModifiers BaseModifiers { get => baseModifiers; }
 
@@ -454,8 +456,8 @@ namespace GAME_Server {
 				};
 				DbFleet f1 = new DbFleet(p1, p1fleet, p1Name + "_Fleet");
 				DbFleet f2 = new DbFleet(p2, p2fleet, p2Name + "_Fleet");
-				GameDataBase.AddFleet(f1.ToFleet(), p1.ToPlayer());
-				GameDataBase.AddFleet(f2.ToFleet(), p2.ToPlayer());
+				GameDataBase.AddFleet(f1.ToFleetOnlyActiveShips(), p1.ToPlayer());
+				GameDataBase.AddFleet(f2.ToFleetOnlyActiveShips(), p2.ToPlayer());
 				var fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
 				var fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
 				Server.Log("Fleets in DB are:");
@@ -546,11 +548,23 @@ namespace GAME_Server {
 				foreach (var p in fleetsP2) Server.Log(p.Id + " fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
 				ships = GameDataBase.GetAllShips();
 				Server.Log("Ships in DB are:");
-				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
+				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username + " active: " + p.IsActive);
+				ships = GameDataBase.GetPlayersShips(p1.ToPlayer());
+				Server.Log("P1 Ships in DB are:");
+				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username + " active: " + p.IsActive);
+				Server.Log("Game Histories in DB are:");
+				historiesP1 = GameDataBase.GetPlayersGameHistory(p1.Id);
+				foreach (var p in historiesP1) {
+					Server.Log("winner: " + p.Winner.Username + " loser: " + p.Loser.Username + " winner fleet count: " + p.WinnerFleet.Name);
+					Server.Log("winner fleet:");
+					foreach (var s in p.WinnerFleet.Ships) Server.Log(s.Id + " Ship of template: " + s.ShipBaseStats.Name + " owned by: " + s.Owner.Username + " active: " + s.IsActive);
+					Server.Log("loser fleet:");
+					foreach (var s in p.LoserFleet.Ships) Server.Log(s.Id + " Ship of template: " + s.ShipBaseStats.Name + " owned by: " + s.Owner.Username + " active: " + s.IsActive);
+				}
 
 				GameDataBase.RemoveShipWithId(fleetsP1.First().Ships.First().Id, true);
+				GameDataBase.RemoveShipWithId(fleetsP1.First().Ships[1].Id, true);
 				Server.Log("----------");
-
 				fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
 				fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
 				Server.Log("Fleets in DB are:");
@@ -558,7 +572,22 @@ namespace GAME_Server {
 				foreach (var p in fleetsP2) Server.Log(p.Id + " fleet name: " + p.Name + " owned by: " + p.Owner.Username + " with ship count: " + p.Ships.Count);
 				ships = GameDataBase.GetAllShips();
 				Server.Log("Ships in DB are:");
-				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username);
+				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username + " active: " + p.IsActive);
+				ships = GameDataBase.GetPlayersShips(p1.ToPlayer());
+				Server.Log("P1 Ships in DB are:");
+				foreach (var p in ships) Server.Log(p.Id + " Ship of template: " + p.ShipBaseStats.Name + " owned by: " + p.Owner.Username + " active: " + p.IsActive);
+				using (IGameDataBase GameDataBase = new MySqlDataBase()) {
+					Server.Log("Game Histories in DB are:");
+					historiesP1 = GameDataBase.GetPlayersGameHistory(p1.Id);
+					foreach (var p in historiesP1) {
+						var pp = GameDataBase.GetGameHistoryEntry(p.Id);
+						Server.Log("winner: " + pp.Winner.Username + " loser: " + pp.Loser.Username + " winner fleet count: " + pp.WinnerFleet.Name);
+						Server.Log("winner fleet:");
+						foreach (var s in pp.WinnerFleet.Ships) Server.Log(s.Id + " Ship of template: " + s.ShipBaseStats.Name + " owned by: " + s.Owner.Username + " active: " + s.IsActive);
+						Server.Log("loser fleet:");
+						foreach (var s in pp.LoserFleet.Ships) Server.Log(s.Id + " Ship of template: " + s.ShipBaseStats.Name + " owned by: " + s.Owner.Username + " active: " + s.IsActive);
+					}
+				}
 
 				//place for future testing
 
@@ -1157,7 +1186,7 @@ namespace GAME_Server {
 						case OperationType.VIEW_FLEETS:         //dont care about internal packet		//OK
 							Server.Log(User.Username + ": wants to view his fleets");
 							List<DbFleet> userDbFleets = GameDataBase.GetAllFleetsOfPlayer(User);
-							List<Fleet> userFleets = userDbFleets.Select(x => x.ToFleet()).ToList();
+							List<Fleet> userFleets = userDbFleets.Select(x => x.ToFleetOnlyActiveShips()).ToList();
 							Client.Send(new GamePacket(OperationType.VIEW_FLEETS, userFleets));
 							break;
 						case OperationType.VIEW_ALL_PLAYER_SHIPS:       //dont care about internal packet
@@ -1185,7 +1214,11 @@ namespace GAME_Server {
 							Server.Log(User.Username + ": wants to modify fleet with id " + fleetToUpdate.Id);
 							validationResult = GameValidator.ValidateFleet(User, fleetToUpdate, GameDataBase, false);
 							if (validationResult == GameValidator.OK) {  //fleet is ok
-								GameDataBase.UpdateFleet(GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, User, false));
+								GameDataBase.RemoveFleetWithId(fleetToUpdate.Id, false, User.Id);	//remove old fleet
+								//DbFleet dbFleetToUpdate = GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, User, true);
+								//dbFleetToUpdate.Ships.AddRange(GameDataBase.GetNotActiveShipsForFleetWithId(fleetToUpdate.Id));	//add ships that are not active and therefore invisible to player - for GameHistory
+								GameDataBase.AddFleet(fleetToUpdate, User);
+								//GameDataBase.UpdateFleet(dbFleetToUpdate);
 								SendSuccess();
 							}
 							else {
@@ -1201,16 +1234,20 @@ namespace GAME_Server {
 						//====================================================== PLAYER STATS =====================================================================================================
 						case OperationType.GET_PLAYER_STATS:		//OK
 							Server.Log(User.Username + " wants to view game history");
-							List<DbGameHistory> dbGameHistory = GameDataBase.GetPlayersGameHistory(User.Id);
-							List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory(false)).ToList();
-							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
+							using (IGameDataBase tempDB = Server.GetGameDBContext()) {
+								List<DbGameHistory> dbGameHistory = tempDB.GetPlayersGameHistory(User.Id);
+								List<GameHistory> gameHistory = dbGameHistory.Select(x => x.ToGameHistory(false)).ToList();
+								Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS, gameHistory));
+							}
 							break;
 						case OperationType.GET_PLAYER_STATS_ENTRY:		//OK
 							GameHistory entry = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + " wants to view details of game history entry with ID: " + entry.Id);
-							DbGameHistory dbEntry = GameDataBase.GetGameHistoryEntry(entry.Id);
-							entry = dbEntry.ToGameHistory(true);
-							Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS_ENTRY, entry));
+							using (IGameDataBase tempDB = Server.GetGameDBContext()) {
+								DbGameHistory dbEntry = tempDB.GetGameHistoryEntry(entry.Id);
+								entry = dbEntry.ToGameHistory(true);
+								Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS_ENTRY, entry));
+							}
 							break;
 						//====================================================== PLAYER STATS =====================================================================================================
 						case OperationType.DISCONNECT:          //OK
@@ -1222,9 +1259,9 @@ namespace GAME_Server {
 							Server.Log(User.Username + ": wants to select fleet used for next game");
 							Fleet selectedFleet = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							DbFleet fleetForGame = GameDataBase.GetFleetWithId(selectedFleet.Id);
-							if (fleetForGame.Owner.Id != User.Id) SendFailure(FailureReasons.INVALID_ID);
+							if (fleetForGame.Owner.Id != User.Id || fleetForGame.IsActive == false) SendFailure(FailureReasons.INVALID_ID);
 							else {
-								SelectedFleetForGame = fleetForGame.ToFleet();
+								SelectedFleetForGame = fleetForGame.ToFleetOnlyActiveShips();
 								SendSuccess();
 							}
 							break;									

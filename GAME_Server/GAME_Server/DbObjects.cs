@@ -284,12 +284,24 @@ namespace GAME_Server {
 		public int Id { get; set; }
 		public bool IsActive { get; set; }
 
-		public Fleet ToFleet() {
+		public Fleet ToFleetFull() {
 			List<Ship> nonDbShips = new List<Ship>();
 			foreach(DbShip ship in Ships) {
 				nonDbShips.Add(ship.ToShip());
 			}
 			return new Fleet(Id, Name, Owner.ToPlayer(), nonDbShips);
+		}
+
+		public Fleet ToFleetOnlyActiveShips() {
+			List<Ship> nonDbShips = new List<Ship>();
+			foreach (DbShip ship in Ships) {
+				if(ship.IsActive) nonDbShips.Add(ship.ToShip());
+			}
+			return new Fleet(Id, Name, Owner.ToPlayer(), nonDbShips);
+		}
+
+		public Fleet ToFleetShallow() {
+			return new Fleet(Id, Name, Owner.ToPlayer(), new List<Ship>());
 		}
 	}
 
@@ -320,12 +332,11 @@ namespace GAME_Server {
 		public DateTime GameDate { get; set; }
 
 		public GameHistory ToGameHistory(bool fullEntry) {
-			if(fullEntry) {
-				return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleet(), LoserFleet.ToFleet(), WasDraw, GameDate);
+			if(fullEntry == false) {
+				return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleetShallow(), LoserFleet.ToFleetShallow(), WasDraw, GameDate);
 			}
 			else {
-				return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), new Fleet(WinnerFleet.Name, Winner.ToPlayer(), new List<Ship>()), 
-					new Fleet(LoserFleet.Name, Loser.ToPlayer(), new List<Ship>()), WasDraw, GameDate);
+				return new GameHistory(Id, Winner.ToPlayer(), Loser.ToPlayer(), WinnerFleet.ToFleetFull(), LoserFleet.ToFleetFull(), WasDraw, GameDate);
 			}
 		}
 	}

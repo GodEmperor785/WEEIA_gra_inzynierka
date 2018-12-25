@@ -94,5 +94,7 @@ namespace GAME_Server {
 		DbGameHistory GetGameHistoryEntry(int id);
 
 		void UpdateShipExp(Ship ship, int expToAdd);
+
 	}
+
 }

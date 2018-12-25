@@ -105,7 +105,7 @@ namespace GAME_Server {
 		private DbGameHistory HistoryQuery(int entryId) {
 			var q = DbContext.GameHistories.Include(x => x.Winner).Include(x => x.WinnerFleet).Include(x => x.WinnerFleet.Owner).Include(x => x.WinnerFleet.Ships)
 				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Faction))
-				.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Faction));
+				.Include(x => x.Loser).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Faction));
 			var q2 = DbContext.GameHistories.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
 			var q22 = DbContext.GameHistories.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Defences.Select(w => w.Faction)));
 			var q3 = DbContext.GameHistories.Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons)).Include(x => x.LoserFleet.Ships.Select(s => s.ShipBaseStats.Weapons.Select(w => w.Faction)));
@@ -246,9 +246,7 @@ namespace GAME_Server {
 			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
-			foreach(DbFleet fleet in q1) fleet.Ships.RemoveAll(ship => ship.IsActive == false);
-			foreach (DbFleet fleet in q2) fleet.Ships.RemoveAll(ship => ship.IsActive == false);
-			foreach (DbFleet fleet in q3) fleet.Ships.RemoveAll(ship => ship.IsActive == false);
+			//removal of not active ship should be done via ToFleetOnlyActiveShips
 			return q1;
 		}
 
@@ -268,9 +266,7 @@ namespace GAME_Server {
 			var q1 = BasicFleetQueryPt1.Where(x => x.Id == id).FirstOrDefault();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Id == id).FirstOrDefault();
 			var q3 = BasicFleetQueryPt3.Where(x => x.Id == id).FirstOrDefault();
-			q1.Ships.RemoveAll(ship => ship.IsActive == false);
-			q2.Ships.RemoveAll(ship => ship.IsActive == false);
-			q3.Ships.RemoveAll(ship => ship.IsActive == false);
+			//removal of not active ship should be done via ToFleetOnlyActiveShips
 			return q1;
 			//var query = BasicFleetQuery.Where(fleet => fleet.Id == id);
 			//return query.FirstOrDefault();
