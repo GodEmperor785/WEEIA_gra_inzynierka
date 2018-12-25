@@ -58,7 +58,17 @@ namespace Client_PC.UI
             }
             set { height = value; }
         }
-        
+
+        public int RealHeight
+        {
+            get
+            {
+                int sum = 0;
+                RowsSize.ForEach(p => sum += (int)p);
+                sum += (RowsSize.Count - 1) * rowOffset;
+                return sum;
+            }
+        }
         public int Rows
         {
             get
@@ -519,22 +529,7 @@ namespace Client_PC.UI
         
 
 
-        public void UpdateActive(bool isActive)
-        {
-
-            foreach (var child in Children)
-            {
-                if (child.element is IClickable)
-                {
-                    IClickable click = (IClickable) child.element;
-                    if(click.ActiveChangeable)
-                        click.Active = isActive;
-                }
-
-                
-            }
-
-        }
+        
         private void UpdateChildren()
         {
             foreach (var child in Children)

@@ -56,5 +56,26 @@ namespace Client_PC.UI
                 child.element.Draw(spriteBatch);
             }
         }
+        public void UpdateActive(bool isActive)
+        {
+
+            foreach (var child in Children)
+            {
+                if (child.element is IClickable)
+                {
+                    IClickable click = (IClickable)child.element;
+                    if (click.ActiveChangeable)
+                        click.Active = isActive;
+                }
+                else if (child.element is Layout)
+                {
+                    Layout z = (Layout) child.element;
+                    z.UpdateActive(isActive);
+                }
+
+
+            }
+
+        }
     }
 }

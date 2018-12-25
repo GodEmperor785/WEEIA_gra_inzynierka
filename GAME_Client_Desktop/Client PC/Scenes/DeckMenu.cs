@@ -284,6 +284,7 @@ namespace Client_PC.Scenes
         }
         public void LoadDecksAndShips(List<Fleet> fleets, List<Ship> ships)
         {
+            Decks.ForEach(p=> Clickable.Remove(p));
             Decks.Clear();
             fleets.ForEach(p=>
             {

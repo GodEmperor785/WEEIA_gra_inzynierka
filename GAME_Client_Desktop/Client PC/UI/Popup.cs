@@ -11,6 +11,7 @@ namespace Client_PC.UI
     class Popup : GuiElement
     {
         public Grid grid;
+        public RelativeLayout layout;
         private Texture2D Background;
         private bool active;
         public bool Active
@@ -38,7 +39,7 @@ namespace Client_PC.UI
             grid.UpdateP();
         }
 
-        private void SetBackground()
+        public void SetBackground()
         {
             Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.White,
                 new Color(200, 200, 200), new Color(70, 120, 180),9);
@@ -49,14 +50,19 @@ namespace Client_PC.UI
             //sp.Begin();
             sp.Draw(Background, Origin.ToVector2(), Color.White);
             //sp.End();
-            
-            grid.Draw(sp);
+            if(grid != null)
+                grid.Draw(sp);
+            if(layout != null)
+                layout.Draw(sp);
         }
 
         public void SetActive(bool active)
         {
             this.active = active;
-            grid.UpdateActive(active);
+            if(grid != null)
+                grid.UpdateActive(active);
+            if(layout != null)
+                layout.UpdateActive(active);
         }
     }
 }
