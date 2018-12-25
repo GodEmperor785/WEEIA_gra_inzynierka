@@ -23,6 +23,8 @@ namespace GAME_Server {
 
 		public PlayerGameBoard Player1GameBoard { get; set; }
 		public PlayerGameBoard Player2GameBoard { get; set; }
+		public PlayerGameBoard Player1GameBoardReference { get; set; }
+		public PlayerGameBoard Player2GameBoardReference { get; set; }
 		public GameState Player1GameState {
 			get {
 				return new GameState(Player1GameBoard, Player2GameBoard);
@@ -55,11 +57,11 @@ namespace GAME_Server {
 
 		#region player move processing
 		public void ProcessPlayer1AttackMove(Move playersMove) {
-			this.ProcessAttackMove(playersMove, Player1GameBoard, Player2GameBoard);
+			this.ProcessAttackMove(playersMove, Player1GameBoard, Player2GameBoardReference);	//attacking board must be board before any modification and modification may be made only to reference
 		}
 
 		public void ProcessPlayer2AttackMove(Move playersMove) {
-			this.ProcessAttackMove(playersMove, Player2GameBoard, Player1GameBoard);
+			this.ProcessAttackMove(playersMove, Player2GameBoard, Player1GameBoardReference);
 		}
 
 		/// <summary>
@@ -157,11 +159,11 @@ namespace GAME_Server {
 		}
 
 		public void ProcessPlayer1MoveOrders(Move playersMove) {
-			this.ProcessMoveOrders(playersMove, Player1GameBoard);
+			this.ProcessMoveOrders(playersMove, Player1GameBoardReference);
 		}
 
 		public void ProcessPlayer2MoveOrders(Move playersMove) {
-			this.ProcessMoveOrders(playersMove, Player2GameBoard);
+			this.ProcessMoveOrders(playersMove, Player2GameBoardReference);
 		}
 
 		/// <summary>
@@ -245,6 +247,9 @@ namespace GAME_Server {
 			if (player2MoveOK) SetShipStatesForPlayer2(player2Move);
 			else SetShipStatesForPlayer2(EmptyMove);
 
+			//open move - copy state before attack to reference
+			OpenMove();
+
 			//first process attack orders - need to calculate if moving ship even survive this turn
 			if (player1MoveOK) ProcessPlayer1AttackMove(player1Move);
 			if (player2MoveOK) ProcessPlayer2AttackMove(player2Move);
@@ -255,6 +260,11 @@ namespace GAME_Server {
 
 			//finalize move by updating the PlayerGameBoards in ThisGame
 			FinalizeMove();
+		}
+
+		public void OpenMove() {
+			Player1GameBoardReference = Server.CloneObject(Player1GameBoard);
+			Player2GameBoardReference = Server.CloneObject(Player2GameBoard);
 		}
 
 		/// <summary>
@@ -268,6 +278,8 @@ namespace GAME_Server {
 			foreach (var line in Player2GameBoard.Board) {
 				line.Value.RemoveAll(ship => ship == null);
 			}
+			Player1GameBoard = Player1GameBoardReference;
+			Player2GameBoard = Player2GameBoardReference;
 		}
 		#endregion
 
