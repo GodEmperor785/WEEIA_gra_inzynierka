@@ -193,8 +193,8 @@ namespace GAME_Server {
 		/// <returns></returns>
 		public DbFleet ConvertFleetToDbFleet(Fleet fleet, Player player, bool isNew) {
 			List<int> shipIds = fleet.Ships.Select(s => s.Id).ToList();
-			List<DbShip> shipsForFleet = this.GetShips(shipIds);
-			DbPlayer owner = this.GetPlayerWithUsername(player.Username);
+			List<DbShip> shipsForFleet = GetShips(shipIds);
+			DbPlayer owner = GetPlayerWithUsername(player.Username);
 			if (!isNew) return new DbFleet(fleet.Id, owner, shipsForFleet, fleet.Name);     //if fleet is NOT new remember ID
 			else return new DbFleet(owner, shipsForFleet, fleet.Name);
 		}
@@ -246,17 +246,20 @@ namespace GAME_Server {
 			var q1 = BasicFleetQueryPt1.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
 			var q3 = BasicFleetQueryPt3.Where(x => x.Owner.Id == player.Id && x.IsActive).ToList();
-			//removal of not active ship should be done via ToFleetOnlyActiveShips
+			//removal of not active ships should be done via ToFleetOnlyActiveShips
 			return q1;
 		}
 
+		/// <summary>
+		/// includes not active ships - to be used only by admin
+		/// </summary>
+		/// <returns></returns>
 		public List<DbShip> GetAllShips() {
 			return BasicShipQuery.ToList();
 		}
 
 		public BaseModifiers GetBaseModifiers() {
 			var query = from baseMods in DbContext.BaseModifiers
-						where baseMods.Id == 1
 						select baseMods;
 			var baseModifiers = query.FirstOrDefault();
 			return baseModifiers.ToBaseModifiers();
@@ -475,7 +478,7 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// for admin call like: RemoveShipWithId(shipId, true), player cant remove ship he does not own
+		/// for admin call like: RemoveShipWithId(shipId, true), player cant remove ship he does not own. This method set ship as unactive - it will be visible only in GameHistory
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="playerId"></param>
@@ -492,7 +495,7 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
-		/// for admin call RemoveFleetWithId(fleetId, true), player cant remove fleets he does not own
+		/// for admin call RemoveFleetWithId(fleetId, true), player cant remove fleets he does not own. This method set fleet as unactive - it will be visible only in GameHistory
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="isAdmin"></param>
@@ -522,24 +525,15 @@ namespace GAME_Server {
 		public bool ValidateUser(Player player) {
 			var playerFromDb = (from players in DbContext.Players
 								where players.Username == player.Username && players.IsActive
-								select players).First();
-			if (playerFromDb.Password == player.Password) return true;
+								select players).FirstOrDefault();
+			if (playerFromDb == null) return false;
+			else if (playerFromDb.Password == player.Password) return true;
 			else return false;
 		}
 
 		public bool FleetNameIsUnique(Player player, string fleetName) {
 			if (DbContext.Fleets.Any(fleet => fleet.Name == fleetName && fleet.Owner.Id == player.Id && fleet.IsActive)) return false;
 			else return true;
-		}
-
-		public bool FleetPointsInRange(DbFleet fleet, Player player) {
-			// TODO
-			return true;
-		}
-
-		public bool FleetShipsExpRequirement(DbFleet fleet, Player player) {
-			// TODO
-			return true;
 		}
 
 		#endregion

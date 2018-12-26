@@ -1214,10 +1214,10 @@ namespace GAME_Server {
 							Server.Log(User.Username + ": wants to modify fleet with id " + fleetToUpdate.Id);
 							validationResult = GameValidator.ValidateFleet(User, fleetToUpdate, GameDataBase, false);
 							if (validationResult == GameValidator.OK) {  //fleet is ok
-								GameDataBase.RemoveFleetWithId(fleetToUpdate.Id, false, User.Id);	//remove old fleet
+								GameDataBase.RemoveFleetWithId(fleetToUpdate.Id, false, User.Id);	//remove old fleet - set it as not active
 								//DbFleet dbFleetToUpdate = GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, User, true);
-								//dbFleetToUpdate.Ships.AddRange(GameDataBase.GetNotActiveShipsForFleetWithId(fleetToUpdate.Id));	//add ships that are not active and therefore invisible to player - for GameHistory
-								GameDataBase.AddFleet(fleetToUpdate, User);
+								//dbFleetToUpdate.Ships.AddRange(GameDataBase.GetNotActiveShipsForFleetWithId(fleetToUpdate.Id));
+								GameDataBase.AddFleet(fleetToUpdate, User);		//add modified fleet as new - preserve old as not active for game history
 								//GameDataBase.UpdateFleet(dbFleetToUpdate);
 								SendSuccess();
 							}
@@ -1821,6 +1821,11 @@ namespace GAME_Server {
 			dbLoser.Money += Server.BaseModifiers.MoneyForLoss;
 			loserDB.UpdatePlayer(dbLoser);
 			UpdateFleetShipsExp(loserDB, Server.BaseModifiers.ExpForLoss, loserFleet);
+
+			using (IGameDataBase tempDB = Server.GetGameDBContext()) {
+				DbGameHistory entryToAdd = new DbGameHistory(dbWinner, dbLoser, tempDB.ConvertFleetToDbFleet(winnerFleet, winner, false), tempDB.ConvertFleetToDbFleet(loserFleet, loser, false),
+						false, DateTime.Now);
+			}
 		}
 
 		private void UpdateDraw() {
@@ -1839,6 +1844,11 @@ namespace GAME_Server {
 			dbPlayer2.Money += (int)((Server.BaseModifiers.MoneyForVictory + Server.BaseModifiers.MoneyForLoss) / 2);
 			Player2DB.UpdatePlayer(dbPlayer2);
 			UpdateFleetShipsExp(Player2DB, Server.BaseModifiers.ExpForDraw, Player2Fleet);
+
+			using (IGameDataBase tempDB = Server.GetGameDBContext()) {
+				DbGameHistory entryToAdd = new DbGameHistory(dbPlayer1, dbPlayer2, tempDB.ConvertFleetToDbFleet(Player1Fleet, Player1, false), tempDB.ConvertFleetToDbFleet(Player2Fleet, Player2, false),
+						true, DateTime.Now);
+			}
 		}
 
 		private void HandleSuddenGameEnd(Player disconnectedPlayer, string reasonToLog) {
