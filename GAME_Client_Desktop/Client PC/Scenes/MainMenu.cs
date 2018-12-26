@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Client_PC;
 using Client_PC.UI;
@@ -20,6 +21,9 @@ namespace Client_PC.Scenes
         private Deck chosenDeck;
         private Grid g;
         private Popup popup;
+        private Label labelWaiting;
+        private Timer timer;
+        private int time;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -92,6 +96,18 @@ namespace Client_PC.Scenes
             {
                 text = "down"
             };
+            Button exit = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                text = "exit"
+            };
+            Button search = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                text = "search game"
+            };
+            search.clickEvent += searchClick;
+            Clickable.Add(search);
+            exit.clickEvent += exitClick;
+            Clickable.Add(exit);
             down.clickEvent += downClick;
             Clickable.Add(down);
             g = new Grid(1, 5, buttonWidth, buttonHeight);
@@ -101,6 +117,7 @@ namespace Client_PC.Scenes
                 Deck d = new Deck(new Point(0,0), buttonWidth, buttonHeight, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,p.Name );
                 d.SetFleet(p);
                 d.clickEvent += DeckClick;
+                d.ActiveChangeable = true;
                 Clickable.Add(d);
                 g.AddChild(d);
             });
@@ -112,20 +129,76 @@ namespace Client_PC.Scenes
             g.UpdateP();
             Point downPoint = new Point(leftOrigin + leftOffset, g.Origin.Y + g.RealHeight + 10);
             down.Origin = downPoint;
+            exit.Origin = new Point(down.Origin.X+10+buttonWidth, down.Origin.Y);
+            search.Origin = new Point(exit.Origin.X,exit.Origin.Y - buttonHeight - 10);
+            labelWaiting = new Label(buttonWidth, buttonHeight * 2 , Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            labelWaiting.Text = "";
+            labelWaiting.Origin = new Point(up.Origin.X + buttonWidth + 10, up.Origin.Y);
             layout.AddChild(up);
             layout.AddChild(down);
             layout.AddChild(g);
-            popup = new Popup(popupOrigin, buttonWidth + 20, topOffset + up.Height + g.RealHeight + 10 + down.Height + 10 + 10,Game1.self.GraphicsDevice,Gui);
+            layout.AddChild(exit);
+            layout.AddChild(search);
+            layout.AddChild(labelWaiting);
+            popup = new Popup(popupOrigin,2 * buttonWidth + 30, topOffset + up.Height + g.RealHeight + 10 + down.Height + 10 + 10,Game1.self.GraphicsDevice,Gui);
             popup.layout = layout;
             up.Update();
             down.Update();
+            exit.Update();
+            search.Update();
             g.UpdateP();
+            labelWaiting.Update();
             popup.SetBackground();
             Game1.self.popupToDraw = popup;
-            popup.SetActive(true);
             SetClickables(false);
+            popup.SetActive(true);
+            popup.layout.UpdateActive(true);
+        }
+        protected override void SetClickables(bool active)
+        {
+            foreach (var clickable in Clickable)
+            {
+                clickable.Active = active;
+                if(popup != null)
+                    if (clickable.Parent == popup.layout)
+                        clickable.Active = !active;
+            }
+        }
+        public void searchClick()
+        {
+            if (chosenDeck != null)
+            {
+                GamePacket packet = new GamePacket(OperationType.SELECT_FLEET,chosenDeck.GetFleet());
+                Game1.self.Connection.Send(packet);
+                packet = Game1.self.Connection.GetReceivedPacket();
+                if (packet.OperationType == OperationType.SUCCESS)
+                {
+                    var autoEvent = new AutoResetEvent(false);
+                    time = 0;
+                    timer = new Timer(timerStart,autoEvent,1000,1000);
+                    packet = new GamePacket(OperationType.PLAY_RANKED,null);
+
+                }
+            }
         }
 
+        public void timerStart(object stateInfo)
+        {
+            AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
+            time++;
+            labelWaiting.Text = "Searching game for " + time + " seconds.";
+        }
+        public void exitClick()
+        {
+            popup.SetActive(false);
+            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            {
+                clickable.Active = true;
+            }
+
+            chosenDeck = null;
+            Game1.self.popupToDraw = null;
+        }
         public void DeckClick(object sender)
         {
             Deck d = (Deck)sender;
@@ -172,8 +245,11 @@ namespace Client_PC.Scenes
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
-            if(popup != null)
+            if (popup != null)
+            {
                 SetClickables(!popup.Active);
+                popup.SetActive(popup.Active);
+            }
             else
             {
                 SetClickables(true);
