@@ -9,9 +9,11 @@ using GAME_connection;
 namespace GAME_Server {
 	[Table("players")]
 	public class DbPlayer {
-		public DbPlayer() { }
+		public DbPlayer() {
+			IsActive = true;
+		}
 
-		public DbPlayer( string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) {
+		public DbPlayer( string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) : this() {
 			Username = username;
 			Password = password;
 			Experience = experience;
@@ -20,7 +22,6 @@ namespace GAME_Server {
 			GamesWon = gamesWon;
 			OwnedShips = new List<DbShip>();
 			Money = money;
-			IsActive = true;
 			IsAdmin = false;
 		}
 
@@ -33,11 +34,11 @@ namespace GAME_Server {
 		/// used to create new player
 		/// </summary>
 		/// <param name="player"></param>
-		public DbPlayer(Player player, int startingMoney) {
+		public DbPlayer(Player player, int startingMoney) : this() {
 			Username = player.Username;
 			Password = player.Password;
 			Experience = 0;
-			MaxFleetPoints = 0;
+			MaxFleetPoints = Server.BaseModifiers.BaseFleetMaxSize;
 			Id = player.Id;
 			GamesPlayed = 0;
 			GamesWon = 0;
