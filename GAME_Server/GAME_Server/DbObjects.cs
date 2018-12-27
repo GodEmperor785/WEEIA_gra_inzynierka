@@ -11,6 +11,7 @@ namespace GAME_Server {
 	public class DbPlayer {
 		public DbPlayer() {
 			IsActive = true;
+			IsAdmin = false;
 		}
 
 		public DbPlayer( string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) : this() {
@@ -22,7 +23,6 @@ namespace GAME_Server {
 			GamesWon = gamesWon;
 			OwnedShips = new List<DbShip>();
 			Money = money;
-			IsAdmin = false;
 		}
 
 		public DbPlayer(int id, string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money) 
@@ -173,9 +173,11 @@ namespace GAME_Server {
 
 	[Table("ship_templates")]
 	public class DbShipTemplate {
-		public DbShipTemplate() { }
+		public DbShipTemplate() {
+			IsActive = true;
+		}
 
-		public DbShipTemplate(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock, Rarity rarity) {
+		public DbShipTemplate(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<DbWeapon> weapons, List<DbDefenceSystem> defences, int expUnlock, Rarity rarity) : this() {
 			Name = name;
 			Faction = faction;
 			Cost = cost;
@@ -210,6 +212,7 @@ namespace GAME_Server {
 		public double Armor { get; set; }
 		public int ExpUnlock { get; set; }
 		public Rarity ShipRarity { get; set; }
+		public bool IsActive { get; set; }
 
 		public List<DbShip> ShipsOfThisTemplate { get; set; }
 
@@ -220,6 +223,18 @@ namespace GAME_Server {
 		/// <returns></returns>
 		public DbShip GenerateNewShipOfThisTemplate(DbPlayer owner) {
 			return new DbShip(owner, 0, this);
+		}
+
+		public Ship ToShip() {
+			List<Weapon> nonDbWeapons = new List<Weapon>();
+			List<DefenceSystem> nonDbDefenceSystems = new List<DefenceSystem>();
+			foreach (DbWeapon weapon in Weapons) {
+				nonDbWeapons.Add(weapon.ToWeapon());
+			}
+			foreach (DbDefenceSystem defSystem in Defences) {
+				nonDbDefenceSystems.Add(defSystem.ToDefenceSystem());
+			}
+			return new Ship(Id, Name, Faction, Cost, Evasion, Hp,Size, Armor, nonDbWeapons, nonDbDefenceSystems, ExpUnlock, ShipRarity);
 		}
 	}
 

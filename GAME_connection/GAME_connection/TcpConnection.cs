@@ -109,7 +109,7 @@ namespace GAME_connection {
 				IPEndPoint ipData = client.Client.RemoteEndPoint as IPEndPoint;
 				this.RemoteIpAddress = ipData.Address.ToString();
 				this.RemotePortNumber = ipData.Port;
-				this.serializer = new BinaryFormatter();
+				this.serializer = new BinaryFormatter();		//BinaryFormatter ALWAYS uses little endian
 				this.messageReceivedEvent = new AutoResetEvent(false);
 				this.connectionEndedEvent = new AutoResetEvent(false);
 
@@ -198,6 +198,11 @@ namespace GAME_connection {
 				OnConnectionEnded(new GameEventArgs(PlayerNumber));
 				//Console.WriteLine(ex2.StackTrace);
 				connectionEnded = true;
+			} catch(Exception ex3) {
+				if (debug) tcpConnectionLogger("Connection ended - on write");
+				OnConnectionEnded(new GameEventArgs(PlayerNumber));
+				//Console.WriteLine(ex3.StackTrace);
+				connectionEnded = true;
 			}
 		}
 		#endregion
@@ -275,6 +280,11 @@ namespace GAME_connection {
 					//Console.WriteLine(ex2.StackTrace);
 					connectionEnded = true;
 					break;
+				} catch (Exception ex3) {
+					if (debug) tcpConnectionLogger("Connection ended - on read");
+					OnConnectionEnded(new GameEventArgs(PlayerNumber));
+					//Console.WriteLine(ex3.StackTrace);
+					connectionEnded = true;
 				}
 				//than block on another read operation
 			}
@@ -372,6 +382,11 @@ namespace GAME_connection {
 					//Console.WriteLine(ex2.StackTrace);
 					connectionEnded = true;
 					break;
+				} catch (Exception ex3) {
+					if (debug) tcpConnectionLogger("Connection endedd");
+					OnConnectionEnded(new GameEventArgs(PlayerNumber));
+					//Console.WriteLine(ex3.StackTrace);
+					connectionEnded = true;
 				}
 			}
 		}

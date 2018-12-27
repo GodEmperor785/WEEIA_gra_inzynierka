@@ -13,6 +13,7 @@ using System.Configuration;
 using GAME_connection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using GAME_Validator;
 
 namespace GAME_Server {
 	internal class Server {
@@ -326,10 +327,15 @@ namespace GAME_Server {
 				Server.Log(">>> Some users");
 				string p1Name = "player1";
 				string p2Name = "player2";
-				DbPlayer p1 = new DbPlayer(p1Name, p1Name, BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, 300, 3, 2, BaseModifiers.StartingMoney);
-				DbPlayer p2 = new DbPlayer(p2Name, p2Name, BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, 300, 3, 1, BaseModifiers.StartingMoney);
+				string a1Name = "admin";
+				DbPlayer p1 = new DbPlayer(p1Name, p1Name, BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, BaseModifiers.BaseFleetMaxSize, 3, 2, BaseModifiers.StartingMoney);
+				DbPlayer p2 = new DbPlayer(p2Name, p2Name, BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, BaseModifiers.BaseFleetMaxSize, 3, 1, BaseModifiers.StartingMoney);
+				DbPlayer a1 = new DbPlayer(a1Name, a1Name, 0, BaseModifiers.BaseFleetMaxSize, 0, 0, BaseModifiers.StartingMoney) {
+					IsAdmin = true
+				};
 				GameDataBase.AddPlayer(p1);
 				GameDataBase.AddPlayer(p2);
+				GameDataBase.AddPlayer(a1);
 				var playersList = GameDataBase.GetAllPlayers();
 				Server.Log("Players in DB are:");
 				foreach (DbPlayer p in playersList) Server.Log(p.Username);
@@ -913,8 +919,8 @@ namespace GAME_Server {
 			Fleet p2fleet = new Fleet("p2fleet", new Player(), p2all);
 			PlayerGameBoard p2gameBoard = new PlayerGameBoard(p2s, p2m, p2l);
 
-			string p1validate = GameValidator.ValidatePlayerBoard(p1gameBoard, p1fleet);
-			string p2validate = GameValidator.ValidatePlayerBoard(p2gameBoard, p2fleet);
+			string p1validate = GameServerValidator.ValidatePlayerBoard(p1gameBoard, p1fleet);
+			string p2validate = GameServerValidator.ValidatePlayerBoard(p2gameBoard, p2fleet);
 			Console.WriteLine("p1 board validate: " + p1validate);
 			Console.WriteLine("p2 board validate: " + p2validate);
 
@@ -930,7 +936,7 @@ namespace GAME_Server {
 			p1move.AttackList.Add(p1ma1);
 			p1move.AttackList.Add(p1ma2);
 
-			p1validate = GameValidator.ValidateMove(p1move, p1gameBoard, p2gameBoard);
+			p1validate = GameServerValidator.ValidateMove(p1move, p1gameBoard, p2gameBoard);
 			Console.WriteLine("p1 move validate: " + p1validate);
 			Console.WriteLine("press any key to contine with game test");
 			Console.ReadKey();
@@ -1028,18 +1034,40 @@ namespace GAME_Server {
 			try {
 				//first do login or register
 				bool loginSuccess = false;
+				bool adminLogin = false;
 				while (!loginSuccess) {		//while login is not succesful
 					LoginResult loginResult = LoginOrRegister();
 					if (loginResult == LoginResult.LOGIN_SUCCESS) loginSuccess = true;
+					else if(loginResult == LoginResult.ADMIN_LOGIN_SUCCESS) {
+						loginSuccess = true;
+						adminLogin = true;
+					}
 				}
 				if (loginSuccess) {
-					//set and send user data
-					this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
-					this.User.Password = "";
-					Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
-					Client.Send(new GamePacket(OperationType.BASE_MODIFIERS, Server.BaseModifiers));
+					if (adminLogin) {
+						this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
+						this.User.Password = "";
 
-					UserProcessing();   //main logic
+						AdminDataPacket adminPacket = new AdminDataPacket(
+							GameDataBase.GetAllShipTemplates().Select(dbTempl => dbTempl.ToShip()).ToList(),
+							GameDataBase.GetAllWeapons().Select(wep => wep.ToWeapon()).ToList(),
+							GameDataBase.GetAllDefences().Select(def => def.ToDefenceSystem()).ToList(),
+							Server.BaseModifiers,
+							GameDataBase.GetAllFactions()
+						);
+						Client.Send(new GamePacket(OperationType.ADMIN_PACKET, adminPacket));
+
+						AdminProcessing();	//main logic
+					}
+					else {
+						//set and send user data
+						this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
+						this.User.Password = "";
+						Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
+						Client.Send(new GamePacket(OperationType.BASE_MODIFIERS, Server.BaseModifiers));
+
+						UserProcessing();   //main logic
+					}
 				}
 				else EndThread();
 			} catch(ConnectionEndedException) {
@@ -1050,6 +1078,7 @@ namespace GAME_Server {
 
 		private enum LoginResult {
 			LOGIN_SUCCESS,
+			ADMIN_LOGIN_SUCCESS,
 			LOGIN_FAILED,
 			REGISTRATION_SUCCESS,
 			REGISTRATION_FAILED,
@@ -1076,9 +1105,16 @@ namespace GAME_Server {
 				if (packet.OperationType == OperationType.LOGIN) {
 					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
 						this.User = playerObject;
-						Server.Log("Succesfully logged in player: " + playerObject.Username);
-						SendSuccess();
-						return LoginResult.LOGIN_SUCCESS;
+						if (GameDataBase.UserIsAdmin(playerObject)) {
+							Server.Log("Succesfully logged in ADMIN: " + playerObject.Username);
+							SendSuccess();
+							return LoginResult.ADMIN_LOGIN_SUCCESS;
+						}
+						else {
+							Server.Log("Succesfully logged in player: " + playerObject.Username);
+							SendSuccess();
+							return LoginResult.LOGIN_SUCCESS;
+						}
 					}
 					else {
 						SendFailure(FailureReasons.INCORRECT_LOGIN + playerObject.Username);
@@ -1120,6 +1156,69 @@ namespace GAME_Server {
 		#endregion
 
 		#region main logic
+		private void AdminProcessing() {
+			ClientConnected = true;
+			string validationResult;
+			while (ClientConnected) {
+				GamePacket gamePacket = Client.GetReceivedPacket();
+				try {
+					switch (gamePacket.OperationType) {
+						case OperationType.UPDATE_SHIP_TEMPLATE:
+							Ship shipToUpdate;
+							shipToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to modify ship template with id " + shipToUpdate.Id);
+							validationResult = GameValidator.ValidateShip(shipToUpdate);
+							if (validationResult == GameValidator.OK) {
+								Server.Log(shipToUpdate.Id + " " + shipToUpdate.Name);
+								DbShipTemplate newData = GameDataBase.ConvertShipToShipTemplate(shipToUpdate);
+								newData.Id = shipToUpdate.Id;
+								GameDataBase.UpdateShipTemplate(newData);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.ADD_SHIP_TEMPLATE:
+							Ship targetShip;
+							targetShip = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to add ship template");
+							validationResult = GameValidator.ValidateShip(targetShip);
+							if(validationResult == GameValidator.OK) {
+								GameDataBase.AddShipTemplate(GameDataBase.ConvertShipToShipTemplate(targetShip));
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.GET_SHIP_TEMPLATES:
+							Server.Log("ADMIN: " + User.Username + ": wants to view ship templates");
+							List<Ship> ships = GameDataBase.GetAllShipTemplates().Select(x => x.ToShip()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_SHIP_TEMPLATES, ships));
+							break;
+						case OperationType.DISCONNECT:          //OK
+							Server.Log("ADMIN: " + User.Username + ": wants to disconnect");
+							ClientConnected = false;
+							break;
+						default:        //OK
+							SendFailure(FailureReasons.INVALID_PACKET);
+							Server.Log("ADMIN: " + User.Username + ": unsupported operation: " + gamePacket.OperationType);
+							break;
+					}
+				}
+				catch (InvalidCastException) {
+					SendFailure(FailureReasons.INVALID_PACKET);
+				}
+				catch (NullReferenceException ex) {         //null indicates that some object does not exist in DB
+					Server.Log("ADMIN: " + "NULL caught - " + User.Username + "Exception message: " + ex.Message + " From:" + ex.Source, true);
+					Server.Log(ex.StackTrace);
+					SendFailure(FailureReasons.INVALID_ID);
+				}
+			}
+			//finally, after the loop end thread
+			Server.Log("ADMIN: " + User.Username + ": Thread Ending");
+			this.EndThread();
+		}
+
+		//=======================================================================================================================
+
 		private void UserProcessing() {
 			//bool clientConnected = true;
 			ClientConnected = true;
@@ -1200,8 +1299,8 @@ namespace GAME_Server {
 							Fleet fleetToAdd = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(fleetToAdd.Name);
 							Server.Log(User.Username + ": wants to add a new fleet");
-							validationResult = GameValidator.ValidateFleet(User, fleetToAdd, GameDataBase, true);
-							if (validationResult == GameValidator.OK) {  //fleet is ok
+							validationResult = GameServerValidator.ValidateFleet(User, fleetToAdd, GameDataBase, true);
+							if (validationResult == GameServerValidator.OK) {  //fleet is ok
 								GameDataBase.AddFleet(fleetToAdd, User);
 								SendSuccess();
 							}
@@ -1212,8 +1311,8 @@ namespace GAME_Server {
 						case OperationType.UPDATE_FLEET:		//OK
 							Fleet fleetToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log(User.Username + ": wants to modify fleet with id " + fleetToUpdate.Id);
-							validationResult = GameValidator.ValidateFleet(User, fleetToUpdate, GameDataBase, false);
-							if (validationResult == GameValidator.OK) {  //fleet is ok
+							validationResult = GameServerValidator.ValidateFleet(User, fleetToUpdate, GameDataBase, false);
+							if (validationResult == GameServerValidator.OK) {  //fleet is ok
 								GameDataBase.RemoveFleetWithId(fleetToUpdate.Id, false, User.Id);	//remove old fleet - set it as not active
 								//DbFleet dbFleetToUpdate = GameDataBase.ConvertFleetToDbFleet(fleetToUpdate, User, true);
 								//dbFleetToUpdate.Ships.AddRange(GameDataBase.GetNotActiveShipsForFleetWithId(fleetToUpdate.Id));
@@ -1249,7 +1348,7 @@ namespace GAME_Server {
 								Client.Send(new GamePacket(OperationType.GET_PLAYER_STATS_ENTRY, entry));
 							}
 							break;
-						//====================================================== PLAYER STATS =====================================================================================================
+						//====================================================== DISCONNECT =====================================================================================================
 						case OperationType.DISCONNECT:          //OK
 							Server.Log(User.Username + ": wants to disconnect");
 							ClientConnected = false;
@@ -1301,7 +1400,7 @@ namespace GAME_Server {
 								else {      //join succeeded - thread removed from available and JoinThisRoom can be called
 									bool joinSuccess = customGameRoomToJoin.JoinThisRoom(Client, User, GameDataBase, this);
 									if (joinSuccess) {
-										SendSuccess();
+										//SendSuccess();
 										Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
 										customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
 										Server.Log(User.Username + ": has ended his game, user thread continues");
@@ -1323,6 +1422,7 @@ namespace GAME_Server {
 								if (rankedGame == null) {           //there are no rooms - need to create new one
 									GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false, this);
 									Thread newRankedGameThread = new Thread(new ThreadStart(newRankedRoom.RunGameThread));
+									SendSuccess();
 									newRankedGameThread.Start();
 									//newCustomGameThread.Join();
 									Server.Log(User.Username + ": create ranked game room successful, user thread blocks");
@@ -1333,7 +1433,7 @@ namespace GAME_Server {
 								else {      //join successful - GameRoomThread removed from available and JoinThisThread can be called
 									bool joinSuccess = rankedGame.JoinThisRoom(Client, User, GameDataBase, this);
 									if (joinSuccess) {
-										SendSuccess();
+										//SendSuccess();
 										Server.Log(User.Username + ": join game room successful, user thread blocks");
 										rankedGame.gameEnded.WaitOne();   //block until end of the game
 										Server.Log(User.Username + ": has ended his game, user thread continues");
@@ -1606,8 +1706,8 @@ namespace GAME_Server {
 					if (player1Packet != null) {
 						try {
 							Player1GameBoard = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
-							validateResult = GameValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
-							if (validateResult != GameValidator.OK) {
+							validateResult = GameServerValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
+							if (validateResult != GameServerValidator.OK) {
 								EndGameOnError(1, validateResult);
 							}
 							else SendSuccess(Player1Conn);	//if setup OK send success
@@ -1620,8 +1720,8 @@ namespace GAME_Server {
 					if (player2Packet != null) {
 						try {
 							Player2GameBoard = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
-							validateResult = GameValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
-							if (validateResult != GameValidator.OK) {
+							validateResult = GameServerValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
+							if (validateResult != GameServerValidator.OK) {
 								EndGameOnError(2, validateResult);
 							}
 							else SendSuccess(Player2Conn);  //if setup OK send success
@@ -1653,8 +1753,8 @@ namespace GAME_Server {
 							if (player1Packet != null) {
 								try {
 									player1Move = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
-									validateResult = GameValidator.ValidateMove(player1Move, ThisGame.Player1GameBoard, ThisGame.Player2GameBoard);
-									if (validateResult != GameValidator.OK) {
+									validateResult = GameServerValidator.ValidateMove(player1Move, ThisGame.Player1GameBoard, ThisGame.Player2GameBoard);
+									if (validateResult != GameServerValidator.OK) {
 										SkipMove(Player1Conn, "invalid move: " + validateResult);
 									}
 									else SendSuccess(Player1Conn);  //if move OK send success
@@ -1669,8 +1769,8 @@ namespace GAME_Server {
 							if (player2Packet != null) {
 								try {
 									player2Move = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
-									validateResult = GameValidator.ValidateMove(player2Move, ThisGame.Player2GameBoard, ThisGame.Player1GameBoard);
-									if (validateResult != GameValidator.OK) {
+									validateResult = GameServerValidator.ValidateMove(player2Move, ThisGame.Player2GameBoard, ThisGame.Player1GameBoard);
+									if (validateResult != GameServerValidator.OK) {
 										SkipMove(Player2Conn, "invalid move: " + validateResult);
 									}
 									else SendSuccess(Player2Conn);  //if move OK send success
@@ -1765,6 +1865,14 @@ namespace GAME_Server {
 		}
 
 		#region game room utils
+		/// <summary>
+		/// sends Success to joiner if join ok and set event that starts the game
+		/// </summary>
+		/// <param name="joinerConnection"></param>
+		/// <param name="joiner"></param>
+		/// <param name="player2DB"></param>
+		/// <param name="player2ThreadObj"></param>
+		/// <returns></returns>
 		internal bool JoinThisRoom(TcpConnection joinerConnection, Player joiner, IGameDataBase player2DB, UserThread player2ThreadObj) {
 			lock (joinLock) {
 				if (!IsFull) {
@@ -1775,6 +1883,7 @@ namespace GAME_Server {
 					Player2ThreadObj = player2ThreadObj;
 					Player2Fleet = player2ThreadObj.SelectedFleetForGame;
 					IsFull = true;
+					SendSuccess(joinerConnection);
 					roomFull.Set();
 					return true;
 				}

@@ -200,6 +200,20 @@ namespace GAME_Server {
 		}
 
 		/// <summary>
+		/// converts communication object of type <see cref="Ship"/> from user to server's internal <see cref="DbShipTemplate"/>
+		/// </summary>
+		/// <param name="ship"></param>
+		/// <returns></returns>
+		public DbShipTemplate ConvertShipToShipTemplate(Ship ship) {
+			List<int> defIds = ship.Defences.Select(s => s.Id).ToList();
+			List<int> wepIds = ship.Weapons.Select(s => s.Id).ToList();
+			List<DbWeapon> dbWeapons = GetDbWeapons(wepIds);
+			List<DbDefenceSystem> dbDefences = GetDbDefenceSystems(wepIds);
+			Faction f = GetFactionWithId(ship.Faction.Id);
+			return new DbShipTemplate(ship.Name, f, ship.Cost, ship.Evasion, ship.Hp, ship.Size, ship.Armor, dbWeapons, dbDefences, ship.ExpUnlock, ship.Rarity);
+		}
+
+		/// <summary>
 		/// adds fleet to Db, does NOT validate the fleet, this should be done earlier (including <see cref="FleetNameIsUnique"/>)
 		/// </summary>
 		/// <param name="fleet"></param>
@@ -230,6 +244,13 @@ namespace GAME_Server {
 			var query = from factions in DbContext.Factions
 						select factions;
 			return query.ToList();
+		}
+
+		public Faction GetFactionWithId(int id) {
+			var query = from factions in DbContext.Factions
+						where factions.Id == id
+						select factions;
+			return query.FirstOrDefault();
 		}
 
 		public List<DbFleet> GetAllFleetsOfPlayer(Player player) {
@@ -339,12 +360,12 @@ namespace GAME_Server {
 		/// <param name="exp"></param>
 		/// <returns></returns>
 		public List<DbShipTemplate> GetShipsAvailableForExp(int exp) {
-			var query = BasicShipTemplateQuery.Where(shipTempl => shipTempl.ExpUnlock <= exp);
+			var query = BasicShipTemplateQuery.Where(shipTempl => (shipTempl.ExpUnlock <= exp) && (shipTempl.IsActive));
 			return query.ToList();
 		}
 
 		public List<DbShipTemplate> GetShipTemplatesWithRarityAndReqExp(Rarity rarity, int reqExp) {
-			var query = BasicShipTemplateQuery.Where(shipTempl => ((shipTempl.ExpUnlock <= reqExp) && (shipTempl.ShipRarity == rarity)));
+			var query = BasicShipTemplateQuery.Where(shipTempl => ((shipTempl.ExpUnlock <= reqExp) && (shipTempl.ShipRarity == rarity)) && (shipTempl.IsActive));
 			return query.ToList();
 		}
 
@@ -396,7 +417,7 @@ namespace GAME_Server {
 		}
 
 		public List<DbShipTemplate> GetAllShipTemplates() {
-			return BasicShipTemplateQuery.ToList();
+			return BasicShipTemplateQuery.Where(x => x.IsActive).ToList();
 		}
 
 		public List<DbShip> GetPlayersShips(Player player) {
@@ -534,6 +555,10 @@ namespace GAME_Server {
 		public bool FleetNameIsUnique(Player player, string fleetName) {
 			if (DbContext.Fleets.Any(fleet => fleet.Name == fleetName && fleet.Owner.Id == player.Id && fleet.IsActive)) return false;
 			else return true;
+		}
+
+		public bool UserIsAdmin(Player player) {
+			return DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username && dbPlayer.IsActive && dbPlayer.IsAdmin == true);
 		}
 
 		#endregion

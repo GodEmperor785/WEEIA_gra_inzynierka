@@ -95,6 +95,10 @@ namespace GAME_Server {
 
 		void UpdateShipExp(Ship ship, int expToAdd);
 
+		bool UserIsAdmin(Player player);
+
+		DbShipTemplate ConvertShipToShipTemplate(Ship ship);
+
 	}
 
 }

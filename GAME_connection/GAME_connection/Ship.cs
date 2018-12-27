@@ -37,8 +37,7 @@ namespace GAME_connection {
 			Defences = new List<DefenceSystem>();
 		}
 
-		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock, int shipExp, Rarity rarity, double shipExpModifier) {
-			this.id = id;
+		public Ship(string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock, Rarity rarity) {
 			this.name = name;
 			this.faction = faction;
 			this.cost = cost;
@@ -49,8 +48,17 @@ namespace GAME_connection {
 			this.weapons = weapons;
 			this.defences = defences;
 			this.expUnlock = expUnlock;
-			this.shipExp = shipExp;
 			this.rarity = rarity;
+		}
+
+		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock, Rarity rarity) :
+				this(name, faction, cost, evasion, hp, size, armor, weapons, defences, expUnlock, rarity) {
+			this.id = id;
+		}
+
+		public Ship(int id, string name, Faction faction, int cost, double evasion, double hp, double size, double armor, List<Weapon> weapons, List<DefenceSystem> defences, int expUnlock, int shipExp, Rarity rarity, double shipExpModifier) 
+				: this(id, name, faction, cost, evasion, hp, size, armor, weapons, defences, expUnlock, rarity) {
+			this.shipExp = shipExp;
 			this.shipExpModifier = shipExpModifier;
 
 			this.CalculateExpBonuses();

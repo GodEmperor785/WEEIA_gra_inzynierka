@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GAME_connection;
+using GAME_Validator;
 
 namespace GAME_Server {
-	public static class GameValidator {
+	/// <summary>
+	/// used to validate GameRoom specific object and object that need to be validated with DataBase
+	/// </summary>
+	public static class GameServerValidator {
 
 		public static readonly string OK = "validation_ok";
 

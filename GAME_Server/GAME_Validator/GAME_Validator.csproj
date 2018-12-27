@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="GAME_connection">
+      <HintPath>..\..\GAME_connection\GAME_connection\bin\Debug\GAME_connection.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

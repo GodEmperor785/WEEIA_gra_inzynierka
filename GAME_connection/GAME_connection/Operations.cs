@@ -46,7 +46,13 @@ namespace GAME_connection {
 
 		//action results
 		SUCCESS,
-		FAILURE
+		FAILURE,
+
+		//admin
+		ADMIN_PACKET,
+		GET_SHIP_TEMPLATES,
+		ADD_SHIP_TEMPLATE,
+		UPDATE_SHIP_TEMPLATE
 	}
 
 	/// <summary>
@@ -64,8 +70,8 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.ADD_FLEET, typeof(Fleet));                   //new fleet object			maybe only list of ids?		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.DELETE_FLEET, typeof(Fleet));                //fleet to delete		maybe only fleet name or id?	- important for server, server respons with S/F
 			operationMapping.Add(OperationType.SELECT_FLEET, typeof(Fleet));                //fleet used for a game, called before PLAY				- important for server, server respons with S/F
-			operationMapping.Add(OperationType.PLAY_RANKED, typeof(object));                //nothing - never used									- null
-			operationMapping.Add(OperationType.ABANDON_GAME, typeof(object));               //internal packet does not matter, s/F response			- server respons with S/F
+			operationMapping.Add(OperationType.PLAY_RANKED, typeof(object));                //internal packet does not matter, S/F response			- server respons with S/F
+			operationMapping.Add(OperationType.ABANDON_GAME, typeof(object));               //internal packet does not matter, S/F response			- server respons with S/F
 			operationMapping.Add(OperationType.PLAY_CUSTOM_JOIN, typeof(CustomGameRoom));   //room with room name, creator name and password		- important for server, server respons with S/F
 			operationMapping.Add(OperationType.PLAY_CUSTOM_CREATE, typeof(CustomGameRoom)); //room with all variables set							- important for server, server respons with S/F
 			operationMapping.Add(OperationType.GET_CUSTOM_ROOMS, typeof(List<CustomGameRoom>)); //list of available vustom rooms					- important for client
@@ -86,6 +92,10 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.BUY, typeof(LootBox));                       //lootbox to buy										- important for server, server respons with S/F
 			operationMapping.Add(OperationType.BOUGHT_SHIPS, typeof(List<Ship>));           //ships from lootbox									- important for client, SUCCESS before this
 			operationMapping.Add(OperationType.SELL_SHIP, typeof(Ship));                    //ship to sell for money								- important for server, server respons with S/F
+
+			operationMapping.Add(OperationType.GET_SHIP_TEMPLATES, typeof(List<Ship>));     //list of all ship templates							- important for client
+			operationMapping.Add(OperationType.ADD_SHIP_TEMPLATE, typeof(Ship));            //ship template to add									- important for server, server respons with S/F
+			operationMapping.Add(OperationType.UPDATE_SHIP_TEMPLATE, typeof(Ship));         //ship template to update								- important for server, server respons with S/F
 
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F
