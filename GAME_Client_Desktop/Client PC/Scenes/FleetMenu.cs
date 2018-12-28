@@ -9,6 +9,7 @@ using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Button = Client_PC.UI.Button;
+using Label = Client_PC.UI.Label;
 
 namespace Client_PC.Scenes
 {
@@ -27,6 +28,7 @@ namespace Client_PC.Scenes
         private int CardWidth = 133;
         private PlayerGameBoard gmBoard;
         private bool readyToSend;
+        private Popup popup;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -71,6 +73,31 @@ namespace Client_PC.Scenes
             save.clickEvent += onSave;
             buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
             cardsGrid.Origin = new Point(200, buttonsGrid.Origin.Y - 200);
+
+
+
+
+            Grid popupGrid = new Grid();
+            Button popupExitButton = new Button(200,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            {
+                text = "Exit to menu"
+            };
+            popupExitButton.clickEvent += onExit;
+            Clickable.Add(popupExitButton);
+            Label lbl = new Label(200,200,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            {
+                Text = "You lost the game due to not choosing shape of fleet for longer than 2 minutes"
+            };
+            popupGrid.AddChild(lbl,0,0);
+            popupGrid.AddChild(popupExitButton,1,0);
+            Point popupOrigin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight / 2 - 150);
+            popup = new Popup(popupOrigin,200,300,Game1.self.GraphicsDevice,Gui);
+            popup.grid = popupGrid;
+            popup.SetToGrid();
+
+
+
+
             buttonsGrid.AddChild(save,0,0);
             layout.AddChild(up);
             layout.AddChild(down);
@@ -83,11 +110,13 @@ namespace Client_PC.Scenes
             cardsGrid.ChildMaxAmount = 15;
             cardsGrid.UpdateP();
             buttonsGrid.UpdateP();
+            SetClickables(true);
         }
 
         public void onSave()
         {
             //TODO not tested
+            grid.UpdateActive(false);
             List<Ship> closestShips = new List<Ship>();
             List<Ship> midShips = new List<Ship>();
             List<Ship> furthestShips = new List<Ship>();
@@ -116,6 +145,10 @@ namespace Client_PC.Scenes
             this.fleet = fleet;
         }
 
+        public void onExit()
+        {
+            Game1.self.state = Game1.State.MainMenu;
+        }
         private void upClick()
         {
             cardsGrid.ChangeRow(-1);
@@ -164,8 +197,9 @@ namespace Client_PC.Scenes
                     }
                     else if (packet.OperationType == OperationType.FAILURE)
                     {
-                        //TODO create popup saying u lost the game due to inactivity for 2 minutes and not picking shape of fleet
-                        Game1.self.state = Game1.State.MainMenu;
+                        popup.SetActive(true);
+                        Game1.self.popupToDraw = popup;
+                        SetClickables(false);
                     }
                 }
 
