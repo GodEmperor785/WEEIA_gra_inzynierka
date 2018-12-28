@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GAME_Server {
+namespace GAME_Validator {
 	public static class FailureReasons {
 		public static readonly string INVALID_PACKET = "Invalid type of received packet";
 		public static readonly string INVALID_PACKET_TYPE = "Invalid packet OperationType received";
@@ -33,5 +33,7 @@ namespace GAME_Server {
 		public static readonly string INDEX_IN_LINE_OUT_OF_RANGE = "Index out of range in ShipIndex";
 		public static readonly string ONE_SHIP_MANY_MOVES = "Ship cannot make many moves in the same time";
 		public static readonly string MOVE_DISTANCE_TOO_LONG = "Ship cannot move more than 1 line a turn";
+		public static readonly string VALUE_NOT_IN_RANGE = "Value not in allowed range: ";
+		public static readonly string NO_WEAPONS_OR_DEFENCES = "Ship has to have at least 1 weapon and 1 defence system";
 	}
 }

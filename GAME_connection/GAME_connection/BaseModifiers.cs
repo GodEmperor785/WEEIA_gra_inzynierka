@@ -54,7 +54,7 @@ namespace GAME_connection {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static string GetWeaponTypeyName(this WeaponType type) {
+		public static string GetWeaponTypyName(this WeaponType type) {
 			switch (type) {
 				case WeaponType.KINETIC:
 					return "Kinetic";
@@ -72,7 +72,7 @@ namespace GAME_connection {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static string GetDefenceSystemType(this DefenceSystemType type) {
+		public static string GetDefenceSystemTypeName(this DefenceSystemType type) {
 			switch (type) {
 				case DefenceSystemType.POINT_DEFENCE:
 					return "Point defence";

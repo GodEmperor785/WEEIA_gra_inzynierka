@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAME_Server", "GAME_Server\GAME_Server.csproj", "{1820BDAB-C124-471C-AEB7-0E9FC7C15A21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAME_AdminApp", "GAME_AdminApp\GAME_AdminApp.csproj", "{B7169E81-5E88-4CBA-B452-F2F683F4A027}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GAME_Validator", "GAME_Validator\GAME_Validator.csproj", "{4506E026-D3FC-47A8-8675-3AF9F36CEED3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{1820BDAB-C124-471C-AEB7-0E9FC7C15A21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1820BDAB-C124-471C-AEB7-0E9FC7C15A21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1820BDAB-C124-471C-AEB7-0E9FC7C15A21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7169E81-5E88-4CBA-B452-F2F683F4A027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7169E81-5E88-4CBA-B452-F2F683F4A027}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7169E81-5E88-4CBA-B452-F2F683F4A027}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7169E81-5E88-4CBA-B452-F2F683F4A027}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4506E026-D3FC-47A8-8675-3AF9F36CEED3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4506E026-D3FC-47A8-8675-3AF9F36CEED3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4506E026-D3FC-47A8-8675-3AF9F36CEED3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4506E026-D3FC-47A8-8675-3AF9F36CEED3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
