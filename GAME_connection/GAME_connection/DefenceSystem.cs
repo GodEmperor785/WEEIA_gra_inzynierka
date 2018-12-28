@@ -19,8 +19,7 @@ namespace GAME_connection {
 			DefMultAgainstWepTypeMap = new Dictionary<WeaponType, double>();
 		}
 
-		public DefenceSystem(int id, string name, Faction faction, double defenceValue, DefenceSystemType systemType, double kineticDefMult, double laserDefMult, double missileDefMult) {
-			this.Id = id;
+		public DefenceSystem(string name, Faction faction, double defenceValue, DefenceSystemType systemType, double kineticDefMult, double laserDefMult, double missileDefMult) {
 			this.Name = name;
 			this.Faction = faction;
 			this.DefenceValue = defenceValue;
@@ -30,6 +29,11 @@ namespace GAME_connection {
 				{ WeaponType.LASER, laserDefMult },
 				{ WeaponType.MISSILE, missileDefMult }
 			};
+		}
+
+		public DefenceSystem(int id, string name, Faction faction, double defenceValue, DefenceSystemType systemType, double kineticDefMult, double laserDefMult, double missileDefMult)
+				: this(name, faction, defenceValue, systemType, kineticDefMult, laserDefMult, missileDefMult) {
+			this.Id = id;
 		}
 
 		public string Name { get => name; set => name = value; }

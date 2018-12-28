@@ -13,24 +13,24 @@ namespace GAME_AdminApp {
 	public partial class ShipWeaponsForm : Form {
 		private Dictionary<CheckBox, int> checkBoxToIdMap = new Dictionary<CheckBox, int>();
 
-		public bool IsModify { get; set; }
-		public int ModifyId { get; set; }
-
 		public ShipWeaponsForm() {
 			InitializeComponent();
 		}
 
 		public void SetForViewOnly(Ship ship, List<Weapon> selectedWeapons) {
+			shipDescriptionLabel.Text = "Viewing possible (faction: " + ship.Faction.Name + ") weapons for ship with ID: " + ship.Id + ", equipped weapons are checked. View is read-only.";
 			ShowWeaponsOfShip(ship, selectedWeapons);
 			SetEnabled(false);
 			saveButton.Enabled = false;
 		} 
 
 		public void SetForModify(Ship ship, List<Weapon> selectedWeapons) {
+			shipDescriptionLabel.Text = "Modifying weapons of ship with ID: " + ship.Id + ", equipped weapons are checked. Weapons of faction " + ship.Faction.Name + " are available.";
 			ShowWeaponsOfShip(ship, selectedWeapons);
 		}
 
 		public void SetForNew(Faction chosenFaction, List<Weapon> selectedWeapons) {
+			shipDescriptionLabel.Text = "Modifying weapons for new ship of faction " + chosenFaction.Name + ". Already selected weapons are checked";
 			ShowAllWeaponsOfFactionPlusSelected(chosenFaction, selectedWeapons);
 		}
 
@@ -66,10 +66,6 @@ namespace GAME_AdminApp {
 				if (pair.Key.Checked) chosenWeapons.Add( AdminApp.GameData.Weapons.Where(wep => wep.Id == pair.Value).FirstOrDefault() );
 			}
 			AdminApp.AppForm.ShipWeapons = chosenWeapons;
-			/*if (IsModify) {
-				Ship modifiedShip = AdminApp.GameData.ShipTemplates.Where(s => s.Id == ModifyId).FirstOrDefault();
-				modifiedShip.Weapons = chosenWeapons;
-			}*/
 			this.Close();
 		}
 

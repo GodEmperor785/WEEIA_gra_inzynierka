@@ -1163,13 +1163,74 @@ namespace GAME_Server {
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				try {
 					switch (gamePacket.OperationType) {
+						case OperationType.UPDATE_DEFENCE:
+							DefenceSystem defenceSystemToUpdate;
+							defenceSystemToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to modify defence system with id " + defenceSystemToUpdate.Id);
+							validationResult = GameValidator.ValidateDefenceSystem(defenceSystemToUpdate);
+							if (validationResult == GameValidator.OK) {
+								GameDataBase.UpdateDefenceSystem(defenceSystemToUpdate);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.ADD_DEFENCE:
+							DefenceSystem defenceSystem;
+							defenceSystem = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to add new defence system");
+							validationResult = GameValidator.ValidateDefenceSystem(defenceSystem);
+							if (validationResult == GameValidator.OK) {
+								defenceSystem.Id = 0;
+								DbDefenceSystem dbWeapon = new DbDefenceSystem(defenceSystem) {
+									Faction = GameDataBase.GetFactionWithId(defenceSystem.Faction.Id)
+								};
+								GameDataBase.AddDefenceSystem(dbWeapon);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.GET_DEFENCES:
+							Server.Log("ADMIN: " + User.Username + ": wants to view defence systems");
+							List<DefenceSystem> defences = GameDataBase.GetAllDefences().Select(x => x.ToDefenceSystem()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_DEFENCES, defences));
+							break;
+						case OperationType.UPDATE_WEAPON:
+							Weapon weaponToUpdate;
+							weaponToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to modify weapon with id " + weaponToUpdate.Id);
+							validationResult = GameValidator.ValidateWeapon(weaponToUpdate);
+							if (validationResult == GameValidator.OK) {
+								GameDataBase.UpdateWeapon(weaponToUpdate);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.ADD_WEAPON:
+							Weapon weapon;
+							weapon = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to add new weapon");
+							validationResult = GameValidator.ValidateWeapon(weapon);
+							if (validationResult == GameValidator.OK) {
+								weapon.Id = 0;
+								DbWeapon dbWeapon = new DbWeapon(weapon) {
+									Faction = GameDataBase.GetFactionWithId(weapon.Faction.Id)
+								};
+								GameDataBase.AddWeapon(dbWeapon);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.GET_WEAPONS:
+							Server.Log("ADMIN: " + User.Username + ": wants to view weapons");
+							List<Weapon> weapons = GameDataBase.GetAllWeapons().Select(x => x.ToWeapon()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_WEAPONS, weapons));
+							break;
 						case OperationType.UPDATE_SHIP_TEMPLATE:
 							Ship shipToUpdate;
 							shipToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
 							Server.Log("ADMIN: " + User.Username + ": wants to modify ship template with id " + shipToUpdate.Id);
 							validationResult = GameValidator.ValidateShip(shipToUpdate);
 							if (validationResult == GameValidator.OK) {
-								Server.Log(shipToUpdate.Id + " " + shipToUpdate.Name);
 								DbShipTemplate newData = GameDataBase.ConvertShipToShipTemplate(shipToUpdate);
 								newData.Id = shipToUpdate.Id;
 								GameDataBase.UpdateShipTemplate(newData);

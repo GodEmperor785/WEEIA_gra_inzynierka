@@ -52,7 +52,13 @@ namespace GAME_connection {
 		ADMIN_PACKET,
 		GET_SHIP_TEMPLATES,
 		ADD_SHIP_TEMPLATE,
-		UPDATE_SHIP_TEMPLATE
+		UPDATE_SHIP_TEMPLATE,
+		GET_WEAPONS,
+		ADD_WEAPON,
+		UPDATE_WEAPON,
+		GET_DEFENCES,
+		ADD_DEFENCE,
+		UPDATE_DEFENCE
 	}
 
 	/// <summary>
@@ -96,6 +102,12 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.GET_SHIP_TEMPLATES, typeof(List<Ship>));     //list of all ship templates							- important for client
 			operationMapping.Add(OperationType.ADD_SHIP_TEMPLATE, typeof(Ship));            //ship template to add									- important for server, server respons with S/F
 			operationMapping.Add(OperationType.UPDATE_SHIP_TEMPLATE, typeof(Ship));         //ship template to update								- important for server, server respons with S/F
+			operationMapping.Add(OperationType.GET_WEAPONS, typeof(List<Weapon>));			//list of all weapons									- important for client
+			operationMapping.Add(OperationType.ADD_WEAPON, typeof(Weapon));					//weapon to add											- important for server, server respons with S/F
+			operationMapping.Add(OperationType.UPDATE_WEAPON, typeof(Weapon));              //weapon to update										- important for server, server respons with S/F
+			operationMapping.Add(OperationType.GET_DEFENCES, typeof(List<DefenceSystem>));  //list of all defences									- important for client
+			operationMapping.Add(OperationType.ADD_DEFENCE, typeof(DefenceSystem));         //defence to add										- important for server, server respons with S/F
+			operationMapping.Add(OperationType.UPDATE_DEFENCE, typeof(DefenceSystem));      //defence to update										- important for server, server respons with S/F
 
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F

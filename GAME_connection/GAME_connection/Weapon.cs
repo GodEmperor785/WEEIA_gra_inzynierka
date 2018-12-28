@@ -19,8 +19,7 @@ namespace GAME_connection {
 
 		public Weapon() { }
 
-		public Weapon(int id, string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double apEffectivity, double rangeMultiplier, double chanceToHit) {
-			this.Id = id;
+		public Weapon(string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double apEffectivity, double rangeMultiplier, double chanceToHit) {
 			this.Name = name;
 			this.Faction = faction;
 			this.Damage = damage;
@@ -29,6 +28,11 @@ namespace GAME_connection {
 			this.ApEffectivity = apEffectivity;
 			this.RangeMultiplier = rangeMultiplier;
 			this.ChanceToHit = chanceToHit;
+		}
+
+		public Weapon(int id, string name, Faction faction, double damage, int numberOfProjectiles, WeaponType weaponType, double apEffectivity, double rangeMultiplier, double chanceToHit)
+				: this(name, faction, damage, numberOfProjectiles, weaponType, apEffectivity, rangeMultiplier, chanceToHit) {
+			this.Id = id;
 		}
 
 		public string Name { get => name; set => name = value; }

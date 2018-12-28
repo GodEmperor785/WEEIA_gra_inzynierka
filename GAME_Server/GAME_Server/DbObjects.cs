@@ -95,7 +95,7 @@ namespace GAME_Server {
 			RangeMultiplier = weapon.RangeMultiplier;
 			ChanceToHit = weapon.ChanceToHit;
 			ApEffectivity = weapon.ApEffectivity;
-			Id = weapon.Id;
+			if(weapon.Id > 0) Id = weapon.Id;
 			Ships = new List<DbShipTemplate>();
 		}
 
@@ -151,7 +151,7 @@ namespace GAME_Server {
 			DefAgainstKinetic = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.KINETIC];
 			DefAgainstLaser = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.LASER];
 			DefAgainstMissile = defenceSystem.DefMultAgainstWepTypeMap[WeaponType.MISSILE];
-			Id = defenceSystem.Id;
+			if(defenceSystem.Id > 0) Id = defenceSystem.Id;
 			Ships = new List<DbShipTemplate>();
 		}
 
@@ -442,9 +442,6 @@ namespace GAME_Server {
 		//money gain values
 		public int MoneyForVictory { get; set; }
 		public int MoneyForLoss {get; set; }
-
-
-
 
 		public BaseModifiers ToBaseModifiers() {
 			Dictionary<WeaponType, double> weaponTypeRangeMultMap = new Dictionary<WeaponType, double>() {

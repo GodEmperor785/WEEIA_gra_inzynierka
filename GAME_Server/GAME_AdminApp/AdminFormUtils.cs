@@ -49,7 +49,7 @@ namespace GAME_AdminApp {
 			table.RowStyles.Add(new RowStyle(temp.SizeType, temp.Height));
 
 			table.Controls.Add(new Label() { Text = weapon.Id.ToString() }, 0, table.RowCount - 1);
-			table.Controls.Add(new Label() { Text = weapon.Name }, 1, table.RowCount - 1);
+			table.Controls.Add(new Label() { Text = weapon.Name, AutoSize = true }, 1, table.RowCount - 1);
 			table.Controls.Add(new Label() { Text = weapon.Faction.Name }, 2, table.RowCount - 1);
 			table.Controls.Add(new Label() { Text = weapon.Damage.ToString() }, 3, table.RowCount - 1);
 			table.Controls.Add(new Label() { Text = weapon.NumberOfProjectiles.ToString() }, 4, table.RowCount - 1);
@@ -70,7 +70,7 @@ namespace GAME_AdminApp {
 			}
 		}
 
-		public static void AddDefenceSystemListForShip(TableLayoutPanel table, List<DefenceSystem> defences, int shpSize, Dictionary<CheckBox, int> checkBoxMap) {
+		public static void AddDefenceSystemListForShip(TableLayoutPanel table, List<DefenceSystem> defences, double shpSize, Dictionary<CheckBox, int> checkBoxMap) {
 			foreach (DefenceSystem def in defences) AddDefenceSystemToTable(def, table, shipSize:shpSize, checkBoxToIdMap:checkBoxMap);
 		}
 
@@ -87,26 +87,27 @@ namespace GAME_AdminApp {
 			int chg = 4;
 
 			table.Controls.Add(new Label() { Text = defence.Id.ToString() }, 0, table.RowCount - 1);
-			table.Controls.Add(new Label() { Text = defence.Name }, 1, table.RowCount - 1);
+			table.Controls.Add(new Label() { Text = defence.Name, AutoSize = true }, 1, table.RowCount - 1);
 			table.Controls.Add(new Label() { Text = defence.Faction.Name }, 2, table.RowCount - 1);
 			table.Controls.Add(new Label() { Text = defence.DefenceValue.ToString() }, 3, table.RowCount - 1);
 			if (!addModifyButton) {
 				table.Controls.Add(new Label() { Text = (defence.DefenceValue * shipSize).ToString() }, chg, table.RowCount - 1);
 				chg++;
 			}
-			table.Controls.Add(new Label() { Text = defence.DefMultAgainstWepTypeMap[WeaponType.KINETIC].ToString() }, chg, table.RowCount - 1);
-			table.Controls.Add(new Label() { Text = defence.DefMultAgainstWepTypeMap[WeaponType.LASER].ToString() }, chg + 1, table.RowCount - 1);
-			table.Controls.Add(new Label() { Text = defence.DefMultAgainstWepTypeMap[WeaponType.MISSILE].ToString() }, chg + 2, table.RowCount - 1);
+			table.Controls.Add(new Label() { Text = defence.SystemType.GetDefenceSystemTypeName() }, chg, table.RowCount - 1);
+			table.Controls.Add(new Label() { Text = defence.DefMultAgainstWepTypeMap[WeaponType.KINETIC].ToString() }, chg + 1, table.RowCount - 1);
+			table.Controls.Add(new Label() { Text = defence.DefMultAgainstWepTypeMap[WeaponType.LASER].ToString() }, chg + 2, table.RowCount - 1);
+			table.Controls.Add(new Label() { Text = defence.DefMultAgainstWepTypeMap[WeaponType.MISSILE].ToString() }, chg + 3, table.RowCount - 1);
 			if (addModifyButton) {
 				Button modifyButton = new Button() { Text = "Modify this defence", AutoSize = true };
 				modifyButton.Click += new EventHandler(modifyButtonHandler);
 				buttonToIdMap.Add(modifyButton, defence.Id);
-				table.Controls.Add(modifyButton, chg + 3, table.RowCount - 1);
+				table.Controls.Add(modifyButton, chg + 4, table.RowCount - 1);
 			}
 			else {
 				CheckBox selectThisDefence = new CheckBox();
 				checkBoxToIdMap.Add(selectThisDefence, defence.Id);
-				table.Controls.Add(selectThisDefence, chg + 3, table.RowCount - 1);
+				table.Controls.Add(selectThisDefence, chg + 4, table.RowCount - 1);
 			}
 		}
 

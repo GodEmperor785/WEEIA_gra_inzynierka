@@ -99,6 +99,11 @@ namespace GAME_Server {
 
 		DbShipTemplate ConvertShipToShipTemplate(Ship ship);
 
+		void UpdateWeapon(Weapon weapon);
+
+		void UpdateDefenceSystem(DefenceSystem defence);
+
+		Faction GetFactionWithId(int id);
 	}
 
 }

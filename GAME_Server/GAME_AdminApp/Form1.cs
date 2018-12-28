@@ -47,7 +47,11 @@ namespace GAME_AdminApp {
 		private void SetupShowAppForm() {
 			GamePacket packet = AdminApp.Connection.GetReceivedPacket();
 			AdminApp.GameData = (AdminDataPacket)packet.Packet;
+
 			AdminApp.AppForm.InitializeShipDropDownLists();
+			AdminApp.AppForm.InitializeWeaponsDropDownLists();
+			AdminApp.AppForm.InitializeDefencesDropDownLists();
+
 			AdminApp.AppForm.Show();
 			this.Hide();
 		}

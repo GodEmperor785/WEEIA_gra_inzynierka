@@ -205,10 +205,10 @@ namespace GAME_Server {
 		/// <param name="ship"></param>
 		/// <returns></returns>
 		public DbShipTemplate ConvertShipToShipTemplate(Ship ship) {
-			List<int> defIds = ship.Defences.Select(s => s.Id).ToList();
 			List<int> wepIds = ship.Weapons.Select(s => s.Id).ToList();
+			List<int> defIds = ship.Defences.Select(s => s.Id).ToList();
 			List<DbWeapon> dbWeapons = GetDbWeapons(wepIds);
-			List<DbDefenceSystem> dbDefences = GetDbDefenceSystems(wepIds);
+			List<DbDefenceSystem> dbDefences = GetDbDefenceSystems(defIds);
 			Faction f = GetFactionWithId(ship.Faction.Id);
 			return new DbShipTemplate(ship.Name, f, ship.Cost, ship.Evasion, ship.Hp, ship.Size, ship.Armor, dbWeapons, dbDefences, ship.ExpUnlock, ship.Rarity);
 		}
@@ -429,6 +429,14 @@ namespace GAME_Server {
 			return GetAllFleetsOfPlayer(player).Count;
 		}
 
+		public DbWeapon GetWeaponWithId(int id) {
+			return BasicWeaponQuery.Where(wep => wep.Id == id).FirstOrDefault();
+		}
+
+		public DbDefenceSystem GetDefenceSystemWithId(int id) {
+			return BasicDefenceSystemQuery.Where(def => def.Id == id).FirstOrDefault();
+		}
+
 		#endregion
 
 		#region UPDATE
@@ -476,6 +484,31 @@ namespace GAME_Server {
 		public void UpdateShipExp(Ship ship, int expToAdd) {
 			var shipToUpdate = GetShipWithId(ship.Id);
 			shipToUpdate.ShipExp = Math.Min(shipToUpdate.ShipExp + expToAdd, Server.BaseModifiers.MaxShipExp);	//exp cant be greater than max
+			SaveChanges();
+		}
+
+		public void UpdateWeapon(Weapon weapon) {
+			var weaponToUpdate = GetWeaponWithId(weapon.Id);
+			weaponToUpdate.Name = weapon.Name;
+			weaponToUpdate.NumberOfProjectiles = weapon.NumberOfProjectiles;
+			weaponToUpdate.RangeMultiplier = weapon.RangeMultiplier;
+			weaponToUpdate.WeaponType = weapon.WeaponType;
+			weaponToUpdate.ApEffectivity = weapon.ApEffectivity;
+			weaponToUpdate.ChanceToHit = weapon.ChanceToHit;
+			weaponToUpdate.Damage = weapon.Damage;
+			weaponToUpdate.Faction = GetFactionWithId(weapon.Faction.Id);
+			SaveChanges();
+		}
+
+		public void UpdateDefenceSystem(DefenceSystem defence) {
+			var defenceSystemToUpdate = GetDefenceSystemWithId(defence.Id);
+			defenceSystemToUpdate.DefAgainstKinetic = defence.DefMultAgainstWepTypeMap[WeaponType.KINETIC];
+			defenceSystemToUpdate.DefAgainstLaser = defence.DefMultAgainstWepTypeMap[WeaponType.LASER];
+			defenceSystemToUpdate.DefAgainstMissile = defence.DefMultAgainstWepTypeMap[WeaponType.MISSILE];
+			defenceSystemToUpdate.DefenceValue = defence.DefenceValue;
+			defenceSystemToUpdate.Faction = GetFactionWithId(defence.Faction.Id);
+			defenceSystemToUpdate.Name = defence.Name;
+			defenceSystemToUpdate.SystemType = defence.SystemType;
 			SaveChanges();
 		}
 		#endregion
