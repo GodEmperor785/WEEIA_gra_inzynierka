@@ -49,10 +49,6 @@ namespace Client_PC.UI
         {
             foreach (var child in Children)
             {
-                if (child.name != null && child.name.Equals("gridW"))
-                {
-                    int z = 0;
-                }
                 child.element.Draw(spriteBatch);
             }
         }

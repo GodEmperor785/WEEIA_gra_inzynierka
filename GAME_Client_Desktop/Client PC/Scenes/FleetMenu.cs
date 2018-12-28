@@ -25,6 +25,8 @@ namespace Client_PC.Scenes
         private double CardGridHeightMulti = 0.15;
         private int CardHeight = 200;
         private int CardWidth = 133;
+        private PlayerGameBoard gmBoard;
+        private bool readyToSend;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -64,7 +66,7 @@ namespace Client_PC.Scenes
 
             Button save = new Button(200,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
-                text = "Save"
+                text = "Ready"
             };
             save.clickEvent += onSave;
             buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
@@ -85,7 +87,29 @@ namespace Client_PC.Scenes
 
         public void onSave()
         {
+            //TODO not tested
+            List<Ship> closestShips = new List<Ship>();
+            List<Ship> midShips = new List<Ship>();
+            List<Ship> furthestShips = new List<Ship>();
+            for (int i = 0; i < 5; i++)
+            {
+                CardSlot slot = (CardSlot) grid.GetChild(0, i);
+                closestShips.Add(slot.Card.GetShip());
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                CardSlot slot = (CardSlot)grid.GetChild(0, i);
+                midShips.Add(slot.Card.GetShip());
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                CardSlot slot = (CardSlot)grid.GetChild(0, i);
+                furthestShips.Add(slot.Card.GetShip());
+            }
+
+            gmBoard = new PlayerGameBoard(closestShips, midShips, furthestShips);
             
+            readyToSend = true;
         }
         public void setFleet(Fleet fleet)
         {
@@ -124,6 +148,34 @@ namespace Client_PC.Scenes
             CurrentCard = c;
             CurrentCard.Update();
             slots.Where(p=> p.Card == null).ToList().ForEach(p => p.CardClicked = true);
+        }
+
+        public override void UpdateLast()
+        {
+            GamePacket packet;
+            while (true)
+            {
+                packet = Game1.self.Connection.GetReceivedPacket(100);
+                if (packet != null)
+                {
+                    if (packet.OperationType == OperationType.SUCCESS)
+                    {
+                        Game1.self.state = Game1.State.GameWindow;
+                    }
+                    else if (packet.OperationType == OperationType.FAILURE)
+                    {
+                        //TODO create popup saying u lost the game due to inactivity for 2 minutes and not picking shape of fleet
+                        Game1.self.state = Game1.State.MainMenu;
+                    }
+                }
+
+                if (readyToSend)
+                {
+                    readyToSend = false;
+                    packet = new GamePacket(OperationType.SETUP_FLEET, gmBoard);
+                    Game1.self.Connection.Send(packet);
+                }
+            }
         }
 
         public override void UpdateButtonNull()

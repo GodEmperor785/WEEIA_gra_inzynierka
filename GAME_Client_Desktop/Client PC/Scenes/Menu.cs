@@ -38,6 +38,7 @@ namespace Client_PC.Scenes
 
             lastState = mouseState.LeftButton;
             UpdateGrid();
+            UpdateLast();
         }
 
         protected virtual void SetClickables(bool active)
@@ -81,6 +82,10 @@ namespace Client_PC.Scenes
             }
         }
 
+        public virtual void UpdateLast()
+        {
+
+        }
         public virtual void UpdateButtonNotNull()
         {
 

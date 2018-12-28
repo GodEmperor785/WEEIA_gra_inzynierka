@@ -80,30 +80,25 @@ namespace Client_PC.Scenes
                                     (int)(Game1.self.graphics.PreferredBackBufferHeight * RightGridHeightMulti + 20));
             gridCenter.Origin = new Point(10, (int)(Game1.self.graphics.PreferredBackBufferHeight - gridCenter.Height - 10));
 
-            Button b = new Button(new Point(0, 0), (int) (gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.25) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
+            Button b = new Button(new Point(0, 0), (int) (gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Add"
             };
-            Button b2 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.25) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
+            Button b2 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Save"
             };
-            Button b3 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.25) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
+            Button b3 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Remove"
             };
-            Button b4 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.25) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
+            Button b4 = new Button(new Point(0, 0), (int)(gridRightBottom.Width * 0.5 - gridCenter.columnOffset), (int)((gridRightBottom.Height * 0.75) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
-            };
-            Button b5 = new Button(new Point(0, 0), (int)(gridRightBottom.Width), (int)((gridRightBottom.Height * 0.25) * 0.5 - gridCenter.rowOffset), Game1.self.GraphicsDevice,
-                Gui, Gui.mediumFont, true)
-            {
-                Text = "Organize"
             };
 
             Button up = new Button(new Point(gridTopLeft.Origin.X + (int)(gridTopLeft.Width) - 60, gridTopLeft.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
@@ -159,17 +154,14 @@ namespace Client_PC.Scenes
             b.clickEvent += OnAdd;
             b2.clickEvent += OnSave;
             b3.clickEvent += OnRemove;
-            b5.clickEvent += onOrganize;
-            Clickable.Add(b5);
             Clickable.Add(b2);
             Clickable.Add(b);
             Clickable.Add(b3);
             gridRightBottom.AddChild(DeckInputBox,0,0,3);
-            gridRightBottom.AddChild(b5,1,0,3);
-            gridRightBottom.AddChild(b,2,1);
-            gridRightBottom.AddChild(b2, 2, 2);
-            gridRightBottom.AddChild(b3, 3, 1);
-            gridRightBottom.AddChild(b4, 3, 2);
+            gridRightBottom.AddChild(b,1,1);
+            gridRightBottom.AddChild(b2, 1, 2);
+            gridRightBottom.AddChild(b3, 2, 1);
+            gridRightBottom.AddChild(b4, 2, 2);
             gridRightBottom.ResizeChildren();
             DeckInputBox.Update();
 
@@ -261,15 +253,6 @@ namespace Client_PC.Scenes
             gridCenter.UpdateP();
             gridTopLeft.UpdateP();
 
-        }
-
-        public void onOrganize()
-        {
-            if (ChosenDeck != null)
-            {
-                Game1.self.SetFleetMenu(ChosenDeck.GetFleet());
-                Game1.self.state = Game1.State.FleetMenu;
-            }
         }
         public void onPopupExit()
         {

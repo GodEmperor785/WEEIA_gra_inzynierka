@@ -24,6 +24,9 @@ namespace Client_PC.Scenes
         private Label labelWaiting;
         private Timer timer;
         private int time;
+        private string initialText = "Select deck and press search button to play";
+        private string foundgame = "Found game";
+        private bool searching = false;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -132,7 +135,8 @@ namespace Client_PC.Scenes
             exit.Origin = new Point(down.Origin.X+10+buttonWidth, down.Origin.Y);
             search.Origin = new Point(exit.Origin.X,exit.Origin.Y - buttonHeight - 10);
             labelWaiting = new Label(buttonWidth, buttonHeight * 2 , Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
-            labelWaiting.Text = "";
+            labelWaiting.Text = initialText;
+            time = 0;
             labelWaiting.Origin = new Point(up.Origin.X + buttonWidth + 10, up.Origin.Y);
             layout.AddChild(up);
             layout.AddChild(down);
@@ -168,6 +172,7 @@ namespace Client_PC.Scenes
         {
             if (chosenDeck != null)
             {
+                searching = false;
                 GamePacket packet = new GamePacket(OperationType.SELECT_FLEET,chosenDeck.GetFleet());
                 Game1.self.Connection.Send(packet);
                 packet = Game1.self.Connection.GetReceivedPacket();
@@ -175,8 +180,31 @@ namespace Client_PC.Scenes
                 {
                     var autoEvent = new AutoResetEvent(false);
                     time = 0;
-                    timer = new Timer(timerStart,autoEvent,1000,1000);
+                    timer = new Timer(timerStart,autoEvent,0,1000);
+                    //TODO not tested
                     packet = new GamePacket(OperationType.PLAY_RANKED,null);
+                    Game1.self.Connection.Send(packet);
+                    packet = Game1.self.Connection.GetReceivedPacket();
+                    if (packet.OperationType == OperationType.SUCCESS)
+                    {
+                        searching = true;
+                        while (searching)
+                        {
+                            packet = Game1.self.Connection.GetReceivedPacket(1000);
+                            if (packet != null)
+                            {
+                                if (packet.OperationType == OperationType.SUCCESS)
+                                {
+                                    if (timer != null)
+                                        timer.Dispose();
+                                    Game1.self.SetFleetMenu(chosenDeck.GetFleet());
+                                    Game1.self.state = Game1.State.FleetMenu;
+                                }
+                                else
+                                    continue;
+                            }
+                        }
+                    }
 
                 }
             }
@@ -190,14 +218,23 @@ namespace Client_PC.Scenes
         }
         public void exitClick()
         {
-            popup.SetActive(false);
-            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            if (searching)
             {
-                clickable.Active = true;
+                searching = false;
+                if (timer != null)
+                    timer.Dispose();
             }
+            else
+            {
+                popup.SetActive(false);
+                foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+                {
+                    clickable.Active = true;
+                }
 
-            chosenDeck = null;
-            Game1.self.popupToDraw = null;
+                chosenDeck = null;
+                Game1.self.popupToDraw = null;
+            }
         }
         public void DeckClick(object sender)
         {
