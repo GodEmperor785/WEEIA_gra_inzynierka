@@ -51,14 +51,11 @@ namespace GAME_AdminApp {
 			AdminApp.AppForm.InitializeShipDropDownLists();
 			AdminApp.AppForm.InitializeWeaponsDropDownLists();
 			AdminApp.AppForm.InitializeDefencesDropDownLists();
-
+			AdminApp.AppForm.InitializeBaseModifiers();
+			AdminApp.AppForm.InitializeUsers();
 			AdminApp.AppForm.Show();
 			this.Hide();
 		}
-
-		private void textBox1_TextChanged(object sender, EventArgs e) {}
-
-		private void textBox2_TextChanged(object sender, EventArgs e) {}
 
 		private void LoginForm_FormClosed(object sender, FormClosedEventArgs e) {
 			AdminApp.ExitApp();

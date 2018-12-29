@@ -446,7 +446,6 @@ namespace GAME_Server {
 		/// <param name="newData"></param>
 		public void UpdateShipTemplate(DbShipTemplate newData) {
 			var shipToUpdate = GetShipTemplateWithId(newData.Id);
-			//update should be done like this
 			shipToUpdate.Name = newData.Name;
 			shipToUpdate.Faction = newData.Faction;
 			shipToUpdate.Cost = newData.Cost;
@@ -463,12 +462,14 @@ namespace GAME_Server {
 
 		public void UpdatePlayer(DbPlayer newData) {
 			var userToUpdate = GetPlayerWithUsername(newData.Username);
-			userToUpdate.Password = newData.Password;
+			//userToUpdate.Password = newData.Password;
 			userToUpdate.MaxFleetPoints = newData.MaxFleetPoints;
 			userToUpdate.Experience = newData.Experience;
 			userToUpdate.GamesPlayed = newData.GamesPlayed;
 			userToUpdate.GamesWon = newData.GamesWon;
 			userToUpdate.Money = newData.Money;
+			userToUpdate.IsAdmin = newData.IsAdmin;
+			userToUpdate.IsActive = newData.IsActive;
 			//userToUpdate.OwnedShips = newData.OwnedShips;
 			SaveChanges();
 		}
@@ -509,6 +510,37 @@ namespace GAME_Server {
 			defenceSystemToUpdate.Faction = GetFactionWithId(defence.Faction.Id);
 			defenceSystemToUpdate.Name = defence.Name;
 			defenceSystemToUpdate.SystemType = defence.SystemType;
+			SaveChanges();
+		}
+
+		public void UpdateBaseModifiers(BaseModifiers mods) {
+			var baseMods = (from modifiers in DbContext.BaseModifiers
+							select modifiers).FirstOrDefault();
+			baseMods.BaseFleetMaxSize = mods.BaseFleetMaxSize;
+			baseMods.BaseShipStatsExpModifier = mods.BaseShipStatsExpModifier;
+			baseMods.ExpForLoss = mods.ExpForLoss;
+			baseMods.ExpForVictory = mods.ExpForVictory;
+			baseMods.FleetSizeExpModifier = mods.FleetSizeExpModifier;
+			baseMods.KineticIF = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.KINETIC)];
+			baseMods.KineticPD = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.KINETIC)];
+			baseMods.KineticShield = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.SHIELD, WeaponType.KINETIC)];
+			baseMods.LaserIF = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.LASER)];
+			baseMods.LaserPD = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.LASER)];
+			baseMods.LaserShield = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.SHIELD, WeaponType.LASER)];
+			baseMods.MissileIF = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE)];
+			baseMods.MissilePD = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.MISSILE)];
+			baseMods.MissileShield = mods.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE)];
+			baseMods.KineticRange = mods.WeaponTypeRangeMultMap[WeaponType.KINETIC];
+			baseMods.LaserRange = mods.WeaponTypeRangeMultMap[WeaponType.LASER];
+			baseMods.MissileRange = mods.WeaponTypeRangeMultMap[WeaponType.MISSILE];
+			baseMods.MaxAbsoluteFleetSize = mods.MaxAbsoluteFleetSize;
+			baseMods.MaxFleetsPerPlayer = mods.MaxFleetsPerPlayer;
+			baseMods.MaxShipExp = mods.MaxShipExp;
+			baseMods.MaxShipsInLine = mods.MaxShipsInLine;
+			baseMods.MaxShipsPerPlayer = mods.MaxShipsPerPlayer;
+			baseMods.MoneyForLoss = mods.MoneyForLoss;
+			baseMods.MoneyForVictory = mods.MoneyForVictory;
+			baseMods.StartingMoney = mods.StartingMoney;
 			SaveChanges();
 		}
 		#endregion
@@ -564,6 +596,14 @@ namespace GAME_Server {
 			SaveChanges();
 			return true;
 		}
+
+		public bool RemovePlayerWithUsername(string username) {
+			var playerToRemove = GetPlayerWithUsername(username);
+
+			playerToRemove.IsActive = false;
+			SaveChanges();
+			return true;
+		}
 		#endregion
 
 		#region Checks
@@ -572,7 +612,7 @@ namespace GAME_Server {
 		}
 
 		public bool PlayerNameIsUnique(Player player) {
-			if (DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username && dbPlayer.IsActive)) return false;
+			if (DbContext.Players.Any(dbPlayer => dbPlayer.Username == player.Username)) return false;
 			else return true;
 		}
 

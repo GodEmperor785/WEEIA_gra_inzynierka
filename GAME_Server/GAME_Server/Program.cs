@@ -794,6 +794,10 @@ namespace GAME_Server {
 			return new MySqlDataBase();
 		}
 
+		internal static void SetBaseModifiers(BaseModifiers newMods) {
+			Server.baseModifiers = newMods;
+		}
+
 		/// <summary>
 		/// Temporary connection tester method. Should be removed later
 		/// </summary>
@@ -1163,6 +1167,68 @@ namespace GAME_Server {
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				try {
 					switch (gamePacket.OperationType) {
+						case OperationType.ADD_USER:
+							AdminAppPlayer newUser;
+							newUser = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to add new user - IsAdmin: " + newUser.IsAdmin);
+							validationResult = GameValidator.ValidateUser(newUser, true);
+							if (validationResult == GameValidator.OK) {
+								if (GameDataBase.PlayerNameIsUnique(newUser)) { //if name is unique - add new user
+									DbPlayer newDbUser = new DbPlayer(newUser, Server.BaseModifiers.StartingMoney, newUser.IsAdmin) {
+										Experience = newUser.Experience,
+										Money = newUser.Money
+									};
+									GameDataBase.AddPlayer(newDbUser);
+									SendSuccess();
+								}
+								else SendFailure(FailureReasons.USERNAME_ALREADY_EXISTS + newUser.Username);
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.UPDATE_USER:
+							AdminAppPlayer userToUpdate;
+							userToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to update user with id " + userToUpdate.Id);
+							validationResult = GameValidator.ValidateUser(userToUpdate, false);
+							if (validationResult == GameValidator.OK) {
+								DbPlayer newData = new DbPlayer() { Id = userToUpdate.Id, Username = userToUpdate.Username, Experience = userToUpdate.Experience, GamesPlayed = userToUpdate.GamesPlayed,
+									GamesWon = userToUpdate.GamesWon, Money = userToUpdate.Money, IsActive = userToUpdate.IsActive, IsAdmin = userToUpdate.IsAdmin
+								};
+								Server.Log("AAA: " + newData.Experience + " " + newData.Money);
+								GameDataBase.UpdatePlayer(newData);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.DEACTIVATE_USER:
+							AdminAppPlayer userToDeactivate;
+							userToDeactivate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to deactivate user with id " + userToDeactivate.Id);
+							if (GameDataBase.RemovePlayerWithUsername(userToDeactivate.Username)) SendSuccess();
+							else SendFailure(FailureReasons.INVALID_ID);
+							break;
+						case OperationType.GET_USERS:
+							Server.Log("ADMIN: " + User.Username + ": wants to view users");
+							List<AdminAppPlayer> allUsers = GameDataBase.GetAllPlayers().Select(x => x.ToAdminAppPlayer()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_USERS, allUsers));
+							break;
+						case OperationType.UPDATE_BASE_MODIFIERS:
+							BaseModifiers updatedMods;
+							updatedMods = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to modify base modifiers");
+							validationResult = GameValidator.ValidateBaseModifiers(updatedMods);
+							if (validationResult == GameValidator.OK) {
+								GameDataBase.UpdateBaseModifiers(updatedMods);
+								Server.SetBaseModifiers(updatedMods);
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.BASE_MODIFIERS:
+							Server.Log("ADMIN: " + User.Username + ": wants to view base modifiers");
+							BaseModifiers mods = GameDataBase.GetBaseModifiers();
+							Client.Send(new GamePacket(OperationType.BASE_MODIFIERS, mods));
+							break;
 						case OperationType.UPDATE_DEFENCE:
 							DefenceSystem defenceSystemToUpdate;
 							defenceSystemToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);

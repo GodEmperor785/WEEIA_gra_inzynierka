@@ -22,19 +22,21 @@ namespace GAME_AdminApp {
 		private Dictionary<Button, int> shipButtonToIdMap = new Dictionary<Button, int>();
 		private Dictionary<Button, int> weaponButtonToIdMap = new Dictionary<Button, int>();
 		private Dictionary<Button, int> defenceButtonToIdMap = new Dictionary<Button, int>();
-		private Dictionary<Button, int> playerButtonToIdMap = new Dictionary<Button, int>();
+		private Dictionary<Button, int> userButtonToIdMap = new Dictionary<Button, int>();
 		private string baseShipModifyDesc;
 		private string baseWeaponModifyDesc;
 		private string baseWeaponCalcChanceToHit;
 		private string baseDefenceModifyDesc;
+		private string baseUserDescription;
 
 		private Operation operationType = Operation.NONE;
 		private Operation weaponOperationType = Operation.NONE;
 		private Operation defenceOperationType = Operation.NONE;
-		private Operation playerOperationType = Operation.NONE;
+		private Operation userOperationType = Operation.NONE;
 		private int modifiedShipId;
 		private int modifiedWeaponID;
 		private int modifiedDefenceID;
+		private int modifiedUserID;
 
 		public List<Weapon> ShipWeapons { get; set; }
 		public List<DefenceSystem> ShipDefences { get; set; }
@@ -50,9 +52,11 @@ namespace GAME_AdminApp {
 			baseWeaponModifyDesc = weaponDescription.Text;
 			baseWeaponCalcChanceToHit = weaponCalculatedChanceToHit.Text;
 			baseDefenceModifyDesc = defenceDescription.Text;
+			baseUserDescription = userDescription.Text;
 
 			SetModfiyControlsEnabled(false, weaponSubmitTable);
 			SetModfiyControlsEnabled(false, defenceSubmitTable);
+			SetModfiyControlsEnabled(false, userSubmitTable);
 		}
 
 		private void AdminForm_FormClosed(object sender, FormClosedEventArgs e) {
@@ -252,13 +256,6 @@ namespace GAME_AdminApp {
 
 			SetShipFormToDefaultMin();
 		}
-
-		/*private void SetModfiyControlsEnabled(bool enabled) {
-			foreach(Control control in submitTableLayout.Controls) {
-				control.Enabled = enabled;
-			}
-			if(enabled) InitializeShipSubmitDropDownLists();
-		}*/
 
 		private Ship GetShipWithID(int id) {
 			return AdminApp.GameData.ShipTemplates.Where(ship => ship.Id == id).FirstOrDefault();
@@ -519,11 +516,9 @@ namespace GAME_AdminApp {
 		}
 		#endregion
 
-		//=================================================================================================================================================================================
+//=================================================================================================================================================================================
 
 		#region Defences
-		private bool alreadyChangedMult = false;
-
 		public void InitializeDefencesDropDownLists() {
 			InitializeFactionComboBox(defenceFactionSearch);
 			InitializeOrderByPropertyComboBox(defenceOrderBy, typeof(DefenceSystem));
@@ -673,13 +668,277 @@ namespace GAME_AdminApp {
 //=================================================================================================================================================================================
 
 		#region BaseModifiers
+		public void InitializeBaseModifiers() {
+			SetBaseModifiersValues(AdminApp.GameData.BaseModifiers);
+		}
 
+		private void SetBaseModifiersValues(BaseModifiers m) {
+			modsAbsoluteFleetMaxSizeBox.Value = m.MaxAbsoluteFleetSize;
+			modsBaseFleetSizeBox.Value = m.BaseFleetMaxSize;
+			modsExpLossBox.Value = m.ExpForLoss;
+			modsExpVictoryBox.Value = m.ExpForVictory;
+			modsFleetSizeExpModifierBox.Value = (decimal)m.FleetSizeExpModifier;
+			modsKineticRangeBox.Value = (decimal)m.WeaponTypeRangeMultMap[WeaponType.KINETIC];
+			modsLaserRangeBox.Value = (decimal)m.WeaponTypeRangeMultMap[WeaponType.LASER];
+			modsMissileRangeBox.Value = (decimal)m.WeaponTypeRangeMultMap[WeaponType.MISSILE];
+			modsMaxFleetNumberPerPlayerBox.Value = m.MaxFleetsPerPlayer;
+			modsMaxShipExpBox.Value = m.MaxShipExp;
+			modsMaxShipsPerPlayerBox.Value = m.MaxShipsPerPlayer;
+			modsMoneyLossBox.Value = m.MoneyForLoss;
+			modsMoneyVictoryBox.Value = m.MoneyForVictory;
+			modsNumOfShipInLineBox.Value = m.MaxShipsInLine;
+			modsIfKineticBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.KINETIC)];
+			modsIfLaserBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.LASER)];
+			modsIfMissilesBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE)];
+			modsPdKineticBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.KINETIC)];
+			modsPdMissilesBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.MISSILE)];
+			modsShieldKineticBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.SHIELD, WeaponType.KINETIC)];
+			modsShieldLaserBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.SHIELD, WeaponType.LASER)];
+			modsShieldMissilesBox.Value = (decimal)m.DefTypeToWepTypeMap[new Tuple<DefenceSystemType, WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE)];
+			modsShipExpModifierBox.Value = (decimal)m.BaseShipStatsExpModifier;
+			modsStartingMoneyBox.Value = m.StartingMoney;
+		}
+
+		private void modsSubmitButton_Click(object sender, EventArgs e) {
+			if (AdminFormUtils.ShowConfirmationBox("Base Modifiers")) {
+				Dictionary<WeaponType, double> weaponTypeRangeMultMap = new Dictionary<WeaponType, double>() {
+					{ WeaponType.KINETIC, (double)modsKineticRangeBox.Value },
+					{ WeaponType.LASER, (double)modsLaserRangeBox.Value },
+					{ WeaponType.MISSILE, (double)modsMissileRangeBox.Value }
+				};
+				Dictionary<Tuple<DefenceSystemType, WeaponType>, double> defTypeToWepTypeMap = new Dictionary<Tuple<DefenceSystemType, WeaponType>, double> {
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.KINETIC), (double)modsPdKineticBox.Value },
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.KINETIC), (double)modsShieldKineticBox.Value },
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.KINETIC),(double)modsIfKineticBox.Value },
+
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.LASER), 0.0 },
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.LASER), (double)modsShieldLaserBox.Value },
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.LASER), (double)modsIfLaserBox.Value },
+
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.POINT_DEFENCE, WeaponType.MISSILE), (double)modsPdMissilesBox.Value },
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.SHIELD, WeaponType.MISSILE), (double)modsShieldMissilesBox.Value },
+					{ new Tuple<DefenceSystemType,WeaponType>(DefenceSystemType.INTEGRITY_FIELD, WeaponType.MISSILE), (double)modsIfMissilesBox.Value }
+				};
+				BaseModifiers newMods = new BaseModifiers(
+					weaponTypeRangeMultMap,
+					defTypeToWepTypeMap,
+					(double)modsShipExpModifierBox.Value,
+					Convert.ToInt32(modsMaxShipsPerPlayerBox.Value),
+					Convert.ToInt32(modsStartingMoneyBox.Value),
+					Convert.ToInt32(modsExpVictoryBox.Value),
+					Convert.ToInt32(modsExpLossBox.Value),
+					(double)modsFleetSizeExpModifierBox.Value,
+					Convert.ToInt32(modsAbsoluteFleetMaxSizeBox.Value),
+					Convert.ToInt32(modsMaxShipExpBox.Value),
+					Convert.ToInt32(modsBaseFleetSizeBox.Value),
+					Convert.ToInt32(modsNumOfShipInLineBox.Value),
+					Convert.ToInt32(modsMaxFleetNumberPerPlayerBox.Value),
+					Convert.ToInt32(modsMoneyVictoryBox.Value),
+					Convert.ToInt32(modsMoneyLossBox.Value)
+				);
+
+				bool warningRes = true;
+				if (newMods.WeaponTypeRangeMultMap[WeaponType.MISSILE] > 0) {
+					DialogResult warningResult = MessageBox.Show("Missile range multiplier is greater than 0, are you sure you want to submit such value?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+					warningRes = warningResult == DialogResult.Yes;
+				}
+				if (warningRes) {
+					string validationResult = GameValidator.ValidateBaseModifiers(newMods);
+					if (validationResult == GameValidator.OK) {
+						GamePacket packet = new GamePacket(OperationType.UPDATE_BASE_MODIFIERS, newMods);
+						AdminApp.Connection.Send(packet);
+						if (CheckSuccessOrFailure()) {
+							SyncBaseModifiers();
+							InitializeBaseModifiers();
+						}
+					}
+					else AdminFormUtils.ShowValidationFailedDialog(validationResult);
+				}
+			}
+		}
+
+		private void SyncBaseModifiers() {
+			GamePacket packet = new GamePacket(OperationType.BASE_MODIFIERS, new object());
+			AdminApp.Connection.Send(packet);
+			packet = AdminApp.Connection.GetReceivedPacket();
+			AdminApp.GameData.BaseModifiers = (BaseModifiers)packet.Packet;
+		}
 		#endregion
 
-//=================================================================================================================================================================================
+		//=================================================================================================================================================================================
 
 		#region Players
+		public void InitializeUsers() {
+			InitializeOrderByPropertyComboBox(userOrderBy, typeof(AdminAppPlayer));
+			syncUsersButton_Click(null, null);
+		}
 
+		private void syncUsersButton_Click(object sender, EventArgs e) {
+			GamePacket packet = new GamePacket(OperationType.GET_USERS, new object());
+			AdminApp.Connection.Send(packet);
+			packet = AdminApp.Connection.GetReceivedPacket();
+			AdminApp.AllUsers = (List<AdminAppPlayer>)packet.Packet;
+		}
+
+		private void userSearchButton_Click(object sender, EventArgs e) {
+			//first clear existing rows
+			AdminFormUtils.ClearPreviousSearch(userTable, userButtonToIdMap);
+
+			bool idOrNameSearch = false;
+			int idSearch = Convert.ToInt32(userIdSearch.Value);
+			string nameSearch = userNameSearch.Text;
+			bool isAdminSearch = userIsAdminSearch.Checked;
+
+			IEnumerable<AdminAppPlayer> searchedUsers = AdminApp.AllUsers.AsEnumerable();
+			//if id != 0 search by id
+			if (idSearch != 0) {
+				idOrNameSearch = true;
+				searchedUsers = searchedUsers.Where(usr => usr.Id == idSearch);
+			}
+			//if name not empty search by name
+			if (!string.IsNullOrWhiteSpace(nameSearch)) {
+				idOrNameSearch = true;
+				searchedUsers = searchedUsers.Where(usr => usr.Username.Contains(nameSearch));
+			}
+			//then search by faction and type if other are not set
+			if (!idOrNameSearch) searchedUsers = searchedUsers.Where(usr => usr.IsAdmin == isAdminSearch);
+
+			//lastly order by chosen property
+			searchedUsers = OrderListByProperty(userOrderBy, searchedUsers);
+
+			AddUserList(searchedUsers.ToList());
+		}
+
+		private void AddUserList(List<AdminAppPlayer> list) {
+			foreach (AdminAppPlayer user in list) {
+				AddUserToTable(user);
+			}
+		}
+
+		private void AddUserToTable(AdminAppPlayer user) {
+			RowStyle temp = userTable.RowStyles[userTable.RowCount - 1];
+			userTable.RowCount++;
+			userTable.RowStyles.Add(new RowStyle(temp.SizeType, temp.Height));
+
+			Button deactivateButton = new Button() { Text = "Deactivate this user" };
+			deactivateButton.Click += new EventHandler(UserDeactivateButton_Click);
+			userButtonToIdMap.Add(deactivateButton, user.Id);
+
+			Button modifyButton = new Button() { Text = "Modify this user", AutoSize = true };
+			modifyButton.Click += new EventHandler(UserModifyButton_Click);
+			userButtonToIdMap.Add(modifyButton, user.Id);
+
+			double winLoseRatio = 0.0;
+			if (user.GamesPlayed != 0) winLoseRatio = user.WinLoseRatio;
+			userTable.Controls.Add(new Label() { Text = user.Id.ToString() }, 0, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.Username, AutoSize = true }, 1, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.Experience.ToString() }, 2, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.MaxFleetPoints.ToString() }, 3, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.GamesPlayed.ToString() }, 4, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.GamesWon.ToString() }, 5, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = string.Format("{0:N2}%", winLoseRatio * 100.0) }, 6, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.Money.ToString() }, 7, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.IsActive.ToString() }, 8, userTable.RowCount - 1);
+			userTable.Controls.Add(new Label() { Text = user.IsAdmin.ToString() }, 9, userTable.RowCount - 1);
+			userTable.Controls.Add(modifyButton, 10, userTable.RowCount - 1);
+			userTable.Controls.Add(deactivateButton, 11, userTable.RowCount - 1);
+		}
+
+		private AdminAppPlayer GetUserWithId(int id) {
+			return AdminApp.AllUsers.Where(usr => usr.Id == id).FirstOrDefault();
+		}
+
+		private void UserModifyButton_Click(object sender, EventArgs e) {
+			int userID = userButtonToIdMap[sender as Button];
+			userDescription.Text = baseUserDescription + userID;
+			AdminAppPlayer user = GetUserWithId(userID);
+
+			SetModfiyControlsEnabled(true, userSubmitTable);
+			userOperationType = Operation.UPDATE;
+			modifiedUserID = userID;
+
+			userNameBox.Text = user.Username;
+			userNameBox.Enabled = false;
+			userPasswordBox.Text = "";
+			userPasswordBox.Enabled = false;
+			userRepeatPasswordBox.Text = "";
+			userRepeatPasswordBox.Enabled = false;
+			userExpBox.Value = user.Experience;
+			userMoneyBox.Value = user.Money;
+			userIsActiveBox.Checked = user.IsActive;
+			userIsAdminBox.Checked = user.IsAdmin;
+		}
+
+		private void UserDeactivateButton_Click(object sender, EventArgs e) {
+			if (AdminFormUtils.ShowConfirmationBox("user - deactivate him")) {
+				int userId = userButtonToIdMap[sender as Button];
+				AdminAppPlayer player = GetUserWithId(userId);
+				GamePacket packet = new GamePacket(OperationType.DEACTIVATE_USER, player);
+				AdminApp.Connection.Send(packet);
+				if (CheckSuccessOrFailure()) {
+					syncUsersButton_Click(sender, e);
+				}
+			}
+		}
+
+		private void userSubmitButton_Click(object sender, EventArgs e) {
+			if (AdminFormUtils.ShowConfirmationBox("user")) {
+				AdminAppPlayer user = new AdminAppPlayer(userNameBox.Text, userPasswordBox.Text, Convert.ToInt32(userExpBox.Value), 0, 0, 
+						0, Convert.ToInt32(userMoneyBox.Value), userIsActiveBox.Checked, userIsAdminBox.Checked);
+
+				bool isNew = userOperationType == Operation.ADD;
+				string validationResult = GameValidator.ValidateUser(user, isNew);
+				GamePacket packet;
+				bool passwordOk = true;
+				if (validationResult == GameValidator.OK) {
+					if (userOperationType == Operation.UPDATE) {
+						AdminAppPlayer temp = GetUserWithId(modifiedUserID);
+						user.Id = modifiedUserID;
+						user.GamesPlayed = temp.GamesPlayed;
+						user.GamesWon = temp.GamesWon;
+						packet = new GamePacket(OperationType.UPDATE_USER, user);
+					}
+					else {
+						if (userPasswordBox.Text != userRepeatPasswordBox.Text) passwordOk = false;
+						packet = new GamePacket(OperationType.ADD_USER, user);
+					}
+
+					if (passwordOk) {
+						AdminApp.Connection.Send(packet);
+						if (CheckSuccessOrFailure()) {
+							syncUsersButton_Click(sender, e);
+
+							//after success return to default min values and disable submit again
+							userDescription.Text = baseUserDescription;
+							SetUserSubmitToDefaultMin();
+							SetModfiyControlsEnabled(false, userSubmitTable);
+						}
+					}
+					else AdminFormUtils.ShowValidationFailedDialog("Repeated password does not match!");
+				}
+				else AdminFormUtils.ShowValidationFailedDialog(validationResult);
+			}
+		}
+
+		private void userAddNewButton_Click(object sender, EventArgs e) {
+			SetModfiyControlsEnabled(true, userSubmitTable);
+
+			userDescription.Text = "Adding new user";
+			userOperationType = Operation.ADD;
+
+			SetUserSubmitToDefaultMin();
+			userIsActiveBox.Enabled = false;
+		}
+
+		private void SetUserSubmitToDefaultMin() {
+			userMoneyBox.Value = AdminApp.GameData.BaseModifiers.StartingMoney;
+			userExpBox.Value = userExpBox.Minimum;
+			userIsActiveBox.Checked = true;
+			userIsAdminBox.Checked = false;
+			userNameBox.Text = "";
+			userPasswordBox.Text = "";
+			userRepeatPasswordBox.Text = "";
+		}
 		#endregion
 
 	}

@@ -42,10 +42,44 @@ namespace GAME_connection {
 		public int GamesPlayed { get => gamesPlayed; set => gamesPlayed = value; }
 		public int GamesWon { get => gamesWon; set => gamesWon = value; }
 		public int Money { get => money; set => money = value; }
-		public int WinLoseRatio {
+		public double WinLoseRatio {
 			get {
-				return GamesWon / GamesPlayed;
+				return ((double)GamesWon) / ((double)GamesPlayed);
 			}
 		}
+
+		public void CalculateMaxFleetSize(BaseModifiers baseModifiers) {
+			int calculatedMaxFleetSize = (int)(baseModifiers.BaseFleetMaxSize + (baseModifiers.FleetSizeExpModifier * this.Experience));
+			if (calculatedMaxFleetSize < baseModifiers.MaxAbsoluteFleetSize) this.MaxFleetPoints = calculatedMaxFleetSize;
+			else this.MaxFleetPoints = baseModifiers.MaxAbsoluteFleetSize;
+		}
+
 	}
+
+	[Serializable]
+	public class AdminAppPlayer : Player {
+		private bool isActive;
+		private bool isAdmin;
+
+		public AdminAppPlayer(bool isActive, bool isAdmin) : base() {
+			IsActive = isActive;
+			IsAdmin = isAdmin;
+		}
+
+		public AdminAppPlayer(string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money, bool isActive, bool isAdmin)
+				: base(0, username, password, experience, maxFleetPoints, gamesPlayed, gamesWon, money) {
+			IsActive = isActive;
+			IsAdmin = isAdmin;
+		}
+
+		public AdminAppPlayer(int id, string username, string password, int experience, int maxFleetPoints, int gamesPlayed, int gamesWon, int money, bool isActive, bool isAdmin)
+				: base(id, username, password, experience, maxFleetPoints, gamesPlayed, gamesWon, money) {
+			IsActive = isActive;
+			IsAdmin = isAdmin;
+		}
+
+		public bool IsActive { get => isActive; set => isActive = value; }
+		public bool IsAdmin { get => isAdmin; set => isAdmin = value; }
+	}
+
 }

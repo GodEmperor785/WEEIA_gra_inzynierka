@@ -104,6 +104,11 @@ namespace GAME_Server {
 		void UpdateDefenceSystem(DefenceSystem defence);
 
 		Faction GetFactionWithId(int id);
+
+		void UpdateBaseModifiers(BaseModifiers mods);
+
+		bool RemovePlayerWithUsername(string username);
+
 	}
 
 }

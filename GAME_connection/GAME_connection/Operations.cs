@@ -58,7 +58,12 @@ namespace GAME_connection {
 		UPDATE_WEAPON,
 		GET_DEFENCES,
 		ADD_DEFENCE,
-		UPDATE_DEFENCE
+		UPDATE_DEFENCE,
+		UPDATE_BASE_MODIFIERS,
+		GET_USERS,
+		ADD_USER,
+		UPDATE_USER,
+		DEACTIVATE_USER
 	}
 
 	/// <summary>
@@ -108,6 +113,11 @@ namespace GAME_connection {
 			operationMapping.Add(OperationType.GET_DEFENCES, typeof(List<DefenceSystem>));  //list of all defences									- important for client
 			operationMapping.Add(OperationType.ADD_DEFENCE, typeof(DefenceSystem));         //defence to add										- important for server, server respons with S/F
 			operationMapping.Add(OperationType.UPDATE_DEFENCE, typeof(DefenceSystem));      //defence to update										- important for server, server respons with S/F
+			operationMapping.Add(OperationType.UPDATE_BASE_MODIFIERS, typeof(BaseModifiers));   //BaseModifiers										- important for server, server respons with S/F
+			operationMapping.Add(OperationType.GET_USERS, typeof(List<AdminAppPlayer>));    //list of all users										- important for client
+			operationMapping.Add(OperationType.ADD_USER, typeof(AdminAppPlayer));           //user to add											- important for server, server respons with S/F
+			operationMapping.Add(OperationType.UPDATE_USER, typeof(AdminAppPlayer));        //user to update										- important for server, server respons with S/F
+			operationMapping.Add(OperationType.DEACTIVATE_USER, typeof(AdminAppPlayer));    //user to deactivate									- important for server, server respons with S/F
 
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F

@@ -10,6 +10,7 @@ namespace GAME_Server {
 	[Table("players")]
 	public class DbPlayer {
 		public DbPlayer() {
+			OwnedShips = new List<DbShip>();
 			IsActive = true;
 			IsAdmin = false;
 		}
@@ -21,7 +22,6 @@ namespace GAME_Server {
 			MaxFleetPoints = maxFleetPoints;
 			GamesPlayed = gamesPlayed;
 			GamesWon = gamesWon;
-			OwnedShips = new List<DbShip>();
 			Money = money;
 		}
 
@@ -42,14 +42,22 @@ namespace GAME_Server {
 			Id = player.Id;
 			GamesPlayed = 0;
 			GamesWon = 0;
-			OwnedShips = new List<DbShip>();
 			Money = startingMoney;
+		}
+
+		/// <summary>
+		/// to add new administrator
+		/// </summary>
+		/// <param name="player"></param>
+		/// <param name="startIngMoney"></param>
+		/// <param name="isAdmin"></param>
+		public DbPlayer(Player player, int startIngMoney, bool isAdmin) : this(player, startIngMoney) {
+			this.IsAdmin = isAdmin;
 		}
 
 		public string Username { get; set; }
 		public string Password { get; set; }
 		public int Experience { get; set; }
-		public int MaxFleetPoints { get; set; }
 		public int Id { get; set; }
 		public int GamesPlayed { get; set; }
 		public int GamesWon { get; set; }
@@ -57,10 +65,25 @@ namespace GAME_Server {
 		public bool IsActive { get; set; }
 		public bool IsAdmin { get; set; }
 
+		[NotMapped]
+		public int MaxFleetPoints { get; set; }
+
 		public List<DbShip> OwnedShips { get; set; }
 
 		public Player ToPlayer() {
+			CalculateMaxFleetSize();
 			return new Player(Id, Username, Password, Experience, MaxFleetPoints, GamesPlayed, GamesWon, Money);
+		}
+
+		public AdminAppPlayer ToAdminAppPlayer() {
+			CalculateMaxFleetSize();
+			return new AdminAppPlayer(Id, Username, Password, Experience, MaxFleetPoints, GamesPlayed, GamesWon, Money, IsActive, IsAdmin);
+		}
+
+		public void CalculateMaxFleetSize() {
+			int calculatedMaxFleetSize = (int)(Server.BaseModifiers.BaseFleetMaxSize + (Server.BaseModifiers.FleetSizeExpModifier * this.Experience));
+			if (calculatedMaxFleetSize < Server.BaseModifiers.MaxAbsoluteFleetSize) this.MaxFleetPoints = calculatedMaxFleetSize;
+			else this.MaxFleetPoints = Server.BaseModifiers.MaxAbsoluteFleetSize;
 		}
 	}
 

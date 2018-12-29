@@ -58,7 +58,40 @@ namespace GAME_Validator {
 			return OK;
 		}
 
-	}
+		public static string ValidateBaseModifiers(BaseModifiers mods) {
+			if (mods.BaseFleetMaxSize <= 0 || mods.BaseFleetMaxSize > mods.MaxAbsoluteFleetSize) return FailureReasons.VALUE_NOT_IN_RANGE + "base fleet max size";
+			if (!mods.BaseShipStatsExpModifier.IsInRangeExcludeMin(0.0, 1.0)) return FailureReasons.VALUE_NOT_IN_RANGE + "ship exp modifier";
+			if (mods.DefTypeToWepTypeMap.Count != 9) return FailureReasons.VALUE_NOT_IN_RANGE + "wrong number of values in def to wep type multipliers";
+			foreach (var entry in mods.DefTypeToWepTypeMap) {
+				if(entry.Value < 0) return FailureReasons.VALUE_NOT_IN_RANGE + entry.Key.Item1.GetDefenceSystemTypeName() + " to " + entry.Key.Item2.GetWeaponTypyName() + " multiplier";
+			}
+			if (mods.ExpForLoss < 0 || mods.ExpForLoss > mods.ExpForVictory) return FailureReasons.VALUE_NOT_IN_RANGE + "exp for loss";
+			if (mods.ExpForVictory < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "exp for victory";
+			if (mods.FleetSizeExpModifier < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "fleet size exp modifier";
+			if (mods.MaxAbsoluteFleetSize <= 0) return FailureReasons.VALUE_NOT_IN_RANGE + "max absolute fleet size";
+			if (mods.MaxFleetsPerPlayer <= 0) return FailureReasons.VALUE_NOT_IN_RANGE + "max fleets per player";
+			if (mods.MaxShipExp < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "max ship exp";
+			if (mods.MaxShipsInLine <= 0) return FailureReasons.VALUE_NOT_IN_RANGE + "max ships in line";
+			if (mods.MaxShipsPerPlayer <= 0) return FailureReasons.VALUE_NOT_IN_RANGE + "max ships per player";
+			if (mods.MoneyForLoss < 0 || mods.MoneyForLoss > mods.MoneyForVictory) return FailureReasons.VALUE_NOT_IN_RANGE + "money for loss";
+			if (mods.MoneyForVictory < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "money for victory";
+			if (mods.StartingMoney < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "starting money";
+			if (mods.WeaponTypeRangeMultMap.Count != 3) return FailureReasons.VALUE_NOT_IN_RANGE + "wrong number of values in range multipliers";
+			foreach (var entry in mods.WeaponTypeRangeMultMap) {
+				if (entry.Value < 0) return FailureReasons.VALUE_NOT_IN_RANGE + entry.Key.GetWeaponTypyName() + " range multiplier";
+			}
+			return OK;
+		}
 
+		public static string ValidateUser(AdminAppPlayer user, bool isNew) {
+			if (string.IsNullOrWhiteSpace(user.Username) && isNew) return FailureReasons.VALUE_NOT_IN_RANGE + "username";
+			if (string.IsNullOrWhiteSpace(user.Password) && isNew) return FailureReasons.VALUE_NOT_IN_RANGE + "password";
+			if (user.IsActive == false && isNew) return FailureReasons.VALUE_NOT_IN_RANGE + "is active";
+			if (user.Money < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "money";
+			if (user.Experience < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "experience";
+			return OK;
+		}
+
+	}
 	
 }
