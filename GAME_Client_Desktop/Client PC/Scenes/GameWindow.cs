@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Client_PC.UI;
 using GAME_connection;
@@ -26,10 +27,15 @@ namespace Client_PC.Scenes
         private Grid enemyGrid;
         private Grid yourGrid;
         private Grid yourCards;
-        private List<Ship> ships;
         private Card CurrentCard;
         private Card LastCard;
         private int CardsInRow = 0;
+        private int cardWidth;
+        private int cardHeight;
+        private bool gameloop = false;
+        private Thread th;
+        private List<Card> AllyCards;
+        private List<Card> EnemyCards;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -43,15 +49,7 @@ namespace Client_PC.Scenes
             enemyGrid = new Grid(3,5, ColumnWidth, RowHeight);
             yourGrid = new Grid(3,5, ColumnWidth, RowHeight);
             yourCards = new Grid();
-            Random rndRandom = new Random();
-            ships = new List<Ship>(20);
-            for (int i = 0; i < 20; i++)
-            {
-                Ship ship = new Ship();
-                ship.Armor = rndRandom.Next(1, 30);
-                ship.Hp = rndRandom.Next(1, 30);
-                ships.Add(ship);
-            }
+
 
 
 
@@ -78,7 +76,7 @@ namespace Client_PC.Scenes
             enemyGrid.rowOffset = (int) (enemyGrid.Height * 0.025);
             yourGrid.rowOffset = (int)(enemyGrid.Height * 0.025);
 
-            enemyGrid.columnOffset =(int) (enemyGrid.Width * 0.125);
+            enemyGrid.columnOffset = (int) (enemyGrid.Width * 0.125);
             yourGrid.columnOffset = (int) (yourGrid.Width * 0.125);
 
 
@@ -91,58 +89,14 @@ namespace Client_PC.Scenes
 
             yourCards.Origin = new Point(10,yourGrid.Origin.Y + yourGrid.Height + (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.02));
 
-            int cardWidth = (int) (yourGrid.Width * cardWidthPercentage);
-            int cardHeight = (int) (yourGrid.Height * cardHeightPercentage);
-
-            Card c1 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[0]);
-            Card c2 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[1]);
-            Card c3 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[2]);
-            Card c4 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[3]);
-            Card c5 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[4]);
-            Card c6 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[5]);
-            Card c7 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[6]);
-            Card c8 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[7]);
-            Card c9 = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false, ships[8]);
-
-            c1.clickEvent += CardClick;
-            c2.clickEvent += CardClick;
-            c3.clickEvent += CardClick;
-            c4.clickEvent += CardClick;
-            c5.clickEvent += CardClick;
-            c6.clickEvent += CardClick;
-            c7.clickEvent += CardClick;
-            c8.clickEvent += CardClick;
-            c9.clickEvent += CardClick;
-
-            Clickable.Add(c1);
-            Clickable.Add(c2);
-            Clickable.Add(c3);
-            Clickable.Add(c4);
-            Clickable.Add(c5);
-            Clickable.Add(c6);
-
-            c1.Active = true;
-            c2.Active = true;
-            c3.Active = true;
-            c4.Active = true;
-            c5.Active = true;
-            c6.Active = true;
-
-            yourGrid.AddChild(c1, 0, 0);
-            yourGrid.AddChild(c2, 0, 1);
-            yourGrid.AddChild(c3, 0, 2);
-
-            enemyGrid.AddChild(c4, 0, 0);
-            enemyGrid.AddChild(c5, 0, 1);
-            enemyGrid.AddChild(c6, 0, 2);
+            cardWidth = (int) (yourGrid.Width * cardWidthPercentage);
+            cardHeight = (int) (yourGrid.Height * cardHeightPercentage);
 
 
-            enemyGrid.ResizeChildren();
-            yourGrid.ResizeChildren();
             layout.AddChild(enemyGrid);
             layout.AddChild(yourGrid);
             layout.AddChild(yourCards);
-
+            th = new Thread(ContactLoop);
             
 
         }
@@ -178,7 +132,12 @@ namespace Client_PC.Scenes
 
             LastCard = CurrentCard;
         }
-        
+
+        public void Start()
+        {
+            gameloop = true;
+            th.Start();
+        }
         public override void UpdateClickables()
         {
             if (Game1.self.FocusedElement == null)
@@ -200,6 +159,66 @@ namespace Client_PC.Scenes
                     c.Update();
                 }
             });
+        }
+
+        public void ContactLoop()
+        {
+            GamePacket packet;
+            while (gameloop)
+            {
+                packet = Game1.self.Connection.GetReceivedPacket(100);
+                if (packet != null)
+                {
+                    if (packet.OperationType == OperationType.GAME_STATE)
+                    {
+                        GameState state = (GameState)packet.Packet;
+                    }
+                }
+            }
+        }
+
+        public void setState(GameState state)
+        {
+            var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToArray();
+            var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToArray();
+            var longAlly = state.YourGameBoard.Board[Line.LONG].ToArray();
+            for (int i = 0; i < 5; i++)
+            {
+                Card c = new Card(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,shortAlly[i]);
+
+            }
+
+        }
+
+        public void initialState(GameState state)
+        {
+            var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToArray();
+            var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToArray();
+            var longAlly = state.YourGameBoard.Board[Line.LONG].ToArray();
+
+            var allied = shortAlly.Concat(medAlly).Concat(longAlly);
+
+            var shortEnemy = state.YourGameBoard.Board[Line.SHORT].ToArray();
+            var medEnemy = state.YourGameBoard.Board[Line.MEDIUM].ToArray();
+            var longEnemy = state.YourGameBoard.Board[Line.LONG].ToArray();
+
+            var enemy = shortEnemy.Concat(medEnemy).Concat(longEnemy);
+
+            foreach (var ship in allied)
+            {
+                Card c = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
+                c.clickEvent += CardClick;
+                Clickable.Add(c);
+                AllyCards.Add(c);
+            }
+            foreach (var ship in enemy)
+            {
+                Card c = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
+                c.clickEvent += CardClick;
+                Clickable.Add(c);
+                EnemyCards.Add(c);
+            }
+
         }
         public override void UpdateButtonNull()
         {
