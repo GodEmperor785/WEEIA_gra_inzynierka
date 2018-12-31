@@ -73,51 +73,52 @@ namespace GAME_connection {
 		private static readonly Dictionary<OperationType, Type> operationMapping;
 
 		static OperationsMap() {
-			operationMapping = new Dictionary<OperationType, Type>();
-			operationMapping.Add(OperationType.CONNECTION_TEST, typeof(object));			//nothing - never used									- null
-			operationMapping.Add(OperationType.VIEW_FLEETS, typeof(List<Fleet>));           //list of players fleets								- important for client
-			operationMapping.Add(OperationType.VIEW_ALL_PLAYER_SHIPS, typeof(Fleet));       //list of player owned ships							- important for client
-			operationMapping.Add(OperationType.UPDATE_FLEET, typeof(Fleet));                //updated fleet object		maybe only list of ids?		- important for server, server respons with S/F
-			operationMapping.Add(OperationType.ADD_FLEET, typeof(Fleet));                   //new fleet object			maybe only list of ids?		- important for server, server respons with S/F
-			operationMapping.Add(OperationType.DELETE_FLEET, typeof(Fleet));                //fleet to delete		maybe only fleet name or id?	- important for server, server respons with S/F
-			operationMapping.Add(OperationType.SELECT_FLEET, typeof(Fleet));                //fleet used for a game, called before PLAY				- important for server, server respons with S/F
-			operationMapping.Add(OperationType.PLAY_RANKED, typeof(object));                //internal packet does not matter, S/F response			- server respons with S/F
-			operationMapping.Add(OperationType.ABANDON_GAME, typeof(object));               //internal packet does not matter, S/F response			- server respons with S/F
-			operationMapping.Add(OperationType.PLAY_CUSTOM_JOIN, typeof(CustomGameRoom));   //room with room name, creator name and password		- important for server, server respons with S/F
-			operationMapping.Add(OperationType.PLAY_CUSTOM_CREATE, typeof(CustomGameRoom)); //room with all variables set							- important for server, server respons with S/F
-			operationMapping.Add(OperationType.GET_CUSTOM_ROOMS, typeof(List<CustomGameRoom>)); //list of available vustom rooms					- important for client
-			operationMapping.Add(OperationType.GAME_END, typeof(GameResult));				//result of game										- important for client
-			operationMapping.Add(OperationType.LOGIN, typeof(Player));                      //player object with password and username set			- important for server, server respons with S/F
-			operationMapping.Add(OperationType.REGISTER, typeof(Player));                   //player object with password and username set			- important for server, server respons with S/F
-			operationMapping.Add(OperationType.DISCONNECT, typeof(object));                 //nothing - never used									- importnant for server, no server response
-			operationMapping.Add(OperationType.PLAYER_DATA, typeof(Player));                //player object with exp and maxFleetPoints set			- important for client
-			operationMapping.Add(OperationType.BASE_MODIFIERS, typeof(BaseModifiers));      //base modifiers for client								- important for client
-			operationMapping.Add(OperationType.GET_PLAYER_STATS, typeof(List<GameHistory>)); //list of game history entries for given player		- important for client
-			operationMapping.Add(OperationType.GET_PLAYER_STATS_ENTRY, typeof(GameHistory)); //full game history entry with given id				- important for client
-			operationMapping.Add(OperationType.MAKE_MOVE, typeof(Move));                    //Move the client wants to make							- important for server, server respons with S/F
-			operationMapping.Add(OperationType.GAME_STATE, typeof(GameState));              //GameState object										- important for client
-			operationMapping.Add(OperationType.SETUP_FLEET, typeof(PlayerGameBoard));       //PlayerGameBoard object with initial setup in 3 lines	- important for server, server respons with S/F
-			operationMapping.Add(OperationType.SUCCESS, typeof(object));                    //nothing - never used									- null
-			operationMapping.Add(OperationType.FAILURE, typeof(string));                    //reason for failure									- important for client
-			operationMapping.Add(OperationType.GET_LOOTBOXES, typeof(List<LootBox>));       //list of available lootboxes							- important for client
-			operationMapping.Add(OperationType.BUY, typeof(LootBox));                       //lootbox to buy										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.BOUGHT_SHIPS, typeof(List<Ship>));           //ships from lootbox									- important for client, SUCCESS before this
-			operationMapping.Add(OperationType.SELL_SHIP, typeof(Ship));                    //ship to sell for money								- important for server, server respons with S/F
+			operationMapping = new Dictionary<OperationType, Type> {
+				{ OperationType.CONNECTION_TEST, typeof(object) },                  //nothing - never used									- null
+				{ OperationType.VIEW_FLEETS, typeof(List<Fleet>) },                 //list of players fleets								- important for client
+				{ OperationType.VIEW_ALL_PLAYER_SHIPS, typeof(Fleet) },             //list of player owned ships							- important for client
+				{ OperationType.UPDATE_FLEET, typeof(Fleet) },                      //updated fleet object									- important for server, server respons with S/F
+				{ OperationType.ADD_FLEET, typeof(Fleet) },                         //new fleet object										- important for server, server respons with S/F
+				{ OperationType.DELETE_FLEET, typeof(Fleet) },                      //fleet to delete										- important for server, server respons with S/F
+				{ OperationType.SELECT_FLEET, typeof(Fleet) },                      //fleet used for a game, called before PLAY				- important for server, server respons with S/F
+				{ OperationType.PLAY_RANKED, typeof(object) },                      //internal packet does not matter, S/F response			- server respons with S/F
+				{ OperationType.ABANDON_GAME, typeof(object) },                     //internal packet does not matter, S/F response			- server respons with S/F
+				{ OperationType.PLAY_CUSTOM_JOIN, typeof(CustomGameRoom) },         //room with room name, creator name and password		- important for server, server respons with S/F
+				{ OperationType.PLAY_CUSTOM_CREATE, typeof(CustomGameRoom) },       //room with all variables set							- important for server, server respons with S/F
+				{ OperationType.GET_CUSTOM_ROOMS, typeof(List<CustomGameRoom>) },   //list of available vustom rooms						- important for client
+				{ OperationType.GAME_END, typeof(GameResult) },                     //result of game										- important for client
+				{ OperationType.LOGIN, typeof(Player) },                            //player object with password and username set			- important for server, server respons with S/F
+				{ OperationType.REGISTER, typeof(Player) },                         //player object with password and username set			- important for server, server respons with S/F
+				{ OperationType.DISCONNECT, typeof(object) },                       //nothing - never used									- importnant for server, no server response
+				{ OperationType.PLAYER_DATA, typeof(Player) },                      //player object with exp and maxFleetPoints set			- important for client
+				{ OperationType.BASE_MODIFIERS, typeof(BaseModifiers) },            //base modifiers for client								- important for client
+				{ OperationType.GET_PLAYER_STATS, typeof(List<GameHistory>) },      //list of game history entries for given player			- important for client
+				{ OperationType.GET_PLAYER_STATS_ENTRY, typeof(GameHistory) },      //full game history entry with given id					- important for client
+				{ OperationType.MAKE_MOVE, typeof(Move) },                          //Move the client wants to make							- important for server, server respons with S/F
+				{ OperationType.GAME_STATE, typeof(GameState) },                    //GameState object										- important for client
+				{ OperationType.SETUP_FLEET, typeof(PlayerGameBoard) },             //PlayerGameBoard object with initial setup in 3 lines	- important for server, server respons with S/F
+				{ OperationType.SUCCESS, typeof(object) },                          //nothing - never used									- null
+				{ OperationType.FAILURE, typeof(string) },                          //reason for failure									- important for client
+				{ OperationType.GET_LOOTBOXES, typeof(List<LootBox>) },             //list of available lootboxes							- important for client
+				{ OperationType.BUY, typeof(LootBox) },                             //lootbox to buy										- important for server, server respons with S/F
+				{ OperationType.BOUGHT_SHIPS, typeof(List<Ship>) },                 //ships from lootbox									- important for client, SUCCESS before this
+				{ OperationType.SELL_SHIP, typeof(Ship) },                          //ship to sell for money								- important for server, server respons with S/F
 
-			operationMapping.Add(OperationType.GET_SHIP_TEMPLATES, typeof(List<Ship>));     //list of all ship templates							- important for client
-			operationMapping.Add(OperationType.ADD_SHIP_TEMPLATE, typeof(Ship));            //ship template to add									- important for server, server respons with S/F
-			operationMapping.Add(OperationType.UPDATE_SHIP_TEMPLATE, typeof(Ship));         //ship template to update								- important for server, server respons with S/F
-			operationMapping.Add(OperationType.GET_WEAPONS, typeof(List<Weapon>));			//list of all weapons									- important for client
-			operationMapping.Add(OperationType.ADD_WEAPON, typeof(Weapon));					//weapon to add											- important for server, server respons with S/F
-			operationMapping.Add(OperationType.UPDATE_WEAPON, typeof(Weapon));              //weapon to update										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.GET_DEFENCES, typeof(List<DefenceSystem>));  //list of all defences									- important for client
-			operationMapping.Add(OperationType.ADD_DEFENCE, typeof(DefenceSystem));         //defence to add										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.UPDATE_DEFENCE, typeof(DefenceSystem));      //defence to update										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.UPDATE_BASE_MODIFIERS, typeof(BaseModifiers));   //BaseModifiers										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.GET_USERS, typeof(List<AdminAppPlayer>));    //list of all users										- important for client
-			operationMapping.Add(OperationType.ADD_USER, typeof(AdminAppPlayer));           //user to add											- important for server, server respons with S/F
-			operationMapping.Add(OperationType.UPDATE_USER, typeof(AdminAppPlayer));        //user to update										- important for server, server respons with S/F
-			operationMapping.Add(OperationType.DEACTIVATE_USER, typeof(AdminAppPlayer));    //user to deactivate									- important for server, server respons with S/F
+				{ OperationType.GET_SHIP_TEMPLATES, typeof(List<Ship>) },           //list of all ship templates							- important for client
+				{ OperationType.ADD_SHIP_TEMPLATE, typeof(Ship) },                  //ship template to add									- important for server, server respons with S/F
+				{ OperationType.UPDATE_SHIP_TEMPLATE, typeof(Ship) },               //ship template to update								- important for server, server respons with S/F
+				{ OperationType.GET_WEAPONS, typeof(List<Weapon>) },                //list of all weapons									- important for client
+				{ OperationType.ADD_WEAPON, typeof(Weapon) },                       //weapon to add											- important for server, server respons with S/F
+				{ OperationType.UPDATE_WEAPON, typeof(Weapon) },                    //weapon to update										- important for server, server respons with S/F
+				{ OperationType.GET_DEFENCES, typeof(List<DefenceSystem>) },        //list of all defences									- important for client
+				{ OperationType.ADD_DEFENCE, typeof(DefenceSystem) },               //defence to add										- important for server, server respons with S/F
+				{ OperationType.UPDATE_DEFENCE, typeof(DefenceSystem) },            //defence to update										- important for server, server respons with S/F
+				{ OperationType.UPDATE_BASE_MODIFIERS, typeof(BaseModifiers) },     //BaseModifiers											- important for server, server respons with S/F
+				{ OperationType.GET_USERS, typeof(List<AdminAppPlayer>) },          //list of all users										- important for client
+				{ OperationType.ADD_USER, typeof(AdminAppPlayer) },                 //user to add											- important for server, server respons with S/F
+				{ OperationType.UPDATE_USER, typeof(AdminAppPlayer) },              //user to update										- important for server, server respons with S/F
+				{ OperationType.DEACTIVATE_USER, typeof(AdminAppPlayer) }           //user to deactivate									- important for server, server respons with S/F
+			};
 
 			// S/F = SUCCESS/FAILURE
 			//if important for server: client must set correct internal packet, server checks validity of packet and responds with S/F

@@ -44,14 +44,16 @@ namespace GAME_connection {
 		}
 
 		/// <summary>
-		/// used by server, unsets password
+		/// used by server to answer clients GET_CUSTOM_ROOMS request
 		/// </summary>
 		/// <param name="room"></param>
-		public CustomGameRoom(CustomGameRoom room) {
+		/// <param name="unsetPassword"></param>
+		public CustomGameRoom(CustomGameRoom room, bool unsetPassword) {
 			this.RoomName = room.RoomName;
 			this.OpenForAll = room.OpenForAll;
 			this.CreatorsUsername = room.CreatorsUsername;
-			this.Password = "";
+			if (unsetPassword) this.Password = "";
+			else this.Password = room.Password;
 		}
 
 		public string RoomName { get => roomName; set => roomName = value; }

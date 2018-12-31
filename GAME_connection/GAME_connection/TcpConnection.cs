@@ -217,8 +217,12 @@ namespace GAME_connection {
 			messageReceivedEvent.WaitOne();     //wait until there is a message
 			queueCount = QueueCount;
 			if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
-			lock (queueLock) {
-				return receivedPackets.Dequeue();
+			try {
+				lock (queueLock) {
+					return receivedPackets.Dequeue();
+				}
+			} catch (Exception) {
+				throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 			}
 		}
 
@@ -232,8 +236,12 @@ namespace GAME_connection {
 			messageReceivedEvent.WaitOne(timeoutMilis);     //wait until there is a message with timeout
 			queueCount = QueueCount;
 			if (queueCount > 0) {
-				lock (queueLock) {
-					return receivedPackets.Dequeue();
+				try {
+					lock (queueLock) {
+						return receivedPackets.Dequeue();
+					}
+				} catch (Exception) {
+					throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 				}
 			}
 			else if (queueCount == 0 && connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
@@ -267,7 +275,10 @@ namespace GAME_connection {
 					}
 					else if (receivedPacket.OperationType == OperationType.SURRENDER) OnSurrender(new GameEventArgs(PlayerNumber));
 					else EnqueuePacket(receivedPacket);
-					if (receivedPacket.OperationType == OperationType.DISCONNECT) KeepReceiving = false;        //stop receiving if disconnect
+					if (receivedPacket.OperationType == OperationType.DISCONNECT) {
+						KeepReceiving = false;        //stop receiving if disconnect
+						OnConnectionEnded(new GameEventArgs(PlayerNumber));
+					}
 				} catch(IOException ex) {
 					if (debug) tcpConnectionLogger("Connection ended - on read");
 					OnConnectionEnded(new GameEventArgs(PlayerNumber));
