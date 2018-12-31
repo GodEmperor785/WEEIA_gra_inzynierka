@@ -23,6 +23,31 @@ namespace Client_PC.Scenes
 
     class GameWindow : Menu
     {
+        private int GetColumn(Line en, bool allied)
+        {
+            int row = 1;
+            if (allied)
+            {
+                if (en == Line.SHORT)
+                    row = 2;
+                if (en == Line.MEDIUM)
+                    row = 1;
+                if (en == Line.LONG)
+                    row = 0;
+            }
+            else
+            {
+                if (en == Line.SHORT)
+                    row = 0;
+                if (en == Line.MEDIUM)
+                    row = 1;
+                if (en == Line.LONG)
+                    row = 2;
+            }
+
+            return row;
+        }
+      
         private RelativeLayout layout;
         private Grid enemyGrid;
         private Grid yourGrid;
@@ -36,6 +61,7 @@ namespace Client_PC.Scenes
         private Thread th;
         private List<Card> AllyCards;
         private List<Card> EnemyCards;
+        private Move move;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -117,7 +143,7 @@ namespace Client_PC.Scenes
                 CardsInRow++;
                 if (CardsInRow == 2)
                 {
-                    if (LastCard.Parent == CurrentCard.Parent) // checking if previous card in action was from the same parent (
+                    if (LastCard.Parent == CurrentCard.Parent) // checking if previous card in action was from the same parent
                     {
                         LastCard.Status = Card.status.clear;
                         CurrentCard.Status = Card.status.clicked;
@@ -126,6 +152,9 @@ namespace Client_PC.Scenes
                     else
                     {
                         CurrentCard.Status = Card.status.target;
+                        ShipPosition origin = new ShipPosition(LastCard.line,LastCard.GetShip().Id);
+                        ShipPosition target = new ShipPosition(CurrentCard.line,CurrentCard.GetShip().Id);
+                        move.AttackList.Add(new Tuple<ShipPosition, ShipPosition>(origin,target));
                     }
                 }
             }
@@ -133,6 +162,30 @@ namespace Client_PC.Scenes
             LastCard = CurrentCard;
         }
 
+        public void CardSlotClick(object sender)
+        {
+            CardSlot c = (CardSlot) sender;
+            if (LineDifference(CurrentCard.line, c.line) < 1 && CurrentCard.CanMove)
+            {
+                var position = yourGrid.getPosition(c);
+                Clickable.Remove(c);
+                Line prev = CurrentCard.line;
+                CurrentCard.line = c.line;
+                yourGrid.RemoveChild(CurrentCard);
+                yourGrid.AddChild(CurrentCard);
+                CurrentCard.CanMove = false;
+                CardSlot z = new CardSlot(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui);
+                z.line = prev;
+                z.clickEvent += CardSlotClick;
+                Clickable.Add(z);
+                yourGrid.UpdateP();
+            }
+        }
+
+        private int LineDifference(Line l1, Line l2)
+        {
+            return Math.Abs(l1 - l2);
+        }
         public void Start()
         {
             gameloop = true;
@@ -179,46 +232,73 @@ namespace Client_PC.Scenes
 
         public void setState(GameState state)
         {
-            var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToArray();
-            var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToArray();
-            var longAlly = state.YourGameBoard.Board[Line.LONG].ToArray();
-            for (int i = 0; i < 5; i++)
-            {
-                Card c = new Card(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,shortAlly[i]);
+            var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToList();
+            var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToList();
+            var longAlly = state.YourGameBoard.Board[Line.LONG].ToList();
 
-            }
+            var shortEnemy = state.YourGameBoard.Board[Line.SHORT].ToList();
+            var medEnemy = state.YourGameBoard.Board[Line.MEDIUM].ToList();
+            var longEnemy = state.YourGameBoard.Board[Line.LONG].ToList();
+
+            CardsToRow(shortAlly,Line.SHORT,true);
+            CardsToRow(medAlly, Line.MEDIUM, true);
+            CardsToRow(longAlly, Line.LONG, true);
+
+            CardsToRow(shortEnemy, Line.SHORT, false);
+            CardsToRow(medEnemy, Line.MEDIUM, false);
+            CardsToRow(longEnemy, Line.LONG, false);
 
         }
 
-        public void initialState(GameState state)
+        public void sendState()
         {
-            var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToArray();
-            var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToArray();
-            var longAlly = state.YourGameBoard.Board[Line.LONG].ToArray();
 
-            var allied = shortAlly.Concat(medAlly).Concat(longAlly);
+        }
 
-            var shortEnemy = state.YourGameBoard.Board[Line.SHORT].ToArray();
-            var medEnemy = state.YourGameBoard.Board[Line.MEDIUM].ToArray();
-            var longEnemy = state.YourGameBoard.Board[Line.LONG].ToArray();
+        public void prepareState()
+        {
 
-            var enemy = shortEnemy.Concat(medEnemy).Concat(longEnemy);
-
-            foreach (var ship in allied)
+        }
+        
+        public void CardsToRow(List<Ship> ships, Line line, bool allied)
+        {
+            if (allied)
             {
-                Card c = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
-                c.clickEvent += CardClick;
-                Clickable.Add(c);
-                AllyCards.Add(c);
-            }
-            foreach (var ship in enemy)
-            {
-                Card c = new Card(cardWidth, cardHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, ship);
-                c.clickEvent += CardClick;
-                Clickable.Add(c);
-                EnemyCards.Add(c);
-            }
+                int i;
+                for (i = 0; i < ships.Count; i++)
+                {
+                    Card c = ShipToCard(ships[i]);
+                    yourGrid.AddChild(c,i, GetColumn(line, allied));
+                }
 
+                i++;
+                while(i < 5)
+                {
+                    
+                    CardSlot c = new CardSlot(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui);
+                    yourGrid.AddChild(c,i,GetColumn(line, allied));
+                    c.line = line;
+                    c.clickEvent += CardSlotClick;
+                    Clickable.Add(c);
+                }
+                yourGrid.UpdateP();
+            }
+            else
+            {
+                for (int i = 0; i < ships.Count; i++)
+                {
+                    Card c = ShipToCard(ships[i]);
+                    enemyGrid.AddChild(c, i, GetColumn(line, allied));
+                }
+                enemyGrid.UpdateP();
+            }
+        }
+        public Card ShipToCard(Ship ship)
+        {
+            Card result = new Card(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,ship);
+            result.clickEvent += CardClick;
+            Clickable.Add(result);
+            return result;
         }
         public override void UpdateButtonNull()
         {

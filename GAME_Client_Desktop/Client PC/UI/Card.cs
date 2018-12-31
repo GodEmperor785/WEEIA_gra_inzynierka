@@ -43,7 +43,8 @@ namespace Client_PC.UI
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
         private bool clicked;
-        public Point Position { get; set; }
+        public bool CanMove { get; set; }
+        public Line line;
         public Card(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base( width, height, device, gui)
         {
             ship = shipInc;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -18,8 +19,8 @@ namespace Client_PC.UI
         public bool CardClicked;
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
-        public Point Position { get; set; }
-
+        public Line line;
+        public int number;
 
 
         public Rectangle GetBoundary()
@@ -48,7 +49,6 @@ namespace Client_PC.UI
         public void SetCard(Card card)
         {
             Card = card;
-            Card.Position = Position;
             Card.Origin = Origin;
             Card.Update();
             HasCard = true;

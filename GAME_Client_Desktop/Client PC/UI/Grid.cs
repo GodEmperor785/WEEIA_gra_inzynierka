@@ -157,6 +157,13 @@ namespace Client_PC.UI
 
         }
 
+        public Point getPosition(GuiElement element)
+        {
+            var child = Children.Single(p => p.element == element);
+            Point result = new Point(child.row,child.column);
+            return result;
+        }
+        #region AddChild
         public void AddChild(GuiElement element, int row,int column)
         {
             Child ch = new Child
@@ -315,7 +322,7 @@ namespace Client_PC.UI
 
             
         }
-
+#endregion
         public void PrintChildren()
         {
             Children.ForEach(p=> p.print());
