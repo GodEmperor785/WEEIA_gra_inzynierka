@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
@@ -20,6 +21,8 @@ namespace Client_PC.Scenes
         private InputBox inputLogin;
         private InputBox inputPassword;
         private Label lbl1;
+        private Button b1;
+        private bool triedReconnection;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -52,7 +55,7 @@ namespace Client_PC.Scenes
             popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5),(int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)),100,400,Game1.self.GraphicsDevice,Gui);
             Grid popupGrid = new Grid();
             lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
-            Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
             };
@@ -87,6 +90,7 @@ namespace Client_PC.Scenes
             registerButton.clickEvent += RegisterClick;
             grid.ResizeChildren();
             SetClickables(true);
+
         }
 
         public void onPopupExit()
@@ -118,9 +122,47 @@ namespace Client_PC.Scenes
         }
         public override void UpdateGrid()
         {
+            triedReconnection = false;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
             SetClickables(!popup.Active);
+            if (Game1.self.Connection == null)
+            {
+                lbl1.Text = "Unable to connect to server";
+                b1.clickEvent += Reconnect;
+                b1.text = "Reconnect";
+                popup.SetActive(true);
+                Clean();
+                Game1.self.popupToDraw = popup;
+                SetClickables(false);
+            }
+            else
+            {
+
+            }
+        }
+
+        public void Reconnect()
+        {
+            if (!triedReconnection)
+            {
+                try
+                {
+                    string server = "212.191.92.88";
+                    int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
+                    TcpClient client = new TcpClient(server, port);
+                    Console.WriteLine("tcpClient created");
+                    Game1.self.Connection = new TcpConnection(client, true, null, false, false, null);
+                    Console.WriteLine("Connection established");
+                    onPopupExit();
+                }
+                catch (Exception e)
+                {
+
+                }
+
+                triedReconnection = true;
+            }
         }
         public void Draw(GameTime gameTime)
         {
@@ -142,7 +184,9 @@ namespace Client_PC.Scenes
 
             if (packetReceived.OperationType == OperationType.SUCCESS)
             {
+                b1.clickEvent += onPopupExit;
                 lbl1.Text = "";
+                b1.text = "Exit";
                 packetReceived = Game1.self.Connection.GetReceivedPacket();
                 if (packetReceived.OperationType == OperationType.PLAYER_DATA)
                 {
