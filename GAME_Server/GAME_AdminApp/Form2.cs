@@ -179,7 +179,7 @@ namespace GAME_AdminApp {
 			modifyButton.Click += new EventHandler(ModifyButton_Click);
 			shipButtonToIdMap.Add(modifyButton, ship.Id);
 
-			shipTable.Controls.Add(new Label() { Text = ship.Id.ToString()}, 0, shipTable.RowCount - 1);
+			shipTable.Controls.Add(new Label() { Text = ship.Id.ToString() }, 0, shipTable.RowCount - 1);
 			shipTable.Controls.Add(new Label() { Text = ship.Name, AutoSize = true }, 1, shipTable.RowCount - 1);
 			shipTable.Controls.Add(new Label() { Text = ship.Faction.Name }, 2, shipTable.RowCount - 1);
 			shipTable.Controls.Add(new Label() { Text = ship.Cost.ToString() }, 3, shipTable.RowCount - 1);
@@ -822,6 +822,7 @@ namespace GAME_AdminApp {
 
 			Button deactivateButton = new Button() { Text = "Deactivate this user" };
 			deactivateButton.Click += new EventHandler(UserDeactivateButton_Click);
+			deactivateButton.AutoSize = true;
 			userButtonToIdMap.Add(deactivateButton, user.Id);
 
 			Button modifyButton = new Button() { Text = "Modify this user", AutoSize = true };

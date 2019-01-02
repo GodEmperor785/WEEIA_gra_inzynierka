@@ -233,13 +233,13 @@
 			this.userExpBox = new System.Windows.Forms.NumericUpDown();
 			this.userMoneyBox = new System.Windows.Forms.NumericUpDown();
 			this.userIsAdminBox = new System.Windows.Forms.CheckBox();
-			this.userSubmitButton = new System.Windows.Forms.Button();
 			this.label121 = new System.Windows.Forms.Label();
 			this.label124 = new System.Windows.Forms.Label();
 			this.userNameBox = new System.Windows.Forms.TextBox();
 			this.userPasswordBox = new System.Windows.Forms.TextBox();
 			this.label125 = new System.Windows.Forms.Label();
 			this.userRepeatPasswordBox = new System.Windows.Forms.TextBox();
+			this.userSubmitButton = new System.Windows.Forms.Button();
 			this.userDescription = new System.Windows.Forms.Label();
 			this.syncUsersButton = new System.Windows.Forms.Button();
 			this.userAddNewButton = new System.Windows.Forms.Button();
@@ -782,7 +782,7 @@
 			this.shipTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 113F));
 			this.shipTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 108F));
 			this.shipTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 119F));
-			this.shipTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 160F));
+			this.shipTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 161F));
 			this.shipTable.Controls.Add(this.label13, 9, 0);
 			this.shipTable.Controls.Add(this.label12, 8, 0);
 			this.shipTable.Controls.Add(this.label11, 7, 0);
@@ -808,7 +808,7 @@
 			this.label13.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label13.AutoSize = true;
 			this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label13.Location = new System.Drawing.Point(1121, 6);
+			this.label13.Location = new System.Drawing.Point(1120, 6);
 			this.label13.Name = "label13";
 			this.label13.Size = new System.Drawing.Size(39, 13);
 			this.label13.TabIndex = 9;
@@ -819,7 +819,7 @@
 			this.label12.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label12.AutoSize = true;
 			this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label12.Location = new System.Drawing.Point(1047, 6);
+			this.label12.Location = new System.Drawing.Point(1046, 6);
 			this.label12.Name = "label12";
 			this.label12.Size = new System.Drawing.Size(31, 13);
 			this.label12.TabIndex = 8;
@@ -830,7 +830,7 @@
 			this.label11.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label11.AutoSize = true;
 			this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label11.Location = new System.Drawing.Point(954, 6);
+			this.label11.Location = new System.Drawing.Point(953, 6);
 			this.label11.Name = "label11";
 			this.label11.Size = new System.Drawing.Size(61, 13);
 			this.label11.TabIndex = 7;
@@ -841,7 +841,7 @@
 			this.label10.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label10.AutoSize = true;
 			this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label10.Location = new System.Drawing.Point(863, 6);
+			this.label10.Location = new System.Drawing.Point(862, 6);
 			this.label10.Name = "label10";
 			this.label10.Size = new System.Drawing.Size(60, 13);
 			this.label10.TabIndex = 6;
@@ -852,7 +852,7 @@
 			this.label9.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label9.AutoSize = true;
 			this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label9.Location = new System.Drawing.Point(774, 6);
+			this.label9.Location = new System.Drawing.Point(773, 6);
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(24, 13);
 			this.label9.TabIndex = 5;
@@ -863,7 +863,7 @@
 			this.label8.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label8.AutoSize = true;
 			this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label8.Location = new System.Drawing.Point(707, 6);
+			this.label8.Location = new System.Drawing.Point(706, 6);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(52, 13);
 			this.label8.TabIndex = 4;
@@ -874,7 +874,7 @@
 			this.label7.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label7.AutoSize = true;
 			this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label7.Location = new System.Drawing.Point(627, 6);
+			this.label7.Location = new System.Drawing.Point(626, 6);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(32, 13);
 			this.label7.TabIndex = 3;
@@ -907,7 +907,7 @@
 			this.label6.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label6.AutoSize = true;
 			this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label6.Location = new System.Drawing.Point(464, 6);
+			this.label6.Location = new System.Drawing.Point(463, 6);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(49, 13);
 			this.label6.TabIndex = 2;
@@ -918,7 +918,7 @@
 			this.label14.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label14.AutoSize = true;
 			this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label14.Location = new System.Drawing.Point(1234, 6);
+			this.label14.Location = new System.Drawing.Point(1233, 6);
 			this.label14.Name = "label14";
 			this.label14.Size = new System.Drawing.Size(85, 13);
 			this.label14.TabIndex = 10;
@@ -929,7 +929,7 @@
 			this.label15.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label15.AutoSize = true;
 			this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label15.Location = new System.Drawing.Point(1342, 6);
+			this.label15.Location = new System.Drawing.Point(1341, 6);
 			this.label15.Name = "label15";
 			this.label15.Size = new System.Drawing.Size(40, 13);
 			this.label15.TabIndex = 11;
@@ -940,7 +940,7 @@
 			this.label16.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label16.AutoSize = true;
 			this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label16.Location = new System.Drawing.Point(1461, 6);
+			this.label16.Location = new System.Drawing.Point(1460, 6);
 			this.label16.Name = "label16";
 			this.label16.Size = new System.Drawing.Size(120, 13);
 			this.label16.TabIndex = 12;
@@ -958,7 +958,7 @@
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 197F));
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 98F));
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 358F));
-			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 174F));
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 176F));
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this.shipIdSearchBox, 1, 0);
 			this.tableLayoutPanel1.Controls.Add(this.label2, 2, 0);
@@ -988,7 +988,7 @@
 			// shipIdSearchBox
 			// 
 			this.shipIdSearchBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.shipIdSearchBox.Location = new System.Drawing.Point(46, 5);
+			this.shipIdSearchBox.Location = new System.Drawing.Point(45, 5);
 			this.shipIdSearchBox.Name = "shipIdSearchBox";
 			this.shipIdSearchBox.Size = new System.Drawing.Size(118, 20);
 			this.shipIdSearchBox.TabIndex = 1;
@@ -997,7 +997,7 @@
 			// 
 			this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(310, 9);
+			this.label2.Location = new System.Drawing.Point(308, 9);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(103, 13);
 			this.label2.TabIndex = 2;
@@ -1006,7 +1006,7 @@
 			// shipNameSearchBox
 			// 
 			this.shipNameSearchBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.shipNameSearchBox.Location = new System.Drawing.Point(424, 5);
+			this.shipNameSearchBox.Location = new System.Drawing.Point(422, 5);
 			this.shipNameSearchBox.MaxLength = 256;
 			this.shipNameSearchBox.Name = "shipNameSearchBox";
 			this.shipNameSearchBox.Size = new System.Drawing.Size(289, 20);
@@ -1016,7 +1016,7 @@
 			// 
 			this.label3.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(734, 9);
+			this.label3.Location = new System.Drawing.Point(732, 9);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(45, 13);
 			this.label3.TabIndex = 4;
@@ -1026,7 +1026,7 @@
 			// 
 			this.shipFaction.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.shipFaction.FormattingEnabled = true;
-			this.shipFaction.Location = new System.Drawing.Point(799, 5);
+			this.shipFaction.Location = new System.Drawing.Point(797, 5);
 			this.shipFaction.Name = "shipFaction";
 			this.shipFaction.Size = new System.Drawing.Size(171, 21);
 			this.shipFaction.TabIndex = 5;
@@ -1034,7 +1034,7 @@
 			// shipSearchButton
 			// 
 			this.shipSearchButton.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.shipSearchButton.Location = new System.Drawing.Point(1455, 4);
+			this.shipSearchButton.Location = new System.Drawing.Point(1453, 4);
 			this.shipSearchButton.Name = "shipSearchButton";
 			this.shipSearchButton.Size = new System.Drawing.Size(75, 23);
 			this.shipSearchButton.TabIndex = 6;
@@ -1047,7 +1047,7 @@
 			this.label42.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label42.AutoSize = true;
 			this.label42.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label42.Location = new System.Drawing.Point(997, 9);
+			this.label42.Location = new System.Drawing.Point(995, 9);
 			this.label42.Name = "label42";
 			this.label42.Size = new System.Drawing.Size(50, 13);
 			this.label42.TabIndex = 7;
@@ -1057,7 +1057,7 @@
 			// 
 			this.shipOrderByBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.shipOrderByBox.FormattingEnabled = true;
-			this.shipOrderByBox.Location = new System.Drawing.Point(1096, 5);
+			this.shipOrderByBox.Location = new System.Drawing.Point(1094, 5);
 			this.shipOrderByBox.Name = "shipOrderByBox";
 			this.shipOrderByBox.Size = new System.Drawing.Size(185, 21);
 			this.shipOrderByBox.TabIndex = 8;
@@ -1084,7 +1084,7 @@
 			this.weaponSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 19.70899F));
 			this.weaponSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80.29101F));
 			this.weaponSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 182F));
-			this.weaponSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 694F));
+			this.weaponSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 695F));
 			this.weaponSubmitTable.Controls.Add(this.weaponChanceToHitBox, 3, 2);
 			this.weaponSubmitTable.Controls.Add(this.label44, 0, 0);
 			this.weaponSubmitTable.Controls.Add(this.label45, 0, 1);
@@ -1124,7 +1124,7 @@
             0,
             0,
             196608});
-			this.weaponChanceToHitBox.Location = new System.Drawing.Point(934, 62);
+			this.weaponChanceToHitBox.Location = new System.Drawing.Point(933, 62);
 			this.weaponChanceToHitBox.Maximum = new decimal(new int[] {
             1,
             0,
@@ -1195,7 +1195,7 @@
 			this.label49.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label49.AutoSize = true;
 			this.label49.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label49.Location = new System.Drawing.Point(752, 7);
+			this.label49.Location = new System.Drawing.Point(751, 7);
 			this.label49.Name = "label49";
 			this.label49.Size = new System.Drawing.Size(72, 13);
 			this.label49.TabIndex = 5;
@@ -1206,7 +1206,7 @@
 			this.label50.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label50.AutoSize = true;
 			this.label50.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label50.Location = new System.Drawing.Point(752, 35);
+			this.label50.Location = new System.Drawing.Point(751, 35);
 			this.label50.Name = "label50";
 			this.label50.Size = new System.Drawing.Size(144, 13);
 			this.label50.TabIndex = 6;
@@ -1217,7 +1217,7 @@
 			this.label51.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label51.AutoSize = true;
 			this.label51.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label51.Location = new System.Drawing.Point(752, 65);
+			this.label51.Location = new System.Drawing.Point(751, 65);
 			this.label51.Name = "label51";
 			this.label51.Size = new System.Drawing.Size(132, 13);
 			this.label51.TabIndex = 7;
@@ -1228,7 +1228,7 @@
 			this.label52.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label52.AutoSize = true;
 			this.label52.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label52.Location = new System.Drawing.Point(752, 88);
+			this.label52.Location = new System.Drawing.Point(751, 88);
 			this.label52.Name = "label52";
 			this.label52.Size = new System.Drawing.Size(162, 26);
 			this.label52.TabIndex = 8;
@@ -1313,7 +1313,7 @@
 			// weaponApBox
 			// 
 			this.weaponApBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.weaponApBox.Location = new System.Drawing.Point(934, 3);
+			this.weaponApBox.Location = new System.Drawing.Point(933, 3);
 			this.weaponApBox.Maximum = new decimal(new int[] {
             1000000000,
             0,
@@ -1342,7 +1342,7 @@
             0,
             0,
             196608});
-			this.weaponRangeMultBox.Location = new System.Drawing.Point(934, 32);
+			this.weaponRangeMultBox.Location = new System.Drawing.Point(933, 32);
 			this.weaponRangeMultBox.Maximum = new decimal(new int[] {
             1,
             0,
@@ -1357,7 +1357,7 @@
 			// 
 			this.weaponCalculatedChanceToHit.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.weaponCalculatedChanceToHit.AutoSize = true;
-			this.weaponCalculatedChanceToHit.Location = new System.Drawing.Point(934, 95);
+			this.weaponCalculatedChanceToHit.Location = new System.Drawing.Point(933, 95);
 			this.weaponCalculatedChanceToHit.Name = "weaponCalculatedChanceToHit";
 			this.weaponCalculatedChanceToHit.Size = new System.Drawing.Size(179, 13);
 			this.weaponCalculatedChanceToHit.TabIndex = 18;
@@ -1548,17 +1548,17 @@
 			// 
 			this.tableLayoutPanel2.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
 			this.tableLayoutPanel2.ColumnCount = 11;
-			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.67442F));
-			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 77.32558F));
-			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 90F));
-			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 308F));
+			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25.86207F));
+			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 74.13793F));
+			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 89F));
+			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 302F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 58F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 191F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 88F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 205F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 95F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 251F));
-			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 217F));
+			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 219F));
 			this.tableLayoutPanel2.Controls.Add(this.label28, 0, 0);
 			this.tableLayoutPanel2.Controls.Add(this.weaponIdSearch, 1, 0);
 			this.tableLayoutPanel2.Controls.Add(this.label29, 2, 0);
@@ -1581,16 +1581,16 @@
 			// 
 			this.label28.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label28.AutoSize = true;
-			this.label28.Location = new System.Drawing.Point(4, 4);
+			this.label28.Location = new System.Drawing.Point(4, 10);
 			this.label28.Name = "label28";
-			this.label28.Size = new System.Drawing.Size(18, 26);
+			this.label28.Size = new System.Drawing.Size(21, 13);
 			this.label28.TabIndex = 0;
 			this.label28.Text = "ID:";
 			// 
 			// weaponIdSearch
 			// 
 			this.weaponIdSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.weaponIdSearch.Location = new System.Drawing.Point(31, 7);
+			this.weaponIdSearch.Location = new System.Drawing.Point(36, 7);
 			this.weaponIdSearch.Name = "weaponIdSearch";
 			this.weaponIdSearch.Size = new System.Drawing.Size(84, 20);
 			this.weaponIdSearch.TabIndex = 1;
@@ -1599,7 +1599,7 @@
 			// 
 			this.label29.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label29.AutoSize = true;
-			this.label29.Location = new System.Drawing.Point(122, 10);
+			this.label29.Location = new System.Drawing.Point(127, 10);
 			this.label29.Name = "label29";
 			this.label29.Size = new System.Drawing.Size(80, 13);
 			this.label29.TabIndex = 2;
@@ -1608,7 +1608,7 @@
 			// weaponNameSearch
 			// 
 			this.weaponNameSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.weaponNameSearch.Location = new System.Drawing.Point(213, 7);
+			this.weaponNameSearch.Location = new System.Drawing.Point(217, 7);
 			this.weaponNameSearch.MaxLength = 256;
 			this.weaponNameSearch.Name = "weaponNameSearch";
 			this.weaponNameSearch.Size = new System.Drawing.Size(289, 20);
@@ -1618,7 +1618,7 @@
 			// 
 			this.label30.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label30.AutoSize = true;
-			this.label30.Location = new System.Drawing.Point(522, 10);
+			this.label30.Location = new System.Drawing.Point(520, 10);
 			this.label30.Name = "label30";
 			this.label30.Size = new System.Drawing.Size(45, 13);
 			this.label30.TabIndex = 4;
@@ -1628,7 +1628,7 @@
 			// 
 			this.weaponFactionSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.weaponFactionSearch.FormattingEnabled = true;
-			this.weaponFactionSearch.Location = new System.Drawing.Point(581, 6);
+			this.weaponFactionSearch.Location = new System.Drawing.Point(579, 6);
 			this.weaponFactionSearch.Name = "weaponFactionSearch";
 			this.weaponFactionSearch.Size = new System.Drawing.Size(171, 21);
 			this.weaponFactionSearch.TabIndex = 5;
@@ -1637,7 +1637,7 @@
 			// 
 			this.label31.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label31.AutoSize = true;
-			this.label31.Location = new System.Drawing.Point(773, 10);
+			this.label31.Location = new System.Drawing.Point(771, 10);
 			this.label31.Name = "label31";
 			this.label31.Size = new System.Drawing.Size(75, 13);
 			this.label31.TabIndex = 7;
@@ -1647,7 +1647,7 @@
 			// 
 			this.weaponTypeSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.weaponTypeSearch.FormattingEnabled = true;
-			this.weaponTypeSearch.Location = new System.Drawing.Point(862, 6);
+			this.weaponTypeSearch.Location = new System.Drawing.Point(860, 6);
 			this.weaponTypeSearch.Name = "weaponTypeSearch";
 			this.weaponTypeSearch.Size = new System.Drawing.Size(189, 21);
 			this.weaponTypeSearch.TabIndex = 8;
@@ -1655,7 +1655,7 @@
 			// weaponSearchButton
 			// 
 			this.weaponSearchButton.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.weaponSearchButton.Location = new System.Drawing.Point(1416, 5);
+			this.weaponSearchButton.Location = new System.Drawing.Point(1414, 5);
 			this.weaponSearchButton.Name = "weaponSearchButton";
 			this.weaponSearchButton.Size = new System.Drawing.Size(75, 23);
 			this.weaponSearchButton.TabIndex = 6;
@@ -1667,7 +1667,7 @@
 			// 
 			this.label43.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label43.AutoSize = true;
-			this.label43.Location = new System.Drawing.Point(1068, 10);
+			this.label43.Location = new System.Drawing.Point(1066, 10);
 			this.label43.Name = "label43";
 			this.label43.Size = new System.Drawing.Size(50, 13);
 			this.label43.TabIndex = 9;
@@ -1677,7 +1677,7 @@
 			// 
 			this.weaponOrderBy.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.weaponOrderBy.FormattingEnabled = true;
-			this.weaponOrderBy.Location = new System.Drawing.Point(1164, 6);
+			this.weaponOrderBy.Location = new System.Drawing.Point(1162, 6);
 			this.weaponOrderBy.Name = "weaponOrderBy";
 			this.weaponOrderBy.Size = new System.Drawing.Size(182, 21);
 			this.weaponOrderBy.TabIndex = 10;
@@ -2084,9 +2084,9 @@
 			// 
 			this.tableLayoutPanel3.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
 			this.tableLayoutPanel3.ColumnCount = 11;
-			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.67442F));
-			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 77.32558F));
-			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 101F));
+			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 31.03448F));
+			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 68.96552F));
+			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 92F));
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 297F));
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 58F));
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 191F));
@@ -2094,7 +2094,7 @@
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 205F));
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 95F));
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 251F));
-			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 217F));
+			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 219F));
 			this.tableLayoutPanel3.Controls.Add(this.label53, 0, 0);
 			this.tableLayoutPanel3.Controls.Add(this.defenceIdSearch, 1, 0);
 			this.tableLayoutPanel3.Controls.Add(this.label54, 2, 0);
@@ -2117,25 +2117,25 @@
 			// 
 			this.label53.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label53.AutoSize = true;
-			this.label53.Location = new System.Drawing.Point(4, 4);
+			this.label53.Location = new System.Drawing.Point(4, 10);
 			this.label53.Name = "label53";
-			this.label53.Size = new System.Drawing.Size(18, 26);
+			this.label53.Size = new System.Drawing.Size(21, 13);
 			this.label53.TabIndex = 0;
 			this.label53.Text = "ID:";
 			// 
 			// defenceIdSearch
 			// 
 			this.defenceIdSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.defenceIdSearch.Location = new System.Drawing.Point(31, 7);
+			this.defenceIdSearch.Location = new System.Drawing.Point(43, 7);
 			this.defenceIdSearch.Name = "defenceIdSearch";
-			this.defenceIdSearch.Size = new System.Drawing.Size(84, 20);
+			this.defenceIdSearch.Size = new System.Drawing.Size(79, 20);
 			this.defenceIdSearch.TabIndex = 1;
 			// 
 			// label54
 			// 
 			this.label54.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label54.AutoSize = true;
-			this.label54.Location = new System.Drawing.Point(122, 10);
+			this.label54.Location = new System.Drawing.Point(129, 10);
 			this.label54.Name = "label54";
 			this.label54.Size = new System.Drawing.Size(80, 13);
 			this.label54.TabIndex = 2;
@@ -2144,7 +2144,7 @@
 			// defenceNameSearch
 			// 
 			this.defenceNameSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.defenceNameSearch.Location = new System.Drawing.Point(224, 7);
+			this.defenceNameSearch.Location = new System.Drawing.Point(222, 7);
 			this.defenceNameSearch.MaxLength = 256;
 			this.defenceNameSearch.Name = "defenceNameSearch";
 			this.defenceNameSearch.Size = new System.Drawing.Size(289, 20);
@@ -2154,7 +2154,7 @@
 			// 
 			this.label55.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label55.AutoSize = true;
-			this.label55.Location = new System.Drawing.Point(522, 10);
+			this.label55.Location = new System.Drawing.Point(520, 10);
 			this.label55.Name = "label55";
 			this.label55.Size = new System.Drawing.Size(45, 13);
 			this.label55.TabIndex = 4;
@@ -2164,7 +2164,7 @@
 			// 
 			this.defenceFactionSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.defenceFactionSearch.FormattingEnabled = true;
-			this.defenceFactionSearch.Location = new System.Drawing.Point(581, 6);
+			this.defenceFactionSearch.Location = new System.Drawing.Point(579, 6);
 			this.defenceFactionSearch.Name = "defenceFactionSearch";
 			this.defenceFactionSearch.Size = new System.Drawing.Size(171, 21);
 			this.defenceFactionSearch.TabIndex = 5;
@@ -2173,7 +2173,7 @@
 			// 
 			this.label56.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label56.AutoSize = true;
-			this.label56.Location = new System.Drawing.Point(773, 10);
+			this.label56.Location = new System.Drawing.Point(771, 10);
 			this.label56.Name = "label56";
 			this.label56.Size = new System.Drawing.Size(74, 13);
 			this.label56.TabIndex = 7;
@@ -2183,7 +2183,7 @@
 			// 
 			this.defenceTypeSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.defenceTypeSearch.FormattingEnabled = true;
-			this.defenceTypeSearch.Location = new System.Drawing.Point(862, 6);
+			this.defenceTypeSearch.Location = new System.Drawing.Point(860, 6);
 			this.defenceTypeSearch.Name = "defenceTypeSearch";
 			this.defenceTypeSearch.Size = new System.Drawing.Size(189, 21);
 			this.defenceTypeSearch.TabIndex = 8;
@@ -2191,7 +2191,7 @@
 			// defenceSearchButton
 			// 
 			this.defenceSearchButton.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.defenceSearchButton.Location = new System.Drawing.Point(1416, 5);
+			this.defenceSearchButton.Location = new System.Drawing.Point(1414, 5);
 			this.defenceSearchButton.Name = "defenceSearchButton";
 			this.defenceSearchButton.Size = new System.Drawing.Size(75, 23);
 			this.defenceSearchButton.TabIndex = 6;
@@ -2203,7 +2203,7 @@
 			// 
 			this.label57.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label57.AutoSize = true;
-			this.label57.Location = new System.Drawing.Point(1068, 10);
+			this.label57.Location = new System.Drawing.Point(1066, 10);
 			this.label57.Name = "label57";
 			this.label57.Size = new System.Drawing.Size(50, 13);
 			this.label57.TabIndex = 9;
@@ -2213,7 +2213,7 @@
 			// 
 			this.defenceOrderBy.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.defenceOrderBy.FormattingEnabled = true;
-			this.defenceOrderBy.Location = new System.Drawing.Point(1164, 6);
+			this.defenceOrderBy.Location = new System.Drawing.Point(1162, 6);
 			this.defenceOrderBy.Name = "defenceOrderBy";
 			this.defenceOrderBy.Size = new System.Drawing.Size(182, 21);
 			this.defenceOrderBy.TabIndex = 10;
@@ -2904,7 +2904,7 @@
 			this.userSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 17.9021F));
 			this.userSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 82.0979F));
 			this.userSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 133F));
-			this.userSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 787F));
+			this.userSubmitTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 788F));
 			this.userSubmitTable.Controls.Add(this.userIsActiveBox, 3, 1);
 			this.userSubmitTable.Controls.Add(this.label119, 0, 0);
 			this.userSubmitTable.Controls.Add(this.label120, 0, 1);
@@ -2937,7 +2937,7 @@
 			this.userIsActiveBox.AutoSize = true;
 			this.userIsActiveBox.Checked = true;
 			this.userIsActiveBox.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.userIsActiveBox.Location = new System.Drawing.Point(849, 33);
+			this.userIsActiveBox.Location = new System.Drawing.Point(848, 33);
 			this.userIsActiveBox.Name = "userIsActiveBox";
 			this.userIsActiveBox.Size = new System.Drawing.Size(15, 14);
 			this.userIsActiveBox.TabIndex = 8;
@@ -2967,7 +2967,7 @@
 			// 
 			this.label122.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label122.AutoSize = true;
-			this.label122.Location = new System.Drawing.Point(716, 7);
+			this.label122.Location = new System.Drawing.Point(715, 7);
 			this.label122.Name = "label122";
 			this.label122.Size = new System.Drawing.Size(81, 13);
 			this.label122.TabIndex = 3;
@@ -2977,7 +2977,7 @@
 			// 
 			this.label123.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label123.AutoSize = true;
-			this.label123.Location = new System.Drawing.Point(716, 34);
+			this.label123.Location = new System.Drawing.Point(715, 34);
 			this.label123.Name = "label123";
 			this.label123.Size = new System.Drawing.Size(51, 13);
 			this.label123.TabIndex = 4;
@@ -3013,22 +3013,11 @@
 			// 
 			this.userIsAdminBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.userIsAdminBox.AutoSize = true;
-			this.userIsAdminBox.Location = new System.Drawing.Point(849, 6);
+			this.userIsAdminBox.Location = new System.Drawing.Point(848, 6);
 			this.userIsAdminBox.Name = "userIsAdminBox";
 			this.userIsAdminBox.Size = new System.Drawing.Size(15, 14);
 			this.userIsAdminBox.TabIndex = 7;
 			this.userIsAdminBox.UseVisualStyleBackColor = true;
-			// 
-			// userSubmitButton
-			// 
-			this.userSubmitButton.Anchor = System.Windows.Forms.AnchorStyles.Right;
-			this.userSubmitButton.Location = new System.Drawing.Point(1556, 128);
-			this.userSubmitButton.Name = "userSubmitButton";
-			this.userSubmitButton.Size = new System.Drawing.Size(75, 21);
-			this.userSubmitButton.TabIndex = 9;
-			this.userSubmitButton.Text = "Submit";
-			this.userSubmitButton.UseVisualStyleBackColor = true;
-			this.userSubmitButton.Click += new System.EventHandler(this.userSubmitButton_Click);
 			// 
 			// label121
 			// 
@@ -3088,6 +3077,17 @@
 			this.userRepeatPasswordBox.PasswordChar = '*';
 			this.userRepeatPasswordBox.Size = new System.Drawing.Size(216, 20);
 			this.userRepeatPasswordBox.TabIndex = 15;
+			// 
+			// userSubmitButton
+			// 
+			this.userSubmitButton.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.userSubmitButton.Location = new System.Drawing.Point(1556, 128);
+			this.userSubmitButton.Name = "userSubmitButton";
+			this.userSubmitButton.Size = new System.Drawing.Size(75, 21);
+			this.userSubmitButton.TabIndex = 9;
+			this.userSubmitButton.Text = "Submit";
+			this.userSubmitButton.UseVisualStyleBackColor = true;
+			this.userSubmitButton.Click += new System.EventHandler(this.userSubmitButton_Click);
 			// 
 			// userDescription
 			// 
@@ -3309,7 +3309,7 @@
 			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 134F));
 			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 73F));
 			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 446F));
-			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 174F));
+			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 176F));
 			this.tableLayoutPanel4.Controls.Add(this.label103, 0, 0);
 			this.tableLayoutPanel4.Controls.Add(this.userIdSearch, 1, 0);
 			this.tableLayoutPanel4.Controls.Add(this.label104, 2, 0);
@@ -3348,7 +3348,7 @@
 			// 
 			this.label104.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label104.AutoSize = true;
-			this.label104.Location = new System.Drawing.Point(323, 12);
+			this.label104.Location = new System.Drawing.Point(321, 12);
 			this.label104.Name = "label104";
 			this.label104.Size = new System.Drawing.Size(58, 13);
 			this.label104.TabIndex = 2;
@@ -3357,7 +3357,7 @@
 			// userNameSearch
 			// 
 			this.userNameSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.userNameSearch.Location = new System.Drawing.Point(402, 8);
+			this.userNameSearch.Location = new System.Drawing.Point(400, 8);
 			this.userNameSearch.MaxLength = 256;
 			this.userNameSearch.Name = "userNameSearch";
 			this.userNameSearch.Size = new System.Drawing.Size(289, 20);
@@ -3367,7 +3367,7 @@
 			// 
 			this.label105.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label105.AutoSize = true;
-			this.label105.Location = new System.Drawing.Point(718, 12);
+			this.label105.Location = new System.Drawing.Point(716, 12);
 			this.label105.Name = "label105";
 			this.label105.Size = new System.Drawing.Size(81, 13);
 			this.label105.TabIndex = 4;
@@ -3376,7 +3376,7 @@
 			// userSearchButton
 			// 
 			this.userSearchButton.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.userSearchButton.Location = new System.Drawing.Point(1468, 7);
+			this.userSearchButton.Location = new System.Drawing.Point(1466, 7);
 			this.userSearchButton.Name = "userSearchButton";
 			this.userSearchButton.Size = new System.Drawing.Size(75, 23);
 			this.userSearchButton.TabIndex = 6;
@@ -3389,7 +3389,7 @@
 			this.label106.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label106.AutoSize = true;
 			this.label106.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label106.Location = new System.Drawing.Point(947, 12);
+			this.label106.Location = new System.Drawing.Point(945, 12);
 			this.label106.Name = "label106";
 			this.label106.Size = new System.Drawing.Size(50, 13);
 			this.label106.TabIndex = 7;
@@ -3399,7 +3399,7 @@
 			// 
 			this.userOrderBy.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.userOrderBy.FormattingEnabled = true;
-			this.userOrderBy.Location = new System.Drawing.Point(1021, 8);
+			this.userOrderBy.Location = new System.Drawing.Point(1019, 8);
 			this.userOrderBy.Name = "userOrderBy";
 			this.userOrderBy.Size = new System.Drawing.Size(185, 21);
 			this.userOrderBy.TabIndex = 8;
@@ -3408,7 +3408,7 @@
 			// 
 			this.userIsAdminSearch.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.userIsAdminSearch.AutoSize = true;
-			this.userIsAdminSearch.Location = new System.Drawing.Point(812, 11);
+			this.userIsAdminSearch.Location = new System.Drawing.Point(810, 11);
 			this.userIsAdminSearch.Name = "userIsAdminSearch";
 			this.userIsAdminSearch.Size = new System.Drawing.Size(15, 14);
 			this.userIsAdminSearch.TabIndex = 9;

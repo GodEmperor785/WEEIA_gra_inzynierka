@@ -39,6 +39,12 @@ namespace GAME_connection {
 			else return true;
 		}
 
+		public override bool Equals(object obj) {
+			Fleet castObj = obj as Fleet;
+			if (castObj == null) return false;
+			return this.Id == castObj.Id; ;
+		}
+
 		public Player Owner { get => owner; set => owner = value; }
 		public List<Ship> Ships { get => ships; set => ships = value; }
 		public string Name { get => name; set => name = value; }

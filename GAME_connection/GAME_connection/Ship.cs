@@ -80,6 +80,12 @@ namespace GAME_connection {
 		public double ShipExpModifier { get => shipExpModifier; set => shipExpModifier = value; }
 		public ShipState State { get => state; set => state = value; }
 
+		public override bool Equals(object obj) {
+			Ship castObj = obj as Ship;
+			if (castObj == null) return false;
+			return (Id == castObj.Id);
+		}
+
 		private void CalculateExpBonuses() {
 			Evasion = Math.Min(MAX_MULTIPLIER, Evasion + Evasion * ShipExpModifier);
 			foreach(Weapon wep in Weapons) {
@@ -90,5 +96,7 @@ namespace GAME_connection {
 				def.DefenceValue = def.DefenceValue + def.DefenceValue * ShipExpModifier;
 			}
 		}
+
+
 	}
 }
