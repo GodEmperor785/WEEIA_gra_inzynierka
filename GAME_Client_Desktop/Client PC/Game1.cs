@@ -15,9 +15,11 @@ using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Button = Client_PC.UI.Button;
 using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
 using GameWindow = Client_PC.Scenes.GameWindow;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
+using Label = Client_PC.UI.Label;
 using MainMenu = Client_PC.Scenes.MainMenu;
 using Menu = Client_PC.Scenes.Menu;
 
@@ -61,9 +63,6 @@ namespace Client_PC
         List<Menu> menus = new List<Menu>();
         public BaseModifiers Modifiers;
         public GAME_connection.TcpConnection Connection;
-
-
-
         private bool test = true; // false if dont connect with server
 
 
@@ -78,7 +77,6 @@ namespace Client_PC
             IsMouseVisible = true;
             setUpConnection();
         }
-
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -127,12 +125,19 @@ namespace Client_PC
         {
             if (test)
             {
-                string server = "212.191.92.88";
-                int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
-                TcpClient client = new TcpClient(server, port);
-                Console.WriteLine("tcpClient created");
-                Connection = new TcpConnection(client, true, null, false, false, null);
-                Console.WriteLine("Connection established");
+                try
+                {
+                    string server = "212.191.92.88";
+                    int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
+                    TcpClient client = new TcpClient(server, port);
+                    Console.WriteLine("tcpClient created");
+                    Connection = new TcpConnection(client, true, null, false, false, null);
+                    Console.WriteLine("Connection established");
+                }
+                catch (Exception e)
+                {
+                    
+                }
             }
         }
 
@@ -209,8 +214,8 @@ namespace Client_PC
         }
         public void ClosingFunction(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Connection.Disconnect();
-            
+            Connection?.Disconnect();
+
         }
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload

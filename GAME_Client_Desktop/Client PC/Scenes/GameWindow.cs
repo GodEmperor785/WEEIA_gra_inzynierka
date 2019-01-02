@@ -58,10 +58,13 @@ namespace Client_PC.Scenes
         private int cardWidth;
         private int cardHeight;
         private bool gameloop = false;
+        private bool readyToSend = false;
         private Thread th;
         private List<Card> AllyCards;
         private List<Card> EnemyCards;
         private Move move;
+        private Button turnButton;
+        private GameState currentGameState;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -107,9 +110,13 @@ namespace Client_PC.Scenes
 
 
             yourCards.Width = (int)(enemyGrid.Width + yourGrid.Width + (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.4));
+            turnButton = new Button(new Point(1000,400), 200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                text="End turn"
+            };
 
-
-
+            turnButton.clickEvent += EndTurnClick;
+            Clickable.Add(turnButton);
             yourGrid.Origin = new Point(10,10);
             enemyGrid.Origin = new Point(10 + yourGrid.Width + (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.4), 10 );
 
@@ -122,11 +129,17 @@ namespace Client_PC.Scenes
             layout.AddChild(enemyGrid);
             layout.AddChild(yourGrid);
             layout.AddChild(yourCards);
+            layout.AddChild(turnButton);
             th = new Thread(ContactLoop);
             
 
         }
 
+        public void EndTurnClick()
+        {
+            readyToSend = true;
+            turnButton.Active = false;
+        }
         public void CardClick(object sender)
         {
             CurrentCard = (Card)sender;
@@ -152,8 +165,9 @@ namespace Client_PC.Scenes
                     else
                     {
                         CurrentCard.Status = Card.status.target;
-                        ShipPosition origin = new ShipPosition(LastCard.line,LastCard.GetShip().Id);
-                        ShipPosition target = new ShipPosition(CurrentCard.line,CurrentCard.GetShip().Id);
+                        LastCard.CanMove = false;
+                        ShipPosition origin = getShipPosition(LastCard.GetShip());
+                        ShipPosition target = getShipPosition(CurrentCard.GetShip());
                         move.AttackList.Add(new Tuple<ShipPosition, ShipPosition>(origin,target));
                     }
                 }
@@ -162,23 +176,48 @@ namespace Client_PC.Scenes
             LastCard = CurrentCard;
         }
 
+        private ShipPosition getShipPosition(Ship ship)
+        {
+            ShipPosition result = null;
+            if (currentGameState.YourGameBoard.Board[Line.SHORT].Contains(ship))
+            {
+                result = new ShipPosition(Line.SHORT,currentGameState.YourGameBoard.Board[Line.SHORT].FindIndex(p=> p.Id == ship.Id));
+            }
+            else if(currentGameState.YourGameBoard.Board[Line.MEDIUM].Contains(ship))
+            {
+                result = new ShipPosition(Line.MEDIUM, currentGameState.YourGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+            }
+            else if (currentGameState.YourGameBoard.Board[Line.LONG].Contains(ship))
+            {
+                result = new ShipPosition(Line.LONG, currentGameState.YourGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+            }
+            else if(currentGameState.EnemyGameBoard.Board[Line.SHORT].Contains(ship))
+            {
+                result = new ShipPosition(Line.SHORT, currentGameState.EnemyGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+            }
+            else if (currentGameState.EnemyGameBoard.Board[Line.MEDIUM].Contains(ship))
+            {
+                result = new ShipPosition(Line.MEDIUM, currentGameState.EnemyGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+            }
+            else if (currentGameState.EnemyGameBoard.Board[Line.LONG].Contains(ship))
+            {
+                result = new ShipPosition(Line.LONG, currentGameState.EnemyGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+            }
+            else
+            {
+                result = null;
+            }
+
+            return result;
+        }
         public void CardSlotClick(object sender)
         {
             CardSlot c = (CardSlot) sender;
             if (LineDifference(CurrentCard.line, c.line) < 1 && CurrentCard.CanMove)
             {
-                var position = yourGrid.getPosition(c);
-                Clickable.Remove(c);
-                Line prev = CurrentCard.line;
-                CurrentCard.line = c.line;
-                yourGrid.RemoveChild(CurrentCard);
-                yourGrid.AddChild(CurrentCard);
                 CurrentCard.CanMove = false;
-                CardSlot z = new CardSlot(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui);
-                z.line = prev;
-                z.clickEvent += CardSlotClick;
-                Clickable.Add(z);
-                yourGrid.UpdateP();
+                ShipPosition origin = getShipPosition(CurrentCard.GetShip());
+                move.MoveList.Add(new Tuple<ShipPosition, Line>(origin,c.line));
             }
         }
 
@@ -225,7 +264,26 @@ namespace Client_PC.Scenes
                     if (packet.OperationType == OperationType.GAME_STATE)
                     {
                         GameState state = (GameState)packet.Packet;
+                        currentGameState = state;
+                        setState(state);
+                        turnButton.Active = true;
                     }
+                }
+                if (readyToSend)
+                {
+                    readyToSend = false;
+                    packet = new GamePacket(OperationType.MAKE_MOVE,move);
+                    Game1.self.Connection.Send(packet);
+                    packet = Game1.self.Connection.GetReceivedPacket();
+                    if (packet.OperationType == OperationType.FAILURE)
+                    {
+                        //TODO add text to game
+                    }
+
+
+
+
+
                 }
             }
         }
@@ -240,6 +298,13 @@ namespace Client_PC.Scenes
             var medEnemy = state.YourGameBoard.Board[Line.MEDIUM].ToList();
             var longEnemy = state.YourGameBoard.Board[Line.LONG].ToList();
 
+            yourGrid.RemoveChildren();
+            enemyGrid.RemoveChildren();
+            Clickable.ForEach(p =>
+            {
+                if (p is Card)
+                    Clickable.Remove(p);
+            });
             CardsToRow(shortAlly,Line.SHORT,true);
             CardsToRow(medAlly, Line.MEDIUM, true);
             CardsToRow(longAlly, Line.LONG, true);
