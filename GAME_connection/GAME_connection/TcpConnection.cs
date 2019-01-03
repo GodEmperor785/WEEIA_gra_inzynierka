@@ -248,7 +248,7 @@ namespace GAME_connection {
 			else return null;
 		}
 
-		private int QueueCount {
+		public int QueueCount {
 			get {
 				int queueCount;
 				lock (queueLock) {
@@ -274,7 +274,10 @@ namespace GAME_connection {
 						OnGameOver(EventArgs.Empty);
 					}
 					else if (receivedPacket.OperationType == OperationType.SURRENDER) OnSurrender(new GameEventArgs(PlayerNumber));
-					else EnqueuePacket(receivedPacket);
+					else {
+						if (debug) tcpConnectionLogger("Received packet: " + receivedPacket.OperationType);
+						EnqueuePacket(receivedPacket);
+					}
 					if (receivedPacket.OperationType == OperationType.DISCONNECT) {
 						KeepReceiving = false;        //stop receiving if disconnect
 						OnConnectionEnded(new GameEventArgs(PlayerNumber));
@@ -302,10 +305,16 @@ namespace GAME_connection {
 			if(AlreadyDisconnected) this.Disconnect();
 		}
 
-		private void EnqueuePacket(GamePacket packet) {
+		/// <summary>
+		/// used to eqnueue packet by receiver thread and by GameRoomThread if packet is wrong
+		/// </summary>
+		/// <param name="packet"></param>
+		public void EnqueuePacket(GamePacket packet) {
 			lock (queueLock) {
+				if (debug) tcpConnectionLogger("equeuing packet: " + packet.OperationType + ", queue count = " + QueueCount);
 				receivedPackets.Enqueue(packet);
 				messageReceivedEvent.Set();
+				if (debug) tcpConnectionLogger("packet enqueued: " + packet.OperationType + ", queue count = " + QueueCount);
 			}
 		}
 

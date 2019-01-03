@@ -1001,9 +1001,14 @@ namespace GAME_Server {
 
 		internal UserThread(TcpConnection client) {
 			client.ConnectionEnded += UserDisconnectedHandler;
+			client.ConnectionTestReceived += ConnectionTestReceived;
 			this.Client = client;
 			this.GameDataBase = Server.GetGameDBContext();
 			this.gameRNG = new GameRNG();
+		}
+
+		private void ConnectionTestReceived(object sender, EventArgs e) {
+			Server.Log("connection test received, queue count = " + Client.QueueCount);
 		}
 
 		public TcpConnection Client { get => client; set => client = value; }
@@ -1352,9 +1357,17 @@ namespace GAME_Server {
 			DbPlayer thisUser;
 			string validationResult;
 			mainLoop: while (ClientConnected) {
+				Server.Log(User.Username + ": waiting for request");
 				GamePacket gamePacket = Client.GetReceivedPacket();
+				Server.Log(User.Username + ": received packet");
 				try {
 					gameSwitch: switch (gamePacket.OperationType) {
+						case OperationType.PLAYER_DATA:
+							Server.Log(User.Username + ": wants to view his data");
+							GetPlayerFromDb();
+							this.User.Password = "";
+							Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
+							break;
 						//====================================================== SHOP =====================================================================================================
 						case OperationType.GET_LOOTBOXES:       //dont care about internal packet		//OK
 							Server.Log(User.Username + ": wants to view lootboxes");
@@ -1659,7 +1672,7 @@ namespace GAME_Server {
 		public readonly string YOU_LOST_MESSAGE;// = "You lost!";
 		public readonly string DRAW_MESSAGE;// = "Draw!";
 		public static readonly int SETUP_FLEET_TIMEOUT = 120000;    //in miliseconds
-		public static readonly int MAKE_MOVE_TIMEOUT = 60000;	//in miliseconds
+		public static readonly int MAKE_MOVE_TIMEOUT = 180000;	//in miliseconds
 
 		private Player player1;     //host
 		private Player player2;
@@ -1838,12 +1851,14 @@ namespace GAME_Server {
 					if (player1Packet != null) {
 						try {
 							if (CheckDisconnectContinueGame(player1Packet, 1)) {
-								Player1GameBoard = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
-								validateResult = GameServerValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
-								if (validateResult != GameServerValidator.OK) {
-									EndGameOnError(1, validateResult);
+								if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.SETUP_FLEET, player1Packet, Player1Conn)) {
+									Player1GameBoard = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
+									validateResult = GameServerValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
+									if (validateResult != GameServerValidator.OK) {
+										EndGameOnError(1, validateResult);
+									}
+									else SendSuccess(Player1Conn);  //if setup OK send success
 								}
-								else SendSuccess(Player1Conn);  //if setup OK send success
 							}
 						}
 						catch (InvalidCastException) {
@@ -1853,13 +1868,15 @@ namespace GAME_Server {
 					else EndGameOnError(1, FailureReasons.RECEIVE_TIMEOUT);
 					if (player2Packet != null) {
 						try {
-							if (CheckDisconnectContinueGame(player1Packet, 1)) {
-								Player2GameBoard = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
-								validateResult = GameServerValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
-								if (validateResult != GameServerValidator.OK) {
-									EndGameOnError(2, validateResult);
+							if (CheckDisconnectContinueGame(player2Packet, 2)) {
+								if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.SETUP_FLEET, player2Packet, Player2Conn)) {
+									Player2GameBoard = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
+									validateResult = GameServerValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
+									if (validateResult != GameServerValidator.OK) {
+										EndGameOnError(2, validateResult);
+									}
+									else SendSuccess(Player2Conn);  //if setup OK send success
 								}
-								else SendSuccess(Player2Conn);  //if setup OK send success
 							}
 						}
 						catch (InvalidCastException) {
@@ -1889,12 +1906,14 @@ namespace GAME_Server {
 							if (player1Packet != null) {
 								try {
 									if (CheckDisconnectContinueGame(player1Packet, 1)) {
-										player1Move = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
-										validateResult = GameServerValidator.ValidateMove(player1Move, ThisGame.Player1GameBoard, ThisGame.Player2GameBoard);
-										if (validateResult != GameServerValidator.OK) {
-											SkipMove(Player1Conn, "invalid move: " + validateResult);
+										if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.MAKE_MOVE, player1Packet, Player1Conn)) {
+											player1Move = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
+											validateResult = GameServerValidator.ValidateMove(player1Move, ThisGame.Player1GameBoard, ThisGame.Player2GameBoard);
+											if (validateResult != GameServerValidator.OK) {
+												SkipMove(Player1Conn, "invalid move: " + validateResult);
+											}
+											else SendSuccess(Player1Conn);  //if move OK send success
 										}
-										else SendSuccess(Player1Conn);  //if move OK send success
 									}
 								}
 								catch (InvalidCastException) {
@@ -1906,13 +1925,15 @@ namespace GAME_Server {
 							}
 							if (player2Packet != null) {
 								try {
-									if (CheckDisconnectContinueGame(player1Packet, 1)) {
-										player2Move = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
-										validateResult = GameServerValidator.ValidateMove(player2Move, ThisGame.Player2GameBoard, ThisGame.Player1GameBoard);
-										if (validateResult != GameServerValidator.OK) {
-											SkipMove(Player2Conn, "invalid move: " + validateResult);
+									if (CheckDisconnectContinueGame(player2Packet, 2)) {
+										if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.MAKE_MOVE, player2Packet, Player2Conn)) {
+											player2Move = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
+											validateResult = GameServerValidator.ValidateMove(player2Move, ThisGame.Player2GameBoard, ThisGame.Player1GameBoard);
+											if (validateResult != GameServerValidator.OK) {
+												SkipMove(Player2Conn, "invalid move: " + validateResult);
+											}
+											else SendSuccess(Player2Conn);  //if move OK send success
 										}
-										else SendSuccess(Player2Conn);  //if move OK send success
 									}
 								}
 								catch (InvalidCastException) {
@@ -1945,37 +1966,33 @@ namespace GAME_Server {
 
 							//check game result and possibly end the game
 							Victory gameResultAfterThisTurn = ThisGame.CheckGameEndResult();
-							if(gameResultAfterThisTurn == Victory.PLAYER_1) {
+							if (gameResultAfterThisTurn == Victory.PLAYER_1) {
 								UpdateLoserAndWiner(Player2, Player1);
 								Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, YOU_WON_MESSAGE)));
 								Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, YOU_LOST_MESSAGE)));
 								SetGameEnded();
 							}
-							else if(gameResultAfterThisTurn == Victory.PLAYER_2) {
+							else if (gameResultAfterThisTurn == Victory.PLAYER_2) {
 								UpdateLoserAndWiner(Player1, Player2);
 								Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, YOU_WON_MESSAGE)));
 								Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, YOU_LOST_MESSAGE)));
 								SetGameEnded();
 							}
-							else if(gameResultAfterThisTurn == Victory.DRAW) {
+							else if (gameResultAfterThisTurn == Victory.DRAW) {
 								UpdateDraw();
 								Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, DRAW_MESSAGE)));
 								Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, DRAW_MESSAGE)));
 								SetGameEnded();
 							}
 							//else if Victory.NOT_YET and game continues
-
-							//na poczatku dla ruchu statku zrobic tymczasowa liste par <statek,linia_docelowa> zeby nie bylo problemow z indexami i nullami
-							//przed przetwarzaniem zrobic refernecyjna liste tych par i na jej podstawie brac statki i wstawiac na nowy PlayerGameBoard
-							//docelowo obiekty zwracane do klienta to te property w tym obiekcie, ta lista par tylko dla referencji
-							//klient moze wrzuca null na miejsce startowe ruchu zeby sie nie pogubil
-
 							//}
 						}
 					}
 
-					Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
-					if(!GameAlreadyEnded) EndGameThread();
+					if (!GameAlreadyEnded) {
+						Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
+						EndGameThread();
+					}
 				}
 			}
 			catch (ConnectionEndedException ex) {
@@ -2017,6 +2034,14 @@ namespace GAME_Server {
 			else return true;
 		}
 
+		private bool CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType expectedType, GamePacket packet, TcpConnection playerConnection) {
+			if (packet.OperationType == expectedType) return true;
+			else {
+				playerConnection.EnqueuePacket(packet);	//put back not matching packet into the queue
+				return false;
+			}
+		}
+
 		#region game room utils
 		/// <summary>
 		/// sends Success to joiner if join ok and set event that starts the game
@@ -2029,6 +2054,9 @@ namespace GAME_Server {
 		internal bool JoinThisRoom(TcpConnection joinerConnection, Player joiner, IGameDataBase player2DB, UserThread player2ThreadObj) {
 			lock (joinLock) {
 				if (!IsFull) {
+					joinerConnection.GameAbandoned += GameAbandonedHandler;   //add event that indicates that player abandoned game
+					joinerConnection.ConnectionEnded += PlayerDisconnectedHandler;    //add event that indicates player disconnection
+					joinerConnection.Surrender += SurrenderHandler;   //add event that indicates player surrender
 					Player2 = joiner;
 					Player2Conn = joinerConnection;
 					Player2Conn.PlayerNumber = 2;
@@ -2051,7 +2079,6 @@ namespace GAME_Server {
 		}
 
 		private void UpdateLoserAndWiner(Player loser, Player winner) {
-
 			Server.Log(UsernamesOfPlayers + ": Game ended - result: winner " + winner.Username + " loser: " + loser.Username);
 
 			IGameDataBase winnerDB;
