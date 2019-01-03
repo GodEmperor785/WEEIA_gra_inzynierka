@@ -275,7 +275,7 @@ namespace GAME_connection {
 					}
 					else if (receivedPacket.OperationType == OperationType.SURRENDER) OnSurrender(new GameEventArgs(PlayerNumber));
 					else {
-						if (debug) tcpConnectionLogger("Received packet: " + receivedPacket.OperationType);
+						//if (debug) tcpConnectionLogger("Received packet: " + receivedPacket.OperationType);
 						EnqueuePacket(receivedPacket);
 					}
 					if (receivedPacket.OperationType == OperationType.DISCONNECT) {
@@ -311,10 +311,10 @@ namespace GAME_connection {
 		/// <param name="packet"></param>
 		public void EnqueuePacket(GamePacket packet) {
 			lock (queueLock) {
-				if (debug) tcpConnectionLogger("equeuing packet: " + packet.OperationType + ", queue count = " + QueueCount);
+				//if (debug) tcpConnectionLogger("equeuing packet: " + packet.OperationType + ", queue count = " + QueueCount);
 				receivedPackets.Enqueue(packet);
 				messageReceivedEvent.Set();
-				if (debug) tcpConnectionLogger("packet enqueued: " + packet.OperationType + ", queue count = " + QueueCount);
+				//if (debug) tcpConnectionLogger("packet enqueued: " + packet.OperationType + ", queue count = " + QueueCount);
 			}
 		}
 

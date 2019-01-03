@@ -329,9 +329,9 @@ namespace GAME_Server {
 				string p1Name = "player1";
 				string p2Name = "player2";
 				string a1Name = "admin";
-				DbPlayer p1 = new DbPlayer(p1Name, p1Name, BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, BaseModifiers.BaseFleetMaxSize, 3, 2, BaseModifiers.StartingMoney);
-				DbPlayer p2 = new DbPlayer(p2Name, p2Name, BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, BaseModifiers.BaseFleetMaxSize, 3, 1, BaseModifiers.StartingMoney);
-				DbPlayer a1 = new DbPlayer(a1Name, a1Name, 0, BaseModifiers.BaseFleetMaxSize, 0, 0, BaseModifiers.StartingMoney) {
+				DbPlayer p1 = new DbPlayer(p1Name, PasswordManager.GeneratePasswordHash(p1Name), BaseModifiers.ExpForVictory * 2 + BaseModifiers.ExpForLoss, BaseModifiers.BaseFleetMaxSize, 3, 2, BaseModifiers.StartingMoney);
+				DbPlayer p2 = new DbPlayer(p2Name, PasswordManager.GeneratePasswordHash(p2Name), BaseModifiers.ExpForLoss * 2 + BaseModifiers.ExpForVictory, BaseModifiers.BaseFleetMaxSize, 3, 1, BaseModifiers.StartingMoney);
+				DbPlayer a1 = new DbPlayer(a1Name, PasswordManager.GeneratePasswordHash(a1Name), 0, BaseModifiers.BaseFleetMaxSize, 0, 0, BaseModifiers.StartingMoney) {
 					IsAdmin = true
 				};
 				GameDataBase.AddPlayer(p1);

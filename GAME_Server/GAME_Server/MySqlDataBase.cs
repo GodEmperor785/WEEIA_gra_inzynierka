@@ -621,7 +621,8 @@ namespace GAME_Server {
 								where players.Username == player.Username && players.IsActive
 								select players).FirstOrDefault();
 			if (playerFromDb == null) return false;
-			else if (playerFromDb.Password == player.Password) return true;
+			else if (PasswordManager.VerifyPassword(playerFromDb.Password, player.Password)) return true;
+			//else if (playerFromDb.Password == player.Password) return true;
 			else return false;
 		}
 

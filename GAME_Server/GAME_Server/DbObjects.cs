@@ -36,7 +36,8 @@ namespace GAME_Server {
 		/// <param name="player"></param>
 		public DbPlayer(Player player, int startingMoney) : this() {
 			Username = player.Username;
-			Password = player.Password;
+			//Password = player.Password;
+			Password = PasswordManager.GeneratePasswordHash(player.Password);
 			Experience = 0;
 			MaxFleetPoints = Server.BaseModifiers.BaseFleetMaxSize;
 			Id = player.Id;
