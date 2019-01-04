@@ -125,12 +125,10 @@ namespace Client_PC.Scenes
             grid.AddChild(backButton,3,1);
             backButton.clickEvent += backClick;
             registerButton.clickEvent += registerClick;
-            registerButton.ActiveChangeable = false;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
             grid.ResizeChildren();
             SetClickables(true);
-            registerButton.Active = false;
         }
 
         protected override void SetClickables(bool active)
@@ -138,9 +136,8 @@ namespace Client_PC.Scenes
             foreach (var clickable in Clickable)
             {
                 clickable.Active = active;
-                if (popup != null)
-                    if (clickable.Parent == popup.grid)
-                        clickable.Active = !active;
+                if (clickable.Parent == popup.grid)
+                    clickable.Active = !active;
             }
         }
         public void onPopupExit()
@@ -155,11 +152,6 @@ namespace Client_PC.Scenes
 
         }
 
-        public override void DataInserted()
-        {
-            registerButton.Active = true;
-            registerButton.ActiveChangeable = true;
-        }
 
         public override void Clean()
         {
@@ -172,7 +164,7 @@ namespace Client_PC.Scenes
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
-            SetClickables(true);
+            SetClickables(!popup.Active);
         }
         public void backClick()
         {
@@ -199,18 +191,18 @@ namespace Client_PC.Scenes
                         lbl1.Text = "User already exists, change login";
                     }
 
-                    popup.SetActive(true);
                     Clean();
                     Game1.self.popupToDraw = popup;
                     SetClickables(false);
+                    popup.SetActive(true);
                 }
                 else
                 {
                     lbl1.Text = "Both passwords must be the same";
-                    popup.SetActive(true);
                     Clean();
                     Game1.self.popupToDraw = popup;
                     SetClickables(false);
+                    popup.SetActive(true);
                 }
             }
 
