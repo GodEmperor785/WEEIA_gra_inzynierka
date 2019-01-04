@@ -29,6 +29,7 @@ namespace Client_PC.Scenes
         private PlayerGameBoard gmBoard;
         private bool readyToSend;
         private Popup popup;
+        private Label tipLabel;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -73,8 +74,11 @@ namespace Client_PC.Scenes
             save.clickEvent += onSave;
             buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
             cardsGrid.Origin = new Point(200, buttonsGrid.Origin.Y - 200);
-
-
+            tipLabel = new Label(new Point(grid.Origin.X + grid.Width + 50,grid.Origin.Y), Game1.self.graphics.PreferredBackBufferWidth - 150 - grid.Width, grid.RealHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            {
+                Text="You have 2 minutes to choose your fleet's shape. There's no difference between positions in rows, all the ships in the end will be put to the left border."
+            };
+            layout.AddChild(tipLabel);
 
 
             Grid popupGrid = new Grid();
@@ -99,6 +103,7 @@ namespace Client_PC.Scenes
 
 
             buttonsGrid.AddChild(save,0,0);
+            Clickable.Add(save);
             layout.AddChild(up);
             layout.AddChild(down);
             Clickable.Add(up);
@@ -111,6 +116,7 @@ namespace Client_PC.Scenes
             cardsGrid.UpdateP();
             buttonsGrid.UpdateP();
             SetClickables(true);
+            layout.Update();
         }
 
         public void onSave()
@@ -123,17 +129,20 @@ namespace Client_PC.Scenes
             for (int i = 0; i < 5; i++)
             {
                 CardSlot slot = (CardSlot) grid.GetChild(0, i);
-                closestShips.Add(slot.Card.GetShip());
+                if(slot.HasCard)
+                    closestShips.Add(slot.Card.GetShip());
             }
             for (int i = 0; i < 5; i++)
             {
                 CardSlot slot = (CardSlot)grid.GetChild(0, i);
-                midShips.Add(slot.Card.GetShip());
+                if (slot.HasCard)
+                    midShips.Add(slot.Card.GetShip());
             }
             for (int i = 0; i < 5; i++)
             {
                 CardSlot slot = (CardSlot)grid.GetChild(0, i);
-                furthestShips.Add(slot.Card.GetShip());
+                if (slot.HasCard)
+                    furthestShips.Add(slot.Card.GetShip());
             }
 
             gmBoard = new PlayerGameBoard(closestShips, midShips, furthestShips);
@@ -172,6 +181,8 @@ namespace Client_PC.Scenes
                 });
             }
             SetClickables(true);
+            Task task = new Task(ReadyFunction);
+            task.Start();
         }
 
         public void CardClick(object sender)
@@ -185,17 +196,23 @@ namespace Client_PC.Scenes
 
         public override void UpdateLast()
         {
+            
+            
+        }
+
+        public void ReadyFunction()
+        {
             GamePacket packet;
             while (true)
             {
                 packet = Game1.self.Connection.GetReceivedPacket(100);
                 if (packet != null)
                 {
-                    if (packet.OperationType == OperationType.SUCCESS)
+                    if (packet.OperationType == OperationType.SUCCESS) // Fleet accepted and can start playing
                     {
                         Game1.self.state = Game1.State.GameWindow;
                     }
-                    else if (packet.OperationType == OperationType.FAILURE)
+                    else if (packet.OperationType == OperationType.FAILURE) // Failed to set fleet therefore loses game 
                     {
                         popup.SetActive(true);
                         Game1.self.popupToDraw = popup;
@@ -250,6 +267,7 @@ namespace Client_PC.Scenes
             grid.Draw(Game1.self.spriteBatch);
             cardsGrid.Draw(Game1.self.spriteBatch);
             buttonsGrid.Draw(Game1.self.spriteBatch);
+            layout.Draw(Game1.self.spriteBatch);
         }
     }
 }

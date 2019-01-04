@@ -52,6 +52,15 @@ namespace Client_PC.UI
                 child.element.Draw(spriteBatch);
             }
         }
+
+        public override void Update()
+        {
+            foreach (var child in Children)
+            {
+                child.element.Update();
+            }
+        }
+
         public void UpdateActive(bool isActive)
         {
 

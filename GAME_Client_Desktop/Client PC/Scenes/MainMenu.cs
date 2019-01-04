@@ -210,7 +210,7 @@ namespace Client_PC.Scenes
                         searching = true;
                         while (searching)
                         {
-                            packet = Game1.self.Connection.GetReceivedPacket(1000);
+                            packet = Game1.self.Connection.GetReceivedPacket(10);
                             if (packet != null)
                             {
                                 if (packet.OperationType == OperationType.SUCCESS)
@@ -218,8 +218,12 @@ namespace Client_PC.Scenes
                                     if (timer != null)
                                         timer.Dispose();
                                     Game1.self.SetFleetMenu(chosenDeck.GetFleet());
-                                    Game1.self.state = Game1.State.FleetMenu;
+                                    Game1.self.ReadyToPlay = true;
                                     searching = false;
+                                    popup.SetActive(false);
+                                    SetClickables(true);
+                                    Game1.self.popupToDraw = null;
+                                    break;
                                 }
                                 else
                                     continue;
@@ -231,6 +235,7 @@ namespace Client_PC.Scenes
                                 packet = new GamePacket(OperationType.ABANDON_GAME,new object());
                                 Game1.self.Connection.Send(packet);
                                 searching = false;
+                                break;
                             }
                         }
                     }
