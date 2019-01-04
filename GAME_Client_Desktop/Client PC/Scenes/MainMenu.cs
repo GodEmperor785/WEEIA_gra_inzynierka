@@ -27,6 +27,17 @@ namespace Client_PC.Scenes
         private string initialText = "Select deck and press search button to play";
         private string foundgame = "Found game";
         private bool searching = false;
+        private bool stopSearching = false;
+        #region popup buttons
+
+        private Button up;
+        private Button down;
+        private Button exit;
+        private Button search;
+        #endregion
+
+
+
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -54,6 +65,7 @@ namespace Client_PC.Scenes
             {
                 Text = "Shop"
             };
+            
             Clickable.Add(p1);
             Clickable.Add(z);
             Clickable.Add(z2);
@@ -88,25 +100,26 @@ namespace Client_PC.Scenes
             int buttonHeight = 50;
             Point popupOrigin = new Point(leftOrigin,topOrigin);
             RelativeLayout layout = new RelativeLayout();
-            Button up = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            up = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "up"
             };
             up.Origin = new Point(leftOrigin + leftOffset, topOrigin + topOffset);
             up.clickEvent += upClick;
             Clickable.Add(up);
-            Button down = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            down = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "down"
             };
-            Button exit = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            exit = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "exit"
             };
-            Button search = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            search = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "search game"
             };
+            search.ActiveChangeable = false;
             search.clickEvent += searchClick;
             Clickable.Add(search);
             exit.clickEvent += exitClick;
@@ -157,6 +170,7 @@ namespace Client_PC.Scenes
             SetClickables(false);
             popup.SetActive(true);
             popup.layout.UpdateActive(true);
+            search.Active = false;
         }
         protected override void SetClickables(bool active)
         {
@@ -170,19 +184,25 @@ namespace Client_PC.Scenes
         }
         public void searchClick() //TODO make it threaded
         {
+            Task task = new Task(searchFunction);
+            task.Start();
+        }
+
+        public void searchFunction()
+        {
             if (chosenDeck != null)
             {
                 searching = false;
-                GamePacket packet = new GamePacket(OperationType.SELECT_FLEET,chosenDeck.GetFleet());
+                GamePacket packet = new GamePacket(OperationType.SELECT_FLEET, chosenDeck.GetFleet());
                 Game1.self.Connection.Send(packet);
                 packet = Game1.self.Connection.GetReceivedPacket();
                 if (packet.OperationType == OperationType.SUCCESS)
                 {
                     var autoEvent = new AutoResetEvent(false);
                     time = 0;
-                    timer = new Timer(timerStart,autoEvent,0,1000);
+                    timer = new Timer(timerStart, autoEvent, 0, 1000);
                     //TODO not tested
-                    packet = new GamePacket(OperationType.PLAY_RANKED,null);
+                    packet = new GamePacket(OperationType.PLAY_RANKED, null);
                     Game1.self.Connection.Send(packet);
                     packet = Game1.self.Connection.GetReceivedPacket();
                     if (packet.OperationType == OperationType.SUCCESS)
@@ -199,9 +219,18 @@ namespace Client_PC.Scenes
                                         timer.Dispose();
                                     Game1.self.SetFleetMenu(chosenDeck.GetFleet());
                                     Game1.self.state = Game1.State.FleetMenu;
+                                    searching = false;
                                 }
                                 else
                                     continue;
+                            }
+
+                            if (stopSearching)
+                            {
+                                stopSearching = false;
+                                packet = new GamePacket(OperationType.ABANDON_GAME,new object());
+                                Game1.self.Connection.Send(packet);
+                                searching = false;
                             }
                         }
                     }
@@ -209,7 +238,6 @@ namespace Client_PC.Scenes
                 }
             }
         }
-
         public void timerStart(object stateInfo)
         {
             AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
@@ -220,7 +248,7 @@ namespace Client_PC.Scenes
         {
             if (searching)
             {
-                searching = false;
+                stopSearching = true;
                 if (timer != null)
                     timer.Dispose();
             }
@@ -240,6 +268,8 @@ namespace Client_PC.Scenes
         {
             Deck d = (Deck)sender;
             chosenDeck = d;
+            search.ActiveChangeable = true;
+            search.Active = true;
         }
 
         public void downClick()

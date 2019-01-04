@@ -25,12 +25,20 @@ namespace Client_PC.Scenes
 
         public virtual void Update(GameTime gameTime)
         {
+            bool update = false;
             Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
             Game1.self.AbleToClick = Game1.self.DeltaSeconds > Constants.clickDelay;
             var mouseState = Mouse.GetState();
             
             var keyboardState = Keyboard.GetState();
-            Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
+            update = Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
+            if (update)
+            {
+                int x = mouseState.X;
+                int y = mouseState.Y;
+                Point xy = new Point(x, y);
+                Test(xy);
+            }
             UpdateGrid();
             if(lastState != mouseState.LeftButton)
                 CheckClickables(mouseState);
@@ -41,6 +49,10 @@ namespace Client_PC.Scenes
             UpdateLast();
         }
 
+        public virtual void DataInserted()
+        {
+
+        }
         protected virtual void SetClickables(bool active)
         {
             foreach (var clickable in Clickable)
@@ -82,6 +94,14 @@ namespace Client_PC.Scenes
             }
         }
 
+        public virtual void Test(Point xy)
+        {
+            var click1 = Clickable.FirstOrDefault(p => p.GetBoundary().Contains(xy));
+            var click2 = Clickable.Where(p => p.Active == true).FirstOrDefault(p => p.GetBoundary().Contains(xy));
+            var clicks = Clickable.Where(p => p.Active == true).Where(p => p.GetBoundary().Contains(xy)).ToList();
+            var clicks2 = Clickable.Where(p => p.GetBoundary().Contains(xy)).ToList();
+            var z = 123;
+        }
         public virtual void UpdateLast()
         {
 
@@ -136,7 +156,7 @@ namespace Client_PC.Scenes
         public virtual IClickable GetClickable(Point xy)
         {
             
-            IClickable click = Clickable.Where(p=> p.Active).FirstOrDefault(p => p.GetBoundary().Contains(xy));
+            IClickable click = Clickable.Where(p=> p.Active == true).FirstOrDefault(p => p.GetBoundary().Contains(xy));
            
             return click;
         }

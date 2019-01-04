@@ -20,11 +20,11 @@ namespace Client_PC.Scenes
         private InputBox loginInputBox;
         private Popup popup;
         private Label lbl1;
-
+        private Button registerButton;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            Button registerButton = new Button(new Point(0,0),120,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            registerButton = new Button(new Point(0,0),120,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 text = "Register"
             };
@@ -87,6 +87,7 @@ namespace Client_PC.Scenes
             {
                 Text = "Exit"
             };
+            b1.Active = false;
             lbl1.DrawBackground = false;
             b1.DrawBackground = false;
             popup.grid = popupGrid;
@@ -124,12 +125,24 @@ namespace Client_PC.Scenes
             grid.AddChild(backButton,3,1);
             backButton.clickEvent += backClick;
             registerButton.clickEvent += registerClick;
+            registerButton.ActiveChangeable = false;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
             grid.ResizeChildren();
             SetClickables(true);
+            registerButton.Active = false;
         }
 
+        protected override void SetClickables(bool active)
+        {
+            foreach (var clickable in Clickable)
+            {
+                clickable.Active = active;
+                if (popup != null)
+                    if (clickable.Parent == popup.grid)
+                        clickable.Active = !active;
+            }
+        }
         public void onPopupExit()
         {
             popup.SetActive(false);
@@ -140,6 +153,12 @@ namespace Client_PC.Scenes
 
             Game1.self.popupToDraw = null;
 
+        }
+
+        public override void DataInserted()
+        {
+            registerButton.Active = true;
+            registerButton.ActiveChangeable = true;
         }
 
         public override void Clean()

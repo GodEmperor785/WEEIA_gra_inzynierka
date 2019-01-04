@@ -22,8 +22,9 @@ namespace Client_PC.Utilities
         };
 
         private static bool wallpaperChange = false;
-        public static void UpdateKeyboard(KeyboardState keyboardState, ref Keys[] lastPressedKeys)
+        public static bool UpdateKeyboard(KeyboardState keyboardState, ref Keys[] lastPressedKeys)
         {
+            bool update = false;
             var keys = keyboardState.GetPressedKeys();
             if (Game1.self.FocusedElement != null)
             {
@@ -37,15 +38,21 @@ namespace Client_PC.Utilities
                         {
                             if (inputBox.Text.Length < inputBox.TextLimit)
                             {
+                                
                                 if (UsableKeys.Contains(key))
                                 {
                                     if (keyboardState.IsKeyDown(Keys.LeftShift) ||
                                         keyboardState.IsKeyDown(Keys.RightShift))
+                                    {
                                         inputBox.Text += ((char) key).ToString().ToUpper();
+                                    }
                                     else
+                                    {
                                         inputBox.Text += ((char) key).ToString().ToLower();
+                                    }
                                 }
 
+                                
                                 if (key == Keys.Space)
                                 {
                                     inputBox.Text += " ";
@@ -77,7 +84,14 @@ namespace Client_PC.Utilities
                 Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
 
             }
+            if (keyboardState.GetPressedKeys().Contains(Keys.Delete) && !lastPressedKeys.Contains(Keys.Delete))
+            {
+
+                update = true;
+
+            }
             lastPressedKeys = keys;
+            return update;
         }
 
         public static Texture2D CreateTexture(GraphicsDevice device, int width, int height)
