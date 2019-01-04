@@ -64,7 +64,7 @@ namespace Client_PC
         public BaseModifiers Modifiers;
         public GAME_connection.TcpConnection Connection;
         private bool test = true; // false if dont connect with server
-
+        public bool ReadyToPlay;
 
 
 
@@ -235,6 +235,11 @@ namespace Client_PC
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            if (ReadyToPlay)
+            {
+                ReadyToPlay = false;
+                state = State.FleetMenu;
+            }
             switch (state)
             {
                 case State.MainMenu:

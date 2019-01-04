@@ -24,73 +24,81 @@ namespace Client_PC.Utilities
         private static bool wallpaperChange = false;
         public static bool UpdateKeyboard(KeyboardState keyboardState, ref Keys[] lastPressedKeys)
         {
+            
             bool update = false;
-            var keys = keyboardState.GetPressedKeys();
-            if (Game1.self.FocusedElement != null)
+            if (Game1.self.IsActive)
             {
-                if (Game1.self.FocusedElement is InputBox)
+                var keys = keyboardState.GetPressedKeys();
+                if (Game1.self.FocusedElement != null)
                 {
-                    InputBox inputBox = (InputBox) Game1.self.FocusedElement;
-                    
-                    foreach (var key in keys)
+                    if (Game1.self.FocusedElement is InputBox)
                     {
-                        if (!lastPressedKeys.Contains(key))
+                        InputBox inputBox = (InputBox) Game1.self.FocusedElement;
+
+                        foreach (var key in keys)
                         {
-                            if (inputBox.Text.Length < inputBox.TextLimit)
+                            if (!lastPressedKeys.Contains(key))
                             {
-                                
-                                if (UsableKeys.Contains(key))
+                                if (inputBox.Text.Length < inputBox.TextLimit)
                                 {
-                                    if (keyboardState.IsKeyDown(Keys.LeftShift) ||
-                                        keyboardState.IsKeyDown(Keys.RightShift))
+
+                                    if (UsableKeys.Contains(key))
                                     {
-                                        inputBox.Text += ((char) key).ToString().ToUpper();
+                                        if (keyboardState.IsKeyDown(Keys.LeftShift) ||
+                                            keyboardState.IsKeyDown(Keys.RightShift))
+                                        {
+                                            inputBox.Text += ((char) key).ToString().ToUpper();
+                                        }
+                                        else
+                                        {
+                                            inputBox.Text += ((char) key).ToString().ToLower();
+                                        }
                                     }
-                                    else
+
+
+                                    if (key == Keys.Space)
                                     {
-                                        inputBox.Text += ((char) key).ToString().ToLower();
+                                        inputBox.Text += " ";
+                                    }
+
+                                    if (key == Keys.Back)
+                                    {
+                                        if (inputBox.Text.Length > 0)
+                                            inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
                                     }
                                 }
-
-                                
-                                if (key == Keys.Space)
-                                {
-                                    inputBox.Text += " ";
-                                }
-
-                                if (key == Keys.Back)
+                                else if (key == Keys.Back)
                                 {
                                     if (inputBox.Text.Length > 0)
                                         inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
                                 }
                             }
-                            else if (key == Keys.Back)
-                            {
-                                if (inputBox.Text.Length > 0)
-                                    inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
-                            }
+
                         }
 
+
+
                     }
-
-
-                    
                 }
+
+                if (keyboardState.GetPressedKeys().Contains(Keys.F5) && !lastPressedKeys.Contains(Keys.F5))
+                {
+
+                    Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice,
+                        Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
+
+                }
+
+                if (keyboardState.GetPressedKeys().Contains(Keys.Delete) && !lastPressedKeys.Contains(Keys.Delete))
+                {
+
+                    update = true;
+
+                }
+
+                lastPressedKeys = keys;
             }
-            
-            if (keyboardState.GetPressedKeys().Contains(Keys.F5) && !lastPressedKeys.Contains(Keys.F5))
-            {
 
-                Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice, Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
-
-            }
-            if (keyboardState.GetPressedKeys().Contains(Keys.Delete) && !lastPressedKeys.Contains(Keys.Delete))
-            {
-
-                update = true;
-
-            }
-            lastPressedKeys = keys;
             return update;
         }
 

@@ -69,28 +69,31 @@ namespace Client_PC.Scenes
         }
         private void CheckClickables(MouseState mouseState)
         {
-            int x = mouseState.X;
-            int y = mouseState.Y;
-            Point xy = new Point(x, y);
-            IClickable button = GetClickable(xy);
-            if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
+            if (Game1.self.IsActive)
             {
-                UpdateFields();
-                Game1.self.DeltaSeconds = 0;
-                Game1.self.AbleToClick = false;
-
-                if (button != null)
+                int x = mouseState.X;
+                int y = mouseState.Y;
+                Point xy = new Point(x, y);
+                IClickable button = GetClickable(xy);
+                if (mouseState.LeftButton == ButtonState.Pressed && Game1.self.AbleToClick)
                 {
-                    UpdateClick(button);
-                    UpdateButtonNotNull();
-                }
-                else
-                {
-                    Game1.self.FocusedElement = null;
-                    UpdateButtonNull();
-                }
+                    UpdateFields();
+                    Game1.self.DeltaSeconds = 0;
+                    Game1.self.AbleToClick = false;
 
-                UpdateClickables();
+                    if (button != null)
+                    {
+                        UpdateClick(button);
+                        UpdateButtonNotNull();
+                    }
+                    else
+                    {
+                        Game1.self.FocusedElement = null;
+                        UpdateButtonNull();
+                    }
+
+                    UpdateClickables();
+                }
             }
         }
 
