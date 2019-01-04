@@ -11,14 +11,14 @@
             <param name="rarity"></param>
             <returns></returns>
         </member>
-        <member name="M:GAME_connection.GameEnumUtils.GetWeaponTypeyName(GAME_connection.WeaponType)">
+        <member name="M:GAME_connection.GameEnumUtils.GetWeaponTypyName(GAME_connection.WeaponType)">
             <summary>
             should be used to get string name of given <see cref="T:GAME_connection.WeaponType"/> enum. Use like: string x = WeaponType.KINETIC.GetWeaponTypeyName();
             </summary>
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:GAME_connection.GameEnumUtils.GetDefenceSystemType(GAME_connection.DefenceSystemType)">
+        <member name="M:GAME_connection.GameEnumUtils.GetDefenceSystemTypeName(GAME_connection.DefenceSystemType)">
             <summary>
             should be used to get string name of given <see cref="T:GAME_connection.DefenceSystemType"/> enum. Use like: string x = DefenceSystemType.SHIELD.GetDefenceSystemType();
             </summary>
@@ -59,11 +59,12 @@
             <param name="openForAll"></param>
             <param name="creatorsUserName"></param>
         </member>
-        <member name="M:GAME_connection.CustomGameRoom.#ctor(GAME_connection.CustomGameRoom)">
+        <member name="M:GAME_connection.CustomGameRoom.#ctor(GAME_connection.CustomGameRoom,System.Boolean)">
             <summary>
-            used by server, unsets password
+            used by server to answer clients GET_CUSTOM_ROOMS request
             </summary>
             <param name="room"></param>
+            <param name="unsetPassword"></param>
         </member>
         <member name="P:GAME_connection.ConnectionEndedException.Orign">
             <summary>
@@ -163,6 +164,12 @@
             <summary>
             Main receiving thread, receives <see cref="T:GAME_connection.GamePacket"/>s and puts them on the queue, ignores <see cref="F:GAME_connection.OperationType.CONNECTION_TEST"/> packets
             </summary>
+        </member>
+        <member name="M:GAME_connection.TcpConnection.EnqueuePacket(GAME_connection.GamePacket)">
+            <summary>
+            used to eqnueue packet by receiver thread and by GameRoomThread if packet is wrong
+            </summary>
+            <param name="packet"></param>
         </member>
         <member name="M:GAME_connection.TcpConnection.Receive">
             <summary>

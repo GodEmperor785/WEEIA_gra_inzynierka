@@ -61,7 +61,7 @@ namespace Client_PC.UI
 
                 parseText(text, Font);
                 if (NeedNewTexture)
-                    Texture = Util.CreateTextureHollow(Device, Width, Height, pixel => Color.Black);
+                    Texture = Util.CreateTextureHollow(Device, Width, Height);
             }
         }
         protected override String parseText(String text, SpriteFont Font)

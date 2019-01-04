@@ -15,7 +15,7 @@ namespace Client_PC.UI
 
     {
         enum Rarity { common, uncommon, rare}
-        
+        public bool IsOver { get; set; }
         private Rarity rarity;
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }

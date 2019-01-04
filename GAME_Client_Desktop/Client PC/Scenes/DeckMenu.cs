@@ -543,6 +543,7 @@ namespace Client_PC.Scenes
         }
         private void OnExit()
         {
+            Game1.self.UpdatePlayer();
             Game1.self.state = Game1.State.MainMenu;
         }
 

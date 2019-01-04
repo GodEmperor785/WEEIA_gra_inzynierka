@@ -22,7 +22,7 @@ namespace Client_PC.UI
             public int id;
             public string name;
         }
-
+        public bool IsOver { get; set; }
         private int OriginalHeight;
         private List<Child> Children;
         private int IdSelected;
@@ -61,7 +61,7 @@ namespace Client_PC.UI
             }
 
             if (NeedNewTexture)
-                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
+                Texture = Util.CreateTexture(Device, Width, Height);
         }
 
         public void ResizeChildren()

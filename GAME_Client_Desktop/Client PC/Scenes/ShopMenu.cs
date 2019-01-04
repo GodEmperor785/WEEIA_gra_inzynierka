@@ -101,8 +101,11 @@ namespace Client_PC.Scenes
         }
         public void GoToMenu()
         {
-            if(state == State.normal)
+            if (state == State.normal)
+            {
+                Game1.self.UpdatePlayer();
                 Game1.self.state = Game1.State.MainMenu;
+            }
             else if (state == State.cards)
                 state = State.normal;
         }

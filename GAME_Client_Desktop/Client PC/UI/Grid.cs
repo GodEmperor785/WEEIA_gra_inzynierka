@@ -641,7 +641,7 @@ namespace Client_PC.UI
             if (DrawBorder)
             {
                 if (Background == null)
-                    Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.Black,
+                    Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height,
                         BorderSize, 0);
                 //spriteBatch.Begin();
                 spriteBatch.Draw(Background, Boundary, Color.White);

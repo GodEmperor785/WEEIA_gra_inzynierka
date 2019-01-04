@@ -16,5 +16,6 @@ namespace Client_PC.UI
         bool ActiveChangeable { get; set; }
         Object Parent { get; set; }
         Tooltip Tooltip { get; set; }
+        bool IsOver { get; set; }
     }
 }

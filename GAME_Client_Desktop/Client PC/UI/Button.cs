@@ -44,7 +44,10 @@ namespace Client_PC.UI
         public bool ActiveChangeable { get; set; }
         public bool TextWrappable { get; set; }
         public Tooltip Tooltip { get; set; }
+        public bool IsOver { get; set; }
+
         public event ElementClickedInt clickEventInt;
+        private Texture2D inactive, over;
         public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin,width,height,device,gui)
         {
             Font = font;
@@ -60,16 +63,44 @@ namespace Client_PC.UI
         public override void Update()
         {
             Update(text, ref textPosition, Font);
-            if(NeedNewTexture)
-                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
+            if (NeedNewTexture)
+            {
+                Texture = Util.CreateTexture(Device, Width, Height);
+                inactive = Util.CreateTexture(Device, Width, Height, new Color(200, 200, 200), new Color(160, 160, 160));
+                over = Util.CreateTexture(Device, Width, Height, new Color(20, 150, 70), new Color(100, 100, 100));
+            }
+            
         }
 
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Begin();
-            if(DrawBackground)
-                spriteBatch.Draw(Texture, Boundary,Color.White);
+            if (DrawBackground)
+            {
+                if (IsOver)
+                {
+                    if (Active)
+                    {
+                        spriteBatch.Draw(over, Boundary, Color.White);
+                    }
+                    else
+                    {
+                        spriteBatch.Draw(inactive, Boundary, Color.White);
+                    }
+                }
+                else if (Active)
+                {
+                    spriteBatch.Draw(Texture, Boundary, Color.White);
+
+                }
+                else
+                {
+                    spriteBatch.Draw(inactive, Boundary, Color.White);
+                }
+                
+            }
+
             if (!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
             //spriteBatch.End();

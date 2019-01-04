@@ -79,7 +79,7 @@ namespace Client_PC.UI
         {
             Update(text,ref textPosition,Font);
             if (NeedNewTexture)
-                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black);
+                Texture = Util.CreateTexture(Device, Width, Height);
         }
     }
 }

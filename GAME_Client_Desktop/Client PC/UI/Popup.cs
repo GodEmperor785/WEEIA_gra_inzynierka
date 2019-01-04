@@ -41,7 +41,7 @@ namespace Client_PC.UI
 
         public void SetBackground()
         {
-            Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, pixel => Color.White,
+            Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height,
                 new Color(200, 200, 200), new Color(70, 120, 180),9);
         }
 

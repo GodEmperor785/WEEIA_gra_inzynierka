@@ -34,7 +34,7 @@ namespace Client_PC.UI
         {
             return Boundary;
         }
-
+        public bool IsOver { get; set; }
         public void OnClick()
         {
             clickEvent(this);
@@ -63,13 +63,13 @@ namespace Client_PC.UI
             if (focused)
             {
                 if(changeOfFocus || NeedNewTexture)
-                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, new Color(140, 140, 140),
+                Texture = Util.CreateTexture(Device, Width, Height, new Color(140, 140, 140),
                     new Color(60, 60, 60));
             }
             else
             {
                 if(changeOfFocus || NeedNewTexture)
-                Texture = Util.CreateTexture(Device, Width, Height, pixel => Color.Black, new Color(180, 180, 180),
+                Texture = Util.CreateTexture(Device, Width, Height, new Color(180, 180, 180),
                     new Color(100, 100, 100));
             }
 

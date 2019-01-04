@@ -106,6 +106,13 @@ namespace Client_PC.Scenes
             int y = mouseState.Y;
             Point xy = new Point(x, y);
             IClickable button = GetClickable(xy);
+            List<IClickable>c = new List<IClickable>();
+            if (button != null)
+            {
+                c.Add(button);
+                button.IsOver = true;
+            }
+            Clickable.Except(c).ToList().ForEach(p => { p.IsOver = false; });
             UpdateTooltips(button, xy);
         }
         public virtual void Initialize(ContentManager Content)

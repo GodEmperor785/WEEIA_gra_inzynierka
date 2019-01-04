@@ -21,7 +21,7 @@ namespace Client_PC.UI
         public event ElementClicked clickEvent;
         public Line line;
         public int number;
-
+        public bool IsOver { get; set; }
 
         public Rectangle GetBoundary()
         {

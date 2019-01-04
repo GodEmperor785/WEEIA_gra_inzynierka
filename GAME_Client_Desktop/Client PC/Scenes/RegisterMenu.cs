@@ -24,7 +24,7 @@ namespace Client_PC.Scenes
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            Button registerButton = new Button(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            Button registerButton = new Button(new Point(0,0),120,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 text = "Register"
             };
@@ -32,27 +32,27 @@ namespace Client_PC.Scenes
             {
                 text = "Back"
             };
-            Label loginLabel = new Label(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            Label loginLabel = new Label(new Point(0,0), 120, 60,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 Text = "Login"
             };
-            Label passwordLabel = new Label(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label passwordLabel = new Label(new Point(0, 0), 120, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password"
             };
-            Label passwordLabel2 = new Label(new Point(0, 0), 100, 55, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label passwordLabel2 = new Label(new Point(0, 0), 120, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password again"
             };
-            loginInputBox = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
+            loginInputBox = new InputBox(new Point(0,0), 300, 60, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
             {
                 TextLimit = 30
             };
-            passwordInputBox = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            passwordInputBox = new InputBox(new Point(0, 0), 300, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30
             };
-            passwordInputBox2 = new InputBox(new Point(0, 0), 300, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            passwordInputBox2 = new InputBox(new Point(0, 0), 300, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30
             };
@@ -163,34 +163,37 @@ namespace Client_PC.Scenes
 
         public void registerClick()
         {
-            if (passwordInputBox.Text.Equals(passwordInputBox2.Text))
+            if (!passwordInputBox.Text.Equals(""))
             {
-                Player player = new Player(loginInputBox.Text, passwordInputBox.Text);
-                GamePacket packet = new GamePacket(OperationType.REGISTER, player);
-                Game1.self.Connection.Send(packet);
-                GamePacket packetReceiver = Game1.self.Connection.GetReceivedPacket();
-                if (packetReceiver.OperationType == OperationType.SUCCESS)
+                if (passwordInputBox.Text.Equals(passwordInputBox2.Text))
                 {
-                    lbl1.Text = "Succesfully registered new user";
+                    Player player = new Player(loginInputBox.Text, passwordInputBox.Text);
+                    GamePacket packet = new GamePacket(OperationType.REGISTER, player);
+                    Game1.self.Connection.Send(packet);
+                    GamePacket packetReceiver = Game1.self.Connection.GetReceivedPacket();
+                    if (packetReceiver.OperationType == OperationType.SUCCESS)
+                    {
+                        lbl1.Text = "Succesfully registered new user";
+                    }
+                    else
+                    {
+                        lbl1.Text = "User already exists, change login";
+                    }
+
+                    popup.SetActive(true);
+                    Clean();
+                    Game1.self.popupToDraw = popup;
+                    SetClickables(false);
                 }
                 else
                 {
-                    lbl1.Text = "User already exists, change login";
+                    lbl1.Text = "Both passwords must be the same";
+                    popup.SetActive(true);
+                    Clean();
+                    Game1.self.popupToDraw = popup;
+                    SetClickables(false);
                 }
-                popup.SetActive(true);
-                Clean();
-                Game1.self.popupToDraw = popup;
-                SetClickables(false);
             }
-            else
-            {
-                lbl1.Text = "Both passwords must be the same";
-                popup.SetActive(true);
-                Clean();
-                Game1.self.popupToDraw = popup;
-                SetClickables(false);
-            }
-
 
 
         }

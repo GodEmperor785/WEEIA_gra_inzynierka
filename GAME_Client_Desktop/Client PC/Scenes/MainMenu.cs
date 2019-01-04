@@ -168,7 +168,7 @@ namespace Client_PC.Scenes
                         clickable.Active = !active;
             }
         }
-        public void searchClick()
+        public void searchClick() //TODO make it threaded
         {
             if (chosenDeck != null)
             {
@@ -276,7 +276,18 @@ namespace Client_PC.Scenes
         {
             Game1.self.state = Game1.State.OptionsMenu;
         }
-       
+
+        public void UpdatePlayer()
+        {
+            GamePacket packet = new GamePacket(OperationType.PLAYER_DATA,Game1.self.player);
+            Game1.self.Connection.Send(packet);
+            packet = Game1.self.Connection.GetReceivedPacket();
+            Game1.self.player = (Player) packet.Packet;
+            packet = new GamePacket(OperationType.VIEW_ALL_PLAYER_SHIPS,null);
+            Game1.self.Connection.Send(packet);
+            packet = Game1.self.Connection.GetReceivedPacket();
+            Game1.self.OwnedShips = (List<Ship>) packet.Packet;
+        }
 
         public override void UpdateGrid()
         {

@@ -143,7 +143,7 @@ namespace Client_PC
 
         public void Quit()
         {
-            Connection.Disconnect();
+            Connection.SendDisconnect();
             this.Exit();
         }
 
@@ -280,6 +280,10 @@ namespace Client_PC
             loginMenu.Clean();
         }
 
+        public void UpdatePlayer()
+        {
+            mainMenu.UpdatePlayer();
+        }
         public void SetShop(List<LootBox> loots)
         {
             shopMenu.Reinitialize(loots);
