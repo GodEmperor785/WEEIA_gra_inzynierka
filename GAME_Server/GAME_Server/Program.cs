@@ -1621,7 +1621,8 @@ namespace GAME_Server {
 
 		#region user thread utils
 		private void UserDisconnectedHandler(object sender, GameEventArgs e) {
-			Server.Log(User.Username + ": sudden disconnection (disconnect event received) - ending user thread");
+			if(User != null) Server.Log(User.Username + ": sudden disconnection (disconnect event received) - ending user thread");
+			else Server.Log("sudden disconnection (disconnect event received) - ending user thread");
 			ClientConnected = false;
 		}
 
@@ -1658,7 +1659,8 @@ namespace GAME_Server {
 		/// does necessary resource cleanup: disconnects from DB and disconnects TcpConnection
 		/// </summary>
 		internal void EndThread() {
-			Server.Log(User.Username + " ending connections");
+			if(User != null) Server.Log(User.Username + " ending connections");
+			else Server.Log("Thread ending - ending connections");
 			this.GameDataBase.Dispose();
 			this.Client.Disconnect();
 		}
