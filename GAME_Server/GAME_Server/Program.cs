@@ -1343,6 +1343,10 @@ namespace GAME_Server {
 					Server.Log(ex.StackTrace);
 					SendFailure(FailureReasons.INVALID_ID);
 				}
+				catch (Exception criticalEx) {
+					Server.Log("ADMIN: " + User.Username + ": UNHANDLED EXCEPTIONt: " + criticalEx.GetType().ToString() + " " + criticalEx.Message + " in: " + criticalEx.Source, true);
+					Server.Log("ADMIN: " + User.Username + ": stack trace:" + Environment.NewLine + criticalEx.StackTrace, true);
+				}
 			}
 			//finally, after the loop end thread
 			Server.Log("ADMIN: " + User.Username + ": Thread Ending");
@@ -1603,6 +1607,10 @@ namespace GAME_Server {
 					Server.Log("NULL caught - " + User.Username + "is sending wrong id values - Exception message: " + ex.Message + " From:" + ex.Source, true);
 					Server.Log(ex.StackTrace);
 					SendFailure(FailureReasons.INVALID_ID);
+				}
+				catch (Exception criticalEx) {
+					Server.Log(User.Username + ": UNHANDLED EXCEPTIONt: " + criticalEx.GetType().ToString() + " " + criticalEx.Message + " in: " + criticalEx.Source, true);
+					Server.Log(User.Username + ": stack trace:" + Environment.NewLine + criticalEx.StackTrace, true);
 				}
 			}
 			//finally, after the loop end thread
@@ -1999,6 +2007,14 @@ namespace GAME_Server {
 				Server.Log(UsernamesOfPlayers + ": player with number " + ex.PlayerNumber + " suddenly disconnected");
 				EndGameBeforeProperEnd(ex.PlayerNumber, SUDDEN_DISCONNECT_LOG_STRING);
 			}
+			catch (NullReferenceException ex2) {
+				Server.Log(UsernamesOfPlayers + ": null caught: " + ex2.Message + " in: " + ex2.Source, true);
+				Server.Log(UsernamesOfPlayers + ": stack trace:" + Environment.NewLine + ex2.StackTrace, true);
+			}
+			catch (Exception criticalEx) {
+				Server.Log(UsernamesOfPlayers + ": UNHANDLED EXCEPTIONt: " + criticalEx.GetType().ToString() + " " + criticalEx.Message + " in: " + criticalEx.Source, true);
+				Server.Log(UsernamesOfPlayers + ": stack trace:" + Environment.NewLine + criticalEx.StackTrace, true);
+			}
 		}
 		#endregion
 
@@ -2226,7 +2242,7 @@ namespace GAME_Server {
 			ContinueGameLoop = false;
 			lock (gameEndLock) {
 				ClearPlayerNumberInConnection(Player1Conn);
-				ClearPlayerNumberInConnection(Player2Conn);
+				if(IsFull) ClearPlayerNumberInConnection(Player2Conn);
 				gameEnded.Set();
 			}
 		}

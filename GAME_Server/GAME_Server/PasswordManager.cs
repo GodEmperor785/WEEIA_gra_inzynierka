@@ -16,11 +16,13 @@ namespace GAME_Server {
 			byte[] hash = new byte[HASH_SIZE];
 
 			//generate new salt value
-			RNGCryptoServiceProvider cryptoRng = new RNGCryptoServiceProvider();
-			cryptoRng.GetBytes(salt);
+			using (RNGCryptoServiceProvider cryptoRng = new RNGCryptoServiceProvider()) {
+				cryptoRng.GetBytes(salt);
+			}
 
-			Rfc2898DeriveBytes passwdHash = new Rfc2898DeriveBytes(plainTextPassword, salt, HASH_ITER);
-			hash = passwdHash.GetBytes(HASH_SIZE);
+			using (Rfc2898DeriveBytes passwdHash = new Rfc2898DeriveBytes(plainTextPassword, salt, HASH_ITER)) {
+				hash = passwdHash.GetBytes(HASH_SIZE);
+			}
 
 			byte[] saltHash = CombineHashAndSalt(salt, hash);
 
@@ -42,8 +44,10 @@ namespace GAME_Server {
 			Array.Copy(storedPasswdHash, 0, salt, 0, SALT_SIZE);
 
 			//hash checked plain text password and compare its hash with stored hash value
-			Rfc2898DeriveBytes passwdHash = new Rfc2898DeriveBytes(checkedPlainTextPassword, salt, HASH_ITER);
-			byte[] checkedPasswdHash = passwdHash.GetBytes(HASH_SIZE);
+			byte[] checkedPasswdHash;
+			using (Rfc2898DeriveBytes passwdHash = new Rfc2898DeriveBytes(checkedPlainTextPassword, salt, HASH_ITER)) {
+				checkedPasswdHash = passwdHash.GetBytes(HASH_SIZE);
+			}
 			for (int i = 0; i < HASH_SIZE; i++) {
 				if (checkedPasswdHash[i] != storedPasswdHash[i + SALT_SIZE]) return false;
 			}
