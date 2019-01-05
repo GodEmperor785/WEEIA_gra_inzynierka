@@ -44,6 +44,7 @@ namespace GAME_connection {
 		public int Money { get => money; set => money = value; }
 		public double WinLoseRatio {
 			get {
+				if (GamesPlayed == 0) return 0.0;
 				return ((double)GamesWon) / ((double)GamesPlayed);
 			}
 		}

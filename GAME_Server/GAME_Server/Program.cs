@@ -14,13 +14,14 @@ using GAME_connection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using GAME_Validator;
+using System.Diagnostics;
 
 namespace GAME_Server {
 	internal class Server {
 		public static readonly int EXIT_STATUS_MANUAL_SHUTDOWN = 1;
+		public static readonly int EXIT_STATUS_SERVER_ERROR = -1;
 
 		private static int port = TcpConnection.DEFAULT_PORT;
-		private static string ip = "25.34.213.187";
 
 		//database specific fields and properties
 		private static IGameDataBase gameDataBase;		//used only for initialization of BaseModifiers etc. Other IGameDataBase are created in user threads
@@ -83,7 +84,6 @@ namespace GAME_Server {
 				
 				InitilizeGameDataFromDB(false, true);       //change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
-				//IPAddress ipAddress = IPAddress.Parse(ip);
 				//TcpListener listener = new TcpListener(ipAddress, port);
 				TcpListener listener = new TcpListener(IPAddress.Any, port);
 				listener.Start();
@@ -113,7 +113,8 @@ namespace GAME_Server {
 				Log(critical.Message);
 				Log(critical.Source);
 				Log(critical.StackTrace);
-				Console.ReadKey();
+				//Console.ReadKey();
+				Environment.Exit(EXIT_STATUS_SERVER_ERROR);
 			}
 			
 		}
@@ -124,12 +125,21 @@ namespace GAME_Server {
 				switch (cmd) {
 					case "exit":
 						Log("exiting...");
+						GameDataBase.Dispose();
 						continueAcceptingConnections = false;
 						foreach (UserThread t in userThreadObjects) {
 							t.ClientConnected = false;
 							t.EndThread();
 						}
 						Environment.Exit(EXIT_STATUS_MANUAL_SHUTDOWN);
+						break;
+					case "info":
+						Log("Process information:");
+						using (Process serverProcess = Process.GetCurrentProcess()) {
+							Log("Used memory: " + serverProcess.PrivateMemorySize64 + " bytes");
+							Log("Started at: " + serverProcess.StartTime);
+							Log("Thread count: " + serverProcess.Threads.Count);
+						}
 						break;
 					default:
 						Log("ERROR: unknown command - " + cmd);
@@ -1063,7 +1073,8 @@ namespace GAME_Server {
 							GameDataBase.GetAllWeapons().Select(wep => wep.ToWeapon()).ToList(),
 							GameDataBase.GetAllDefences().Select(def => def.ToDefenceSystem()).ToList(),
 							Server.BaseModifiers,
-							GameDataBase.GetAllFactions()
+							GameDataBase.GetAllFactions(),
+							GameDataBase.GetAllLootBoxes().Select(l => l.ToLootBox()).ToList()
 						);
 						Client.Send(new GamePacket(OperationType.ADMIN_PACKET, adminPacket));
 
@@ -1080,9 +1091,14 @@ namespace GAME_Server {
 					}
 				}
 				else EndThread();
-			} catch(ConnectionEndedException) {
+			}
+			catch (ConnectionEndedException) {
 				Server.Log(FailureReasons.CLIENT_DISCONNECTED, true);
 				EndThread();
+			}
+			catch (Exception criticalEx) {
+				Server.Log("UNHANDLED EXCEPTIONt: " + criticalEx.GetType().ToString() + " " + criticalEx.Message + " in: " + criticalEx.Source, true);
+				Server.Log(": stack trace:" + Environment.NewLine + criticalEx.StackTrace, true);
 			}
 		}
 
@@ -1173,6 +1189,45 @@ namespace GAME_Server {
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				try {
 					switch (gamePacket.OperationType) {
+						case OperationType.ADD_LOOTBOX:
+							LootBox newLootbox;
+							newLootbox = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to add new lootbox");
+							validationResult = GameValidator.ValidateLootbox(newLootbox);
+							if (validationResult == GameValidator.OK) {
+								GameDataBase.AddLootBox(new DbLootBox(
+									newLootbox.Cost,
+									newLootbox.Name,
+									newLootbox.ChancesForRarities[Rarity.COMMON],
+									newLootbox.ChancesForRarities[Rarity.RARE],
+									newLootbox.ChancesForRarities[Rarity.VERY_RARE],
+									newLootbox.ChancesForRarities[Rarity.LEGENDARY],
+									newLootbox.NumberOfShips
+								));
+								SendSuccess();
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.UPDATE_LOOTBOX:
+							LootBox lootboxToUpdate;
+							lootboxToUpdate = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
+							Server.Log("ADMIN: " + User.Username + ": wants to update lootbox with id " + lootboxToUpdate.Id);
+							validationResult = GameValidator.ValidateLootbox(lootboxToUpdate);
+							if (validationResult == GameValidator.OK) {
+								if (lootboxToUpdate.Id != 0) {
+									GameDataBase.UpdateLootbox(lootboxToUpdate);
+									SendSuccess();
+								}
+								else SendFailure(FailureReasons.INVALID_ID);
+							}
+							else SendFailure(validationResult);
+							break;
+						case OperationType.GET_LOOTBOXES:
+							Server.Log("ADMIN: " + User.Username + ": wants to view lootboxes");
+							List<DbLootBox> dbLootBoxes = GameDataBase.GetAllLootBoxes();
+							List<LootBox> lootBoxes = dbLootBoxes.Select(x => x.ToLootBox()).ToList();
+							Client.Send(new GamePacket(OperationType.GET_LOOTBOXES, lootBoxes));
+							break;
 						case OperationType.ADD_USER:
 							AdminAppPlayer newUser;
 							newUser = Server.CastPacketToProperType(gamePacket.Packet, OperationsMap.OperationMapping[gamePacket.OperationType]);
@@ -2097,7 +2152,7 @@ namespace GAME_Server {
 		}
 
 		private void UpdateLoserAndWiner(Player loser, Player winner) {
-			Server.Log(UsernamesOfPlayers + ": Game ended - result: winner " + winner.Username + " loser: " + loser.Username);
+			Server.Log(UsernamesOfPlayers + ": Game ended - result - winner: " + winner.Username + " loser: " + loser.Username);
 
 			IGameDataBase winnerDB;
 			IGameDataBase loserDB;

@@ -15,12 +15,16 @@ namespace GAME_connection {
 
 		public LootBox() { }
 
-		public LootBox(int id, int cost, string name, Dictionary<Rarity,double> chancesForRarities, int numberOfShips) {
-			this.Id = id;
+		public LootBox(int cost, string name, Dictionary<Rarity, double> chancesForRarities, int numberOfShips) : this() {
 			this.Cost = cost;
 			this.Name = name;
 			this.ChancesForRarities = chancesForRarities;
 			this.NumberOfShips = numberOfShips;
+		}
+
+		public LootBox(int id, int cost, string name, Dictionary<Rarity,double> chancesForRarities, int numberOfShips)
+				:this(cost, name, chancesForRarities, numberOfShips) {
+			this.Id = id;
 		}
 
 		public int Id { get => id; set => id = value; }

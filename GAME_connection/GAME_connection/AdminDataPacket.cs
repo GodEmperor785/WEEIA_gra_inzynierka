@@ -12,20 +12,23 @@ namespace GAME_connection {
 		private List<DefenceSystem> defences;
 		private BaseModifiers baseModifiers;
 		private List<Faction> factions;
+		private List<LootBox> lootboxes;
 
 		public AdminDataPacket() {
 			shipTemplates = new List<Ship>();
 			weapons = new List<Weapon>();
 			defences = new List<DefenceSystem>();
 			factions = new List<Faction>();
+			lootboxes = new List<LootBox>();
 		}
 
-		public AdminDataPacket(List<Ship> shipTemplates, List<Weapon> weapons, List<DefenceSystem> defences, BaseModifiers baseModifiers, List<Faction> factions) {
+		public AdminDataPacket(List<Ship> shipTemplates, List<Weapon> weapons, List<DefenceSystem> defences, BaseModifiers baseModifiers, List<Faction> factions, List<LootBox> lootboxes) {
 			this.shipTemplates = shipTemplates;
 			this.weapons = weapons;
 			this.defences = defences;
 			this.baseModifiers = baseModifiers;
 			this.factions = factions;
+			this.lootboxes = lootboxes;
 		}
 
 		public List<Ship> ShipTemplates { get => shipTemplates; set => shipTemplates = value; }
@@ -33,5 +36,6 @@ namespace GAME_connection {
 		public List<DefenceSystem> Defences { get => defences; set => defences = value; }
 		public BaseModifiers BaseModifiers { get => baseModifiers; set => baseModifiers = value; }
 		public List<Faction> Factions { get => factions; set => factions = value; }
+		public List<LootBox> Lootboxes { get => lootboxes; set => lootboxes = value; }
 	}
 }

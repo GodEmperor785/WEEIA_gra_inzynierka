@@ -543,26 +543,21 @@ namespace GAME_Server {
 			baseMods.StartingMoney = mods.StartingMoney;
 			SaveChanges();
 		}
+
+		public void UpdateLootbox(LootBox newData) {
+			var lootboxToUpdate = GetLootBoxWithId(newData.Id);
+			lootboxToUpdate.Name = newData.Name;
+			lootboxToUpdate.Cost = newData.Cost;
+			lootboxToUpdate.NumberOfShips = newData.NumberOfShips;
+			lootboxToUpdate.CommonChance = newData.ChancesForRarities[Rarity.COMMON];
+			lootboxToUpdate.RareChance = newData.ChancesForRarities[Rarity.RARE];
+			lootboxToUpdate.VeryRareChance = newData.ChancesForRarities[Rarity.VERY_RARE];
+			lootboxToUpdate.LegendaryChance = newData.ChancesForRarities[Rarity.LEGENDARY];
+			SaveChanges();
+		}
 		#endregion
 
 		#region DELETE
-		/// <summary>
-		/// deletes ship with specified id, can't delete ship that belongs to any player or to any fleet. returns true if delete completed, false if at least one ship of this template exists
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public bool RemoveTemplateShipWithId(int id) {
-			var shipToDelete = GetShipTemplateWithId(id);
-			if (shipToDelete.ShipsOfThisTemplate.Count > 0) return false;
-
-			//shipToDelete.Weapons.Clear();
-			//shipToDelete.Defences.Clear();
-			//SaveChanges();
-			DbContext.ShipTemplates.Remove(shipToDelete);
-			SaveChanges();
-			return true;
-		}
-
 		/// <summary>
 		/// for admin call like: RemoveShipWithId(shipId, true), player cant remove ship he does not own. This method set ship as unactive - it will be visible only in GameHistory
 		/// </summary>

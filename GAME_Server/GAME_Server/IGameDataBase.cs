@@ -7,107 +7,68 @@ using GAME_connection;
 
 namespace GAME_Server {
 	public interface IGameDataBase : IDisposable {
-		DbFleet GetFleetWithId(int id);
-
-		DbShip GetShipWithId(int id);
-
-		DbPlayer GetPlayerWithUsername(string username);
-
-		List<DbFleet> GetAllFleetsOfPlayer(Player player);
-
-		List<DbShip> GetAllShips();
-
-		List<Faction> GetAllFactions();
-
+		//SELECT
 		BaseModifiers GetBaseModifiers();
-
-		bool FleetNameIsUnique(Player player, string fleetName);
-
-		bool PlayerExists(Player player);
-
-		bool PlayerNameIsUnique(Player player);
-
-		void AddPlayer(DbPlayer player);
-
-		void AddFaction(Faction faction);
-
-		void AddWeapon(DbWeapon weapon);
-
-		void AddDefenceSystem(DbDefenceSystem defence);
-
-		List<DbWeapon> GetAllWeapons();
-
-		List<DbDefenceSystem> GetAllDefences();
-
-		void UpdateShipTemplate(DbShipTemplate newData);
-
-		bool RemoveTemplateShipWithId(int id);
-
-		List<DbShipTemplate> GetShipsAvailableForExp(int exp);
-
-		bool ValidateUser(Player player);
-
-		void AddFleet(Fleet fleet, Player owner);
-
-		void AddShipTemplate(DbShipTemplate shipTemplate);
-
-		void AddShip(DbShip ship);
-
-		DbShipTemplate GetShipTemplateWithId(int id);
-
-		List<DbShipTemplate> GetShipTemplatesWithRarityAndReqExp(Rarity rarity, int reqExp);
-
-		int GetPlayerShipCount(Player player);
-
-		DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity, int expReq);
-
-		DbLootBox GetLootBoxWithId(int id);
-
-		List<DbLootBox> GetAllLootBoxes();
-
-		void UpdatePlayer(DbPlayer newData);
-
-		bool RemoveShipWithId(int id, bool isAdmin, int playerId = 0);
-
-		List<DbGameHistory> GetPlayersGameHistory(int playerId);
-
-		void AddBaseModifiers(DbBaseModifiers mods);
-
-		List<DbPlayer> GetAllPlayers();
-
-		void AddLootBox(DbLootBox lootbox);
-
-		List<DbShipTemplate> GetAllShipTemplates();
-
-		void AddGameHistory(DbGameHistory entry);
-
+		List<Faction> GetAllFactions();
+		Faction GetFactionWithId(int id);
+		DbFleet GetFleetWithId(int id);
+		List<DbFleet> GetAllFleetsOfPlayer(Player player);
+		DbShip GetShipWithId(int id);
+		List<DbShip> GetAllShips();
 		List<DbShip> GetPlayersShips(Player player);
-
-		bool RemoveFleetWithId(int id, bool isAdmin, int playerId = 0);
-
-		void UpdateFleet(DbFleet newData);
-
-		DbFleet ConvertFleetToDbFleet(Fleet fleet, Player player, bool isNew);
-
+		List<DbShipTemplate> GetAllShipTemplates();
+		DbShipTemplate GetShipTemplateWithId(int id);
+		List<DbShipTemplate> GetShipsAvailableForExp(int exp);
+		DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity, int expReq);
+		List<DbShipTemplate> GetShipTemplatesWithRarityAndReqExp(Rarity rarity, int reqExp);
+		List<DbWeapon> GetAllWeapons();
+		List<DbDefenceSystem> GetAllDefences();
+		DbLootBox GetLootBoxWithId(int id);
+		List<DbLootBox> GetAllLootBoxes();
+		DbPlayer GetPlayerWithUsername(string username);
+		List<DbPlayer> GetAllPlayers();
+		DbGameHistory GetGameHistoryEntry(int id);
+		List<DbGameHistory> GetPlayersGameHistory(int playerId);
+		int GetPlayerShipCount(Player player);
 		int GetPlayerFleetCount(Player player);
 
-		DbGameHistory GetGameHistoryEntry(int id);
+		//INSERT
+		void AddPlayer(DbPlayer player);
+		void AddFaction(Faction faction);
+		void AddWeapon(DbWeapon weapon);
+		void AddDefenceSystem(DbDefenceSystem defence);
+		void AddFleet(Fleet fleet, Player owner);
+		void AddShipTemplate(DbShipTemplate shipTemplate);
+		void AddShip(DbShip ship);
+		void AddBaseModifiers(DbBaseModifiers mods);
+		void AddLootBox(DbLootBox lootbox);
+		void AddGameHistory(DbGameHistory entry);
 
+		//UPDATE
+		void UpdateShipTemplate(DbShipTemplate newData);
+		void UpdatePlayer(DbPlayer newData);
+		void UpdateFleet(DbFleet newData);
 		void UpdateShipExp(Ship ship, int expToAdd);
+		void UpdateWeapon(Weapon weapon);
+		void UpdateDefenceSystem(DefenceSystem defence);
+		void UpdateBaseModifiers(BaseModifiers mods);
+		void UpdateLootbox(LootBox newData);
 
+		//DELETE
+		bool RemoveShipWithId(int id, bool isAdmin, int playerId = 0);
+		bool RemoveFleetWithId(int id, bool isAdmin, int playerId = 0);
+		bool RemovePlayerWithUsername(string username);
+
+		//Checks
+		bool FleetNameIsUnique(Player player, string fleetName);
+		bool PlayerExists(Player player);
+		bool PlayerNameIsUnique(Player player);
+		bool ValidateUser(Player player);
 		bool UserIsAdmin(Player player);
 
+		//Converts
+		DbFleet ConvertFleetToDbFleet(Fleet fleet, Player player, bool isNew);
 		DbShipTemplate ConvertShipToShipTemplate(Ship ship);
-
-		void UpdateWeapon(Weapon weapon);
-
-		void UpdateDefenceSystem(DefenceSystem defence);
-
-		Faction GetFactionWithId(int id);
-
-		void UpdateBaseModifiers(BaseModifiers mods);
-
-		bool RemovePlayerWithUsername(string username);
 
 	}
 
