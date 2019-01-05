@@ -18,6 +18,10 @@ namespace GAME_Validator {
 			return (number > min && number <= max);
 		}
 
+		public static bool IsEqualWithTolerance(this double number1, double number2, double tolerance) {
+			return (Math.Abs(number1 - number2) < tolerance);
+		}
+
 		public static string ValidateShip(Ship ship) {
 			if (!ship.Evasion.IsInRangeExcludeMin(0.0, 1.0)) return FailureReasons.VALUE_NOT_IN_RANGE + "Evasion";
 			if (ship.ExpUnlock < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "Exp Unlock";
@@ -89,6 +93,19 @@ namespace GAME_Validator {
 			if (user.IsActive == false && isNew) return FailureReasons.VALUE_NOT_IN_RANGE + "is active";
 			if (user.Money < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "money";
 			if (user.Experience < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "experience";
+			return OK;
+		}
+
+		public static string ValidateLootbox(LootBox lootbox) {
+			if (string.IsNullOrWhiteSpace(lootbox.Name)) return FailureReasons.VALUE_NOT_IN_RANGE + "name";
+			if (lootbox.Cost < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "cost";
+			if (lootbox.NumberOfShips <= 0) return FailureReasons.VALUE_NOT_IN_RANGE + "number of ships";
+			double chancesSum = 0.0;
+			foreach(var entry in lootbox.ChancesForRarities) {
+				if (entry.Value < 0) return FailureReasons.VALUE_NOT_IN_RANGE + "chance for " + entry.Key.GetRarityName();
+				chancesSum += entry.Value;
+			}
+			if (!chancesSum.IsEqualWithTolerance(1.0, 0.00001)) return FailureReasons.VALUE_NOT_IN_RANGE + "chances do not sum up to 1.0";
 			return OK;
 		}
 

@@ -109,6 +109,8 @@ namespace GAME_Server {
 
 		bool RemovePlayerWithUsername(string username);
 
+		void UpdateLootbox(LootBox newData);
+
 	}
 
 }

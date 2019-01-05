@@ -14,6 +14,8 @@ namespace GAME_AdminApp {
 
 		public LoginForm() {
 			InitializeComponent();
+			ipTextBox.Text = AdminApp.DefaultIP;
+			portBox.Value = AdminApp.DefaultPort;
 			LoginButton.Enabled = false;
 		}
 
@@ -53,6 +55,7 @@ namespace GAME_AdminApp {
 			AdminApp.AppForm.InitializeDefencesDropDownLists();
 			AdminApp.AppForm.InitializeBaseModifiers();
 			AdminApp.AppForm.InitializeUsers();
+			AdminApp.AppForm.InitializeLootboxes();
 			AdminApp.AppForm.Show();
 			this.Hide();
 		}

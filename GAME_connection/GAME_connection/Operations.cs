@@ -63,7 +63,9 @@ namespace GAME_connection {
 		GET_USERS,
 		ADD_USER,
 		UPDATE_USER,
-		DEACTIVATE_USER
+		DEACTIVATE_USER,
+		ADD_LOOTBOX,
+		UPDATE_LOOTBOX
 	}
 
 	/// <summary>
@@ -117,7 +119,9 @@ namespace GAME_connection {
 				{ OperationType.GET_USERS, typeof(List<AdminAppPlayer>) },          //list of all users										- important for client
 				{ OperationType.ADD_USER, typeof(AdminAppPlayer) },                 //user to add											- important for server, server respons with S/F
 				{ OperationType.UPDATE_USER, typeof(AdminAppPlayer) },              //user to update										- important for server, server respons with S/F
-				{ OperationType.DEACTIVATE_USER, typeof(AdminAppPlayer) }           //user to deactivate									- important for server, server respons with S/F
+				{ OperationType.DEACTIVATE_USER, typeof(AdminAppPlayer) },          //user to deactivate									- important for server, server respons with S/F
+				{ OperationType.ADD_LOOTBOX, typeof(LootBox) },						//lootobx to add										- important for server, server respons with S/F
+				{ OperationType.UPDATE_LOOTBOX, typeof(LootBox) },					//lootobx to update										- important for server, server respons with S/F
 			};
 
 			// S/F = SUCCESS/FAILURE

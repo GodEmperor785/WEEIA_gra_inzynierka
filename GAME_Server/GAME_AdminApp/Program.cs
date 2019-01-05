@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using GAME_connection;
 using GAME_Validator;
+using System.Configuration;
 
 namespace GAME_AdminApp {
 	public static class AdminApp {
@@ -33,6 +34,9 @@ namespace GAME_AdminApp {
 		}
 		public static AdminDataPacket GameData { get; set; }
 		public static List<AdminAppPlayer> AllUsers { get; set; }
+		public static string DefaultIP { get; set; }
+		public static int DefaultPort { get; set; }
+		public static bool UseSsl { get; set; }
 
 		/// <summary>
 		/// The main entry point for the application.
@@ -43,6 +47,12 @@ namespace GAME_AdminApp {
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(GlobalExceptionHandler);
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(ThreadExceptionHandler);
+
+			var useSslVar = ConfigurationManager.AppSettings["useSsl"];
+			UseSsl = Convert.ToBoolean(useSslVar);
+			DefaultIP = ConfigurationManager.AppSettings["defaultIP"];
+			DefaultPort = Convert.ToInt32(ConfigurationManager.AppSettings["defaultPort"]);
+
 			LoginForm = new LoginForm();
 			AppForm = new AdminForm();
 			AlreadyClosed = false;
@@ -77,8 +87,8 @@ namespace GAME_AdminApp {
 		public static bool ConnectToServer(string ip, int port) {
 			try {
 				TcpClient client = new TcpClient(ip, port);
-				Connection = new TcpConnection(client, true, Log);
-				//new TcpConnection(client, true, Log, true, true);		//dla ssl
+				if (UseSsl) Connection = new TcpConnection(client, true, Log, false, true);
+				else Connection = new TcpConnection(client, true, Log, false);
 				Connection.ConnectionEnded += Connection_ConnectionEnded;
 				return true;
 			}
@@ -100,7 +110,7 @@ namespace GAME_AdminApp {
 		}
 
 		public static void Log(string msg) {
-			Console.WriteLine(msg);
+			//Console.WriteLine(msg);
 		}
 	}
 }

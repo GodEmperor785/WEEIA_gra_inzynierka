@@ -543,6 +543,18 @@ namespace GAME_Server {
 			baseMods.StartingMoney = mods.StartingMoney;
 			SaveChanges();
 		}
+
+		public void UpdateLootbox(LootBox newData) {
+			var lootboxToUpdate = GetLootBoxWithId(newData.Id);
+			lootboxToUpdate.Name = newData.Name;
+			lootboxToUpdate.Cost = newData.Cost;
+			lootboxToUpdate.NumberOfShips = newData.NumberOfShips;
+			lootboxToUpdate.CommonChance = newData.ChancesForRarities[Rarity.COMMON];
+			lootboxToUpdate.RareChance = newData.ChancesForRarities[Rarity.RARE];
+			lootboxToUpdate.VeryRareChance = newData.ChancesForRarities[Rarity.VERY_RARE];
+			lootboxToUpdate.LegendaryChance = newData.ChancesForRarities[Rarity.LEGENDARY];
+			SaveChanges();
+		}
 		#endregion
 
 		#region DELETE

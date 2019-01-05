@@ -23,20 +23,24 @@ namespace GAME_AdminApp {
 		private Dictionary<Button, int> weaponButtonToIdMap = new Dictionary<Button, int>();
 		private Dictionary<Button, int> defenceButtonToIdMap = new Dictionary<Button, int>();
 		private Dictionary<Button, int> userButtonToIdMap = new Dictionary<Button, int>();
+		private Dictionary<Button, int> lootboxButtonToIdMap = new Dictionary<Button, int>();
 		private string baseShipModifyDesc;
 		private string baseWeaponModifyDesc;
 		private string baseWeaponCalcChanceToHit;
 		private string baseDefenceModifyDesc;
 		private string baseUserDescription;
+		private string baseLootboxDescription;
 
 		private Operation operationType = Operation.NONE;
 		private Operation weaponOperationType = Operation.NONE;
 		private Operation defenceOperationType = Operation.NONE;
 		private Operation userOperationType = Operation.NONE;
+		private Operation lootboxOperationType = Operation.NONE;
 		private int modifiedShipId;
 		private int modifiedWeaponID;
 		private int modifiedDefenceID;
 		private int modifiedUserID;
+		private int modifiedLootboxID;
 
 		public List<Weapon> ShipWeapons { get; set; }
 		public List<DefenceSystem> ShipDefences { get; set; }
@@ -53,10 +57,12 @@ namespace GAME_AdminApp {
 			baseWeaponCalcChanceToHit = weaponCalculatedChanceToHit.Text;
 			baseDefenceModifyDesc = defenceDescription.Text;
 			baseUserDescription = userDescription.Text;
+			baseLootboxDescription = lootboxDescription.Text;
 
 			SetModfiyControlsEnabled(false, weaponSubmitTable);
 			SetModfiyControlsEnabled(false, defenceSubmitTable);
 			SetModfiyControlsEnabled(false, userSubmitTable);
+			SetModfiyControlsEnabled(false, lootboxSubmitTable);
 		}
 
 		private void AdminForm_FormClosed(object sender, FormClosedEventArgs e) {
@@ -94,15 +100,22 @@ namespace GAME_AdminApp {
 		}
 
 		private void InitializeOrderByPropertyComboBox(ComboBox box, Type type) {
-			var propertyList = type.GetProperties();
+			var allProperties = type.GetProperties();
+			List<PropertyInfo> propertyList = new List<PropertyInfo>();
+			foreach(PropertyInfo property in allProperties) {       //add only properties that implement IComparable - OrderBy can use only them
+				if (property.PropertyType.GetInterfaces().Contains(typeof(IComparable))) propertyList.Add(property);
+			}
 			box.DataSource = propertyList;
 			box.DisplayMember = "Name";
 			box.SelectedItem = type.GetProperty("Id");   //set default as Id
 		}
 
 		private IEnumerable<T> OrderListByProperty<T>(ComboBox box, IEnumerable<T> list) {
-			string orderByPropertyName = ((PropertyInfo)box.SelectedItem).Name;
-			list = list.OrderBy(x => x.GetType().GetProperty(orderByPropertyName).GetValue(x, null));
+			PropertyInfo propertyInfo = ((PropertyInfo)box.SelectedItem);
+			string orderByPropertyName = propertyInfo.Name;
+			if (propertyInfo.PropertyType.GetInterfaces().Contains(typeof(IComparable))) {	//check if chosen property can be ordered by - check if it implements IComparable
+				list = list.OrderBy(x => x.GetType().GetProperty(orderByPropertyName).GetValue(x, null));
+			}
 			return list;
 		}
 
@@ -765,7 +778,7 @@ namespace GAME_AdminApp {
 		}
 		#endregion
 
-		//=================================================================================================================================================================================
+//=================================================================================================================================================================================
 
 		#region Players
 		public void InitializeUsers() {
@@ -800,7 +813,7 @@ namespace GAME_AdminApp {
 				idOrNameSearch = true;
 				searchedUsers = searchedUsers.Where(usr => usr.Username.Contains(nameSearch));
 			}
-			//then search by faction and type if other are not set
+			//then search by is admin if other are not set
 			if (!idOrNameSearch) searchedUsers = searchedUsers.Where(usr => usr.IsAdmin == isAdminSearch);
 
 			//lastly order by chosen property
@@ -942,6 +955,141 @@ namespace GAME_AdminApp {
 		}
 		#endregion
 
+//=================================================================================================================================================================================
+
+		#region Lootboxes
+		public void InitializeLootboxes() {
+			InitializeOrderByPropertyComboBox(lootboxOrderBy, typeof(LootBox));
+		}
+
+		private void lootboxSearchButton_Click(object sender, EventArgs e) {
+			//first clear existing rows
+			AdminFormUtils.ClearPreviousSearch(lootboxTable, lootboxButtonToIdMap);
+
+			int idSearch = Convert.ToInt32(lootboxIdSearch.Value);
+			string nameSearch = lootboxNameSearch.Text;
+
+			IEnumerable<LootBox> searchedLootboxes = AdminApp.GameData.Lootboxes.AsEnumerable();
+			//if id != 0 search by id
+			if (idSearch != 0) searchedLootboxes = searchedLootboxes.Where(l => l.Id == idSearch);
+			//if name not empty search by name
+			if (!string.IsNullOrWhiteSpace(nameSearch)) searchedLootboxes = searchedLootboxes.Where(l => l.Name.Contains(nameSearch));
+
+			//lastly order by chosen property
+			searchedLootboxes = OrderListByProperty(lootboxOrderBy, searchedLootboxes);
+
+			AddLootboxList(searchedLootboxes.ToList());
+		}
+
+		private void AddLootboxList(List<LootBox> list) {
+			foreach(LootBox lootBox in list) {
+				AddLootboxToTable(lootBox);
+			}
+		}
+
+		private void AddLootboxToTable(LootBox lootbox) {
+			RowStyle temp = lootboxTable.RowStyles[lootboxTable.RowCount - 1];
+			lootboxTable.RowCount++;
+			lootboxTable.RowStyles.Add(new RowStyle(temp.SizeType, temp.Height));
+
+			Button modifyButton = new Button() { Text = "Modify this lootbox", AutoSize = true };
+			modifyButton.Click += new EventHandler(LootboxModifyButton_Click);
+			lootboxButtonToIdMap.Add(modifyButton, lootbox.Id);
+
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.Id.ToString() }, 0, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.Name, AutoSize = true }, 1, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.Cost.ToString() }, 2, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.NumberOfShips.ToString() }, 3, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.ChancesForRarities[Rarity.COMMON].ToString() }, 4, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.ChancesForRarities[Rarity.RARE].ToString() }, 5, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.ChancesForRarities[Rarity.VERY_RARE].ToString() }, 6, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(new Label() { Text = lootbox.ChancesForRarities[Rarity.LEGENDARY].ToString() }, 7, lootboxTable.RowCount - 1);
+			lootboxTable.Controls.Add(modifyButton, 8, lootboxTable.RowCount - 1);
+		}
+
+		private LootBox GetLootBoxWithId(int id) {
+			return AdminApp.GameData.Lootboxes.Where(l => l.Id == id).FirstOrDefault();
+		}
+
+		private void LootboxModifyButton_Click(object sender, EventArgs e) {
+			int lootboxId = lootboxButtonToIdMap[sender as Button];
+			lootboxDescription.Text = baseLootboxDescription + lootboxId;
+			LootBox lootbox = GetLootBoxWithId(lootboxId);
+
+			SetModfiyControlsEnabled(true, lootboxSubmitTable);
+			lootboxOperationType = Operation.UPDATE;
+			modifiedLootboxID = lootboxId;
+
+			lootboxNameBox.Text = lootbox.Name;
+			lootboxCostBox.Value = lootbox.Cost;
+			lootboxNumberOfShipsBox.Value = lootbox.NumberOfShips;
+			lootboxCommonBox.Value = (decimal)lootbox.ChancesForRarities[Rarity.COMMON];
+			lootboxRareBox.Value = (decimal)lootbox.ChancesForRarities[Rarity.RARE];
+			lootboxVeryRareBox.Value = (decimal)lootbox.ChancesForRarities[Rarity.VERY_RARE];
+			lootboxLegendaryBox.Value = (decimal)lootbox.ChancesForRarities[Rarity.LEGENDARY];
+		}
+
+		private void SetLootboxSubmitToDefaultMin() {
+			lootboxNameBox.Text = "";
+			lootboxCostBox.Value = lootboxCostBox.Minimum;
+			lootboxNumberOfShipsBox.Value = lootboxNumberOfShipsBox.Minimum;
+			lootboxCommonBox.Value = lootboxCommonBox.Minimum;
+			lootboxRareBox.Value = lootboxRareBox.Minimum;
+			lootboxVeryRareBox.Value = lootboxVeryRareBox.Minimum;
+			lootboxLegendaryBox.Value = lootboxLegendaryBox.Minimum;
+		}
+
+		private void lootboxesSyncButton_Click(object sender, EventArgs e) {
+			GamePacket packet = new GamePacket(OperationType.GET_LOOTBOXES, new object());
+			AdminApp.Connection.Send(packet);
+			packet = AdminApp.Connection.GetReceivedPacket();
+			AdminApp.GameData.Lootboxes = (List<LootBox>)packet.Packet;
+		}
+
+		private void lootboxAddButton_Click(object sender, EventArgs e) {
+			SetModfiyControlsEnabled(true, lootboxSubmitTable);
+
+			lootboxDescription.Text = "Adding new lootbox";
+			lootboxOperationType = Operation.ADD;
+
+			SetLootboxSubmitToDefaultMin();
+		}
+
+		private void lootboxSubmitButton_Click(object sender, EventArgs e) {
+			if (AdminFormUtils.ShowConfirmationBox("lootbox")) {
+				Dictionary<Rarity, double> chancesForRarities = new Dictionary<Rarity, double>() {
+					{ Rarity.COMMON, (double)lootboxCommonBox.Value},
+					{ Rarity.RARE, (double)lootboxRareBox.Value},
+					{ Rarity.VERY_RARE, (double)lootboxVeryRareBox.Value},
+					{ Rarity.LEGENDARY, (double)lootboxLegendaryBox.Value}
+				};
+				LootBox lootbox = new LootBox(Convert.ToInt32(lootboxCostBox.Value), lootboxNameBox.Text, chancesForRarities, Convert.ToInt32(lootboxNumberOfShipsBox.Value));
+
+				string validationResult = GameValidator.ValidateLootbox(lootbox);
+				GamePacket packet;
+				if (validationResult == GameValidator.OK) {
+					if (lootboxOperationType == Operation.UPDATE) {
+						lootbox.Id = modifiedLootboxID;
+						packet = new GamePacket(OperationType.UPDATE_LOOTBOX, lootbox);
+					}
+					else {
+						packet = new GamePacket(OperationType.ADD_LOOTBOX, lootbox);
+					}
+
+					AdminApp.Connection.Send(packet);
+					if (CheckSuccessOrFailure()) {
+						lootboxesSyncButton_Click(sender, e);
+
+						//after success return to default min values and disable submit again
+						lootboxDescription.Text = baseLootboxDescription;
+						SetLootboxSubmitToDefaultMin();
+						SetModfiyControlsEnabled(false, lootboxSubmitTable);
+					}
+				}
+				else AdminFormUtils.ShowValidationFailedDialog(validationResult);
+			}
+		}
+		#endregion
 	}
 
 }
