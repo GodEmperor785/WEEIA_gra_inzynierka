@@ -326,7 +326,13 @@ namespace Client_PC.Scenes
             CardsToRow(shortEnemy, Line.SHORT, false);
             CardsToRow(medEnemy, Line.MEDIUM, false);
             CardsToRow(longEnemy, Line.LONG, false);
+            SetClickables(true);
         
+        }
+
+        protected override void SetClickables(bool active)
+        {
+            Clickable.ForEach(p => { p.Active = active; });
         }
 
         public void sendState()
