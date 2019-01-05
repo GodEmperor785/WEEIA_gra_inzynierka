@@ -26,6 +26,7 @@ namespace Client_PC.UI
         public SpriteFont Font { get; set; }
         public bool TextWrappable { get; set; }
         public bool ActiveChangeable { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
         public Tooltip( int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
         {
             Font = font;

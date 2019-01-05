@@ -59,6 +59,7 @@ namespace Client_PC.Scenes
         private int cardHeight;
         private bool gameloop = false;
         private bool readyToSend = false;
+        private bool readyToSet = false;
         private Thread th;
         private List<Card> AllyCards;
         private List<Card> EnemyCards;
@@ -131,7 +132,7 @@ namespace Client_PC.Scenes
             layout.AddChild(yourCards);
             layout.AddChild(turnButton);
             th = new Thread(ContactLoop);
-            
+            layout.Update();
 
         }
 
@@ -258,14 +259,14 @@ namespace Client_PC.Scenes
             GamePacket packet;
             while (gameloop)
             {
-                packet = Game1.self.Connection.GetReceivedPacket(100);
+                packet = Game1.self.Connection.GetReceivedPacket(10);
                 if (packet != null)
                 {
                     if (packet.OperationType == OperationType.GAME_STATE)
                     {
                         GameState state = (GameState)packet.Packet;
                         currentGameState = state;
-                        setState(state);
+                        readyToSet = true;
                         turnButton.Active = true;
                     }
                 }
@@ -288,6 +289,16 @@ namespace Client_PC.Scenes
             }
         }
 
+        public override void UpdateLast()
+        {
+            if (readyToSet)
+            {
+
+                setState(currentGameState);
+                readyToSet = false;
+            }
+        }
+
         public void setState(GameState state)
         {
             var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToList();
@@ -300,19 +311,22 @@ namespace Client_PC.Scenes
 
             yourGrid.RemoveChildren();
             enemyGrid.RemoveChildren();
+            
             Clickable.ForEach(p =>
             {
                 if (p is Card)
                     Clickable.Remove(p);
             });
-            CardsToRow(shortAlly,Line.SHORT,true);
+
+
+            CardsToRow(shortAlly, Line.SHORT, true);
             CardsToRow(medAlly, Line.MEDIUM, true);
             CardsToRow(longAlly, Line.LONG, true);
 
             CardsToRow(shortEnemy, Line.SHORT, false);
             CardsToRow(medEnemy, Line.MEDIUM, false);
             CardsToRow(longEnemy, Line.LONG, false);
-
+        
         }
 
         public void sendState()
@@ -333,6 +347,7 @@ namespace Client_PC.Scenes
                 for (i = 0; i < ships.Count; i++)
                 {
                     Card c = ShipToCard(ships[i]);
+                    Clickable.Add(c);
                     yourGrid.AddChild(c,i, GetColumn(line, allied));
                 }
 
@@ -345,6 +360,7 @@ namespace Client_PC.Scenes
                     c.line = line;
                     c.clickEvent += CardSlotClick;
                     Clickable.Add(c);
+                    i++;
                 }
                 yourGrid.UpdateP();
             }
@@ -362,7 +378,7 @@ namespace Client_PC.Scenes
         {
             Card result = new Card(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,ship);
             result.clickEvent += CardClick;
-            Clickable.Add(result);
+            
             return result;
         }
         public override void UpdateButtonNull()

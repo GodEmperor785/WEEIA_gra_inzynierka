@@ -46,6 +46,7 @@ namespace Client_PC.UI
         public bool CanMove { get; set; }
         public Line line;
         public bool IsOver { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
         public Card(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base( width, height, device, gui)
         {
             ship = shipInc;

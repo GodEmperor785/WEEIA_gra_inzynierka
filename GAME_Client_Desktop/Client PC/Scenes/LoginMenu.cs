@@ -26,11 +26,11 @@ namespace Client_PC.Scenes
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            Label labelLogin = new Label(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            Label labelLogin = new Label(new Point(0,0),100,50,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Login"
             };
-            Label labelPassword = new Label(new Point(0, 0), 115, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label labelPassword = new Label(new Point(0, 0), 115, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password"
             };

@@ -34,11 +34,13 @@ namespace Client_PC.UI
 
         public SpriteFont Font { get ; set ; }
         public bool TextWrappable { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
 
         public Label(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin, width, height, device, gui)
         {
             Font = font;
             TextWrappable = wrapable;
+            HeightDerivatingFromText = false;
         }
         public Label(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
         {
@@ -63,7 +65,82 @@ namespace Client_PC.UI
             }
         }
         */
-        
+        /*
+        protected override String parseText(String text, SpriteFont Font)
+        {
+            String line = String.Empty;
+            String returnString = String.Empty;
+            String[] wordArray = text.Split(' ');
+            int usedHeight = 0;
+            foreach (String word in wordArray)
+            {
+                
+                if (Font.MeasureString(line + word).Length() > TextBox.Width - 10)
+                {
+                    returnString = returnString + line + '\n';
+                    line = String.Empty;
+                }
+                int z = 0;
+                if (line == String.Empty)
+                {
+                    z = (int)Font.MeasureString(line + word).Y;
+                }
+                
+                if (((usedHeight + z) > TextBox.Height))
+                {
+                    line = line + word + ' ';
+                    usedHeight += z;
+                }
+                else if (!((usedHeight += z) > TextBox.Height))
+                {
+                    line = line + word + ' ';
+                }
+
+                
+            }
+
+            if (HeightDerivatingFromText)
+                Height = usedHeight + 20;
+            return returnString + line;
+        }
+
+        */
+
+        private void AdaptToText(String text, SpriteFont Font)
+        {
+            String line = String.Empty;
+            String returnString = String.Empty;
+            String[] wordArray = text.Split(' ');
+            int usedHeight = 0;
+            foreach (String word in wordArray)
+            {
+
+                if (Font.MeasureString(line + word).Length() > TextBox.Width - 10)
+                {
+                    returnString = returnString + line + '\n';
+                    line = String.Empty;
+                }
+                int z = 0;
+                if (line == String.Empty)
+                {
+                    z = (int)Font.MeasureString(line + word).Y;
+                }
+
+                if (((usedHeight + z) > TextBox.Height))
+                {
+                    line = line + word + ' ';
+                    usedHeight += z;
+                }
+                else if (!((usedHeight += z) > TextBox.Height))
+                {
+                    line = line + word + ' ';
+                }
+
+
+            }
+
+            Height = usedHeight + 20;
+        }
         public override void Draw(SpriteBatch spriteBatch)
         {
             this.Update();
@@ -77,9 +154,11 @@ namespace Client_PC.UI
 
         public override void Update()
         {
+            if(HeightDerivatingFromText)
+                AdaptToText(Text, Font);
             Update(text,ref textPosition,Font);
             if (NeedNewTexture)
-                Texture = Util.CreateTexture(Device, Width, Height);
+                Texture = Util.CreateTexture(Device, Width, Height, new Color(180, 180, 180),new Color(100, 100, 100), alpha : 50);
         }
     }
 }

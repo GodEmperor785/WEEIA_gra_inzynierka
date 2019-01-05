@@ -54,13 +54,15 @@ namespace Client_PC.Scenes
             cardsGrid.WitdhAndHeightColumnDependant = false;
             cardsGrid.Width = (int)((int)Game1.self.graphics.PreferredBackBufferWidth * CardGridWidthMulti);
             cardsGrid.Height = (int)((int)Game1.self.graphics.PreferredBackBufferHeight * CardGridHeightMulti);
-            Button up = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width) - 60, cardsGrid.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
+            buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
+            cardsGrid.Origin = new Point(50, buttonsGrid.Origin.Y - 200);
+            Button up = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width/2) - 60, cardsGrid.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "up"
             };
             up.clickEvent += upClick;
-            Button down = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width) - 60, cardsGrid.Origin.Y + 30), 60, 30, Game1.self.GraphicsDevice,
+            Button down = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width/2) - 60, cardsGrid.Origin.Y + 30), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "down"
@@ -72,12 +74,12 @@ namespace Client_PC.Scenes
                 text = "Ready"
             };
             save.clickEvent += onSave;
-            buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
-            cardsGrid.Origin = new Point(200, buttonsGrid.Origin.Y - 200);
             tipLabel = new Label(new Point(grid.Origin.X + grid.Width + 50,grid.Origin.Y), Game1.self.graphics.PreferredBackBufferWidth - 150 - grid.Width, grid.RealHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text="You have 2 minutes to choose your fleet's shape. There's no difference between positions in rows, all the ships in the end will be put to the left border."
             };
+            tipLabel.HeightDerivatingFromText = true;
+           // tipLabel.Update();
             layout.AddChild(tipLabel);
 
 
@@ -134,13 +136,13 @@ namespace Client_PC.Scenes
             }
             for (int i = 0; i < 5; i++)
             {
-                CardSlot slot = (CardSlot)grid.GetChild(0, i);
+                CardSlot slot = (CardSlot)grid.GetChild(1, i);
                 if (slot.HasCard)
                     midShips.Add(slot.Card.GetShip());
             }
             for (int i = 0; i < 5; i++)
             {
-                CardSlot slot = (CardSlot)grid.GetChild(0, i);
+                CardSlot slot = (CardSlot)grid.GetChild(2, i);
                 if (slot.HasCard)
                     furthestShips.Add(slot.Card.GetShip());
             }
@@ -211,12 +213,15 @@ namespace Client_PC.Scenes
                     if (packet.OperationType == OperationType.SUCCESS) // Fleet accepted and can start playing
                     {
                         Game1.self.state = Game1.State.GameWindow;
+                        Game1.self.StartGame();
+                        break;
                     }
                     else if (packet.OperationType == OperationType.FAILURE) // Failed to set fleet therefore loses game 
                     {
                         popup.SetActive(true);
                         Game1.self.popupToDraw = popup;
                         SetClickables(false);
+                        break;
                     }
                 }
 

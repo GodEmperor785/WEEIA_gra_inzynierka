@@ -45,6 +45,7 @@ namespace Client_PC.UI
         public bool TextWrappable { get; set; }
         public Tooltip Tooltip { get; set; }
         public bool IsOver { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
 
         public event ElementClickedInt clickEventInt;
         private Texture2D inactive, over;

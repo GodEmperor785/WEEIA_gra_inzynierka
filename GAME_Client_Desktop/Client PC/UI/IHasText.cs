@@ -15,5 +15,6 @@ namespace Client_PC.UI
         Vector2 TextPosition { get; set; }
         SpriteFont Font { get; set; }
         bool TextWrappable { get; set; }
+        bool HeightDerivatingFromText { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Client_PC.UI;
 using Client_PC.Utilities;
@@ -135,7 +136,10 @@ namespace Client_PC.Scenes
                 c.Add(button);
                 button.IsOver = true;
             }
+
+            
             Clickable.Except(c).ToList().ForEach(p => { p.IsOver = false; });
+             
             UpdateTooltips(button, xy);
         }
         public virtual void Initialize(ContentManager Content)

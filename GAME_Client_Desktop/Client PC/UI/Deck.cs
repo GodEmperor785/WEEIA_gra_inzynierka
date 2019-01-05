@@ -27,6 +27,7 @@ namespace Client_PC.UI
         private bool lastStateOfFocus;
         public object Parent { get; set; }
         public Tooltip Tooltip { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
         private Fleet fleet;
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;

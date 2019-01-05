@@ -32,6 +32,7 @@ namespace Client_PC.UI
         public bool TextWrappable { get; set; }
         public Tooltip Tooltip { get; set; }
         public bool IsPassword { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
         public Rectangle GetBoundary()
         {
             return Boundary;
