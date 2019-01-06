@@ -165,8 +165,6 @@ namespace Client_PC.Scenes
                     {
                         if (CurrentCard.CanMove)
                         {
-
-
                             LastCard.Status = Card.status.clear;
                             CurrentCard.Status = Card.status.clicked;
                             CardsInRow = 1;
@@ -176,9 +174,12 @@ namespace Client_PC.Scenes
                     {
                         CurrentCard.Status = Card.status.target;
                         LastCard.CanMove = false;
+                        LastCard.Status = Card.status.hasMove;
                         ShipPosition origin = getShipPosition(LastCard.GetShip());
                         ShipPosition target = getShipPosition(CurrentCard.GetShip());
                         move.AttackList.Add(new Tuple<ShipPosition, ShipPosition>(origin,target));
+                        HideSlots();
+                        CurrentCard = null;
                     }
                 }
             }
@@ -186,6 +187,17 @@ namespace Client_PC.Scenes
             LastCard = CurrentCard;
         }
 
+        public void HideSlots()
+        {
+            foreach (var clickable in Clickable)
+            {
+                if (clickable is CardSlot)
+                {
+                    CardSlot c = (CardSlot) clickable;
+                    c.CardClicked = false;
+                }
+            }
+        }
         public void SetSlots(bool clicked)
         {
             Clickable.ForEach(p =>
@@ -208,11 +220,11 @@ namespace Client_PC.Scenes
             }
             else if(currentGameState.YourGameBoard.Board[Line.MEDIUM].Contains(ship))
             {
-                result = new ShipPosition(Line.MEDIUM, getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.SHORT]));
+                result = new ShipPosition(Line.MEDIUM, getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.MEDIUM]));
             }
             else if (currentGameState.YourGameBoard.Board[Line.LONG].Contains(ship))
             {
-                result = new ShipPosition(Line.LONG, getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.SHORT]));
+                result = new ShipPosition(Line.LONG, getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.LONG]));
             }
             else if(currentGameState.EnemyGameBoard.Board[Line.SHORT].Contains(ship))
             {
@@ -220,11 +232,11 @@ namespace Client_PC.Scenes
             }
             else if (currentGameState.EnemyGameBoard.Board[Line.MEDIUM].Contains(ship))
             {
-                result = new ShipPosition(Line.MEDIUM, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.SHORT]));
+                result = new ShipPosition(Line.MEDIUM, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.MEDIUM]));
             }
             else if (currentGameState.EnemyGameBoard.Board[Line.LONG].Contains(ship))
             {
-                result = new ShipPosition(Line.LONG, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.SHORT]));
+                result = new ShipPosition(Line.LONG, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.LONG]));
             }
             else
             {
@@ -259,8 +271,9 @@ namespace Client_PC.Scenes
                 ShipPosition origin = getShipPosition(CurrentCard.GetShip());
                 move.MoveList.Add(new Tuple<ShipPosition, Line>(origin,c.line));
                 c.Active = false;
+                CurrentCard.Status = Card.status.hasMove;
                 SetSlots(false);
-                CurrentCard.Status = Card.status.clear;
+                if(CurrentCard.Parent == yourGrid)
                 LastCard = null;
             }
         }
@@ -276,7 +289,7 @@ namespace Client_PC.Scenes
         }
         public override void UpdateClickables()
         {
-            if (Game1.self.FocusedElement == null)
+            /*if (Game1.self.FocusedElement == null)
             {
                 Clickable.ForEach(p =>
                 {
@@ -286,7 +299,7 @@ namespace Client_PC.Scenes
                         c.Status = Card.status.clear;
                     }
                 });
-            }
+            }*/
             Clickable.ForEach(p =>
             {
                 if (p is Card)
@@ -427,6 +440,7 @@ namespace Client_PC.Scenes
 
                     Card c = ShipToCard(ships[i]);
                     c.line = line;
+                    Clickable.Add(c);
                     enemyGrid.AddChild(c, i, GetColumn(line, allied));
                 }
                 enemyGrid.UpdateP();
@@ -443,7 +457,11 @@ namespace Client_PC.Scenes
         {
             CardsInRow = 0;
             SetSlots(false);
+            if (LastCard != null && LastCard.Parent == yourGrid)
+                LastCard.Status = Card.status.clear;
             LastCard = null;
+            if (CurrentCard != null && CurrentCard.Parent == yourGrid)
+                CurrentCard.Status = Card.status.clear;
             CurrentCard = null;
         }
         public void Draw(GameTime gameTime)
