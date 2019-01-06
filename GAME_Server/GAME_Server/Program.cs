@@ -31,6 +31,7 @@ namespace GAME_Server {
 		private static readonly object logLock = new object();
 		private static readonly object customRoomsLock = new object();
 		private static readonly object rankedRoomsLock = new object();
+		private static readonly object loggedInUsersLock = new object();
 
 		//http://www.entityframeworktutorial.net/code-first/database-initialization-strategy-in-code-first.aspx
 		//https://dev.mysql.com/doc/connector-net/en/connector-net-entityframework60.html
@@ -68,6 +69,8 @@ namespace GAME_Server {
 		private static List<UserThread> userThreadObjects = new List<UserThread>();
 		internal static Dictionary<CustomGameRoom, GameRoomThread> availableCustomGameRooms = new Dictionary<CustomGameRoom, GameRoomThread>();
 		internal static List<GameRoomThread> availableRankedGameRooms = new List<GameRoomThread>();
+
+		private static List<string> loggedInUsers = new List<string>(); 
 
 		internal static bool continueAcceptingConnections = true;
 
@@ -145,6 +148,38 @@ namespace GAME_Server {
 						Log("ERROR: unknown command - " + cmd);
 						break;
 				}
+			}
+		}
+		//========================= LOGGED IN USERS UTILS ==================================================================================================================
+
+		/// <summary>
+		/// used to login a user
+		/// </summary>
+		/// <param name="username"></param>
+		internal static void AddLoggedInUser(string username) {
+			Log("Logging IN user: " + username);
+			lock (loggedInUsersLock) {
+				loggedInUsers.Add(username);
+			}
+		}
+
+		/// <summary>
+		/// used to logout a user
+		/// </summary>
+		/// <param name="username"></param>
+		internal static void RemoveLoggedInUser(string username) {
+			string msg = "";
+			lock (loggedInUsersLock) {
+				if (loggedInUsers.Remove(username)) msg = "success";
+				else msg = "already logged out";
+			}
+			Log("Logging OUT user: " + username + " " + msg);
+		}
+
+		internal static bool UserAlreadyLoggedIn(string username) {
+			lock (loggedInUsersLock) {
+				if (loggedInUsers.Any(name => name == username)) return true;
+				else return false;
 			}
 		}
 
@@ -627,111 +662,6 @@ namespace GAME_Server {
 				Server.Log("winner: " + x3.Winner.Username + " loser: " + x3.Loser.Username + " winner fleet: " + x3.WinnerFleet.Name + " fleet first ship weapon faction name: " 
 					+ x3.WinnerFleet.Ships[0].ShipBaseStats.Weapons[0].Faction.Name );
 			}
-
-
-			/*string p1Name = "player1";
-			DbPlayer p1 = new DbPlayer(1, p1Name, "haslo1", 0, 100, 0, 0, 0);
-			DbPlayer p2 = new DbPlayer(2, "player2", "haslo2", 0, 100, 0, 0, 0);
-
-			gameDataBase.AddPlayer(p1);
-			gameDataBase.AddPlayer(p2);
-
-			Thread.Sleep(500);
-			if (Server.GameDataBase.PlayerExists(p1.ToPlayer())) Console.WriteLine("ano jest");
-			else Console.WriteLine("nima");
-
-			Thread.Sleep(500);
-
-			//create factions
-			var f1 = new Faction(1, "test");
-			var f2 = new Faction(2, "test2");
-			gameDataBase.AddFaction(f1);
-			gameDataBase.AddFaction(f2);
-			var faction = gameDataBase.GetAllFactions().First();
-
-			//create weapons and defences (independent of one another)
-			DbWeapon w1 = new DbWeapon(1, "w1", faction, 10.0, 15, WeaponType.KINETIC, 1.5, 1.4, 12.0);
-			DbWeapon w2 = new DbWeapon(2, "w2", faction, 12.0, 15, WeaponType.LASER, 2.6, 5.4, 88.0);
-			DbWeapon w3 = new DbWeapon(3, "w3", faction, 10.0, 17, WeaponType.KINETIC, 1.0, 1.4, 55.0);
-			gameDataBase.AddWeapon(w1);
-			gameDataBase.AddWeapon(w2);
-			gameDataBase.AddWeapon(w3);
-			DbDefenceSystem d1 = new DbDefenceSystem(1, "d1", faction, 5.0, DefenceSystemType.SHIELD, 2.0, 2.0, 1.3);
-			DbDefenceSystem d2 = new DbDefenceSystem(2, "s2", faction, 3.0, DefenceSystemType.INTEGRITY_FIELD, 1.2, 1.3, 1.5);
-			gameDataBase.AddDefenceSystem(d1);
-			gameDataBase.AddDefenceSystem(d2);
-
-			//make lists of weapons and defences - NEW LIST FOR EACH SHIP
-			var weps = gameDataBase.GetAllWeapons();
-			var defs = gameDataBase.GetAllDefences(); 
-			List<DbWeapon> weapons1 = new List<DbWeapon> {
-				weps[0],
-				weps[1],
-				weps[2]
-			};
-			List<DbWeapon> weapons2 = new List<DbWeapon> {
-				weps[0],
-				weps[2]
-			};
-			List<DbWeapon> weapons3 = new List<DbWeapon> {
-				weps[0],
-				weps[2]
-			};
-			List<DbDefenceSystem> denences = new List<DbDefenceSystem> {
-				defs[0],
-				defs[1]
-			};
-			List<DbDefenceSystem> denences2 = new List<DbDefenceSystem> {
-				defs[0],
-				defs[1]
-			};
-			//create ship template objects
-			DbShipTemplate st1 = new DbShipTemplate(1, "s1", faction, 10, 10.0, 1000.0, 4.0, 54.0, weapons1, denences, 2000, Rarity.COMMON);
-			DbShipTemplate st2 = new DbShipTemplate(2, "s2", faction, 20, 5.0, 500.0, 1.0, 23.0, weapons2, denences2, 1000, Rarity.VERY_RARE);
-			gameDataBase.AddShipTemplate(st1);
-			gameDataBase.AddShipTemplate(st2);
-
-			Thread.Sleep(500);
-			Console.WriteLine("teraz apdejt");
-			DbShipTemplate sUp = new DbShipTemplate(1, "s1", faction, 99, 10.0, 9999.0, 4.0, 54.0, weapons3, denences, 2000, Rarity.RARE);
-			gameDataBase.UpdateShipTemplate(sUp);
-
-			Thread.Sleep(500);
-			Console.WriteLine("i delete");
-			gameDataBase.RemoveTemplateShipWithId(2);
-
-			Thread.Sleep(500);
-			Console.WriteLine("no i insert DbShip");
-			var player = gameDataBase.GetPlayerWithUsername(p1Name);
-			var shpT = gameDataBase.GetShipTemplateWithId(1);
-			DbShip sh1 = new DbShip(1, player, 1000, shpT);
-			gameDataBase.AddShip(sh1);
-
-			Thread.Sleep(500);
-			Console.WriteLine("select ships");
-			var ships = gameDataBase.GetAllShips();
-			foreach (DbShip ship in ships) Console.WriteLine(ship.ShipBaseStats.Name + " " + ship.Id + " " + ship.ShipBaseStats.Weapons[0].Name + " " + ship.ShipBaseStats.ShipRarity);
-
-			Thread.Sleep(500);
-			Console.WriteLine("no i 2 insert DbShip - przez generate");
-			var player_ = gameDataBase.GetPlayerWithUsername(p1Name);
-			var shpT_ = gameDataBase.GetShipTemplateWithId(1);
-			DbShip sh2 = shpT_.GenerateNewShipOfThisTemplate(player_);
-			gameDataBase.AddShip(sh2);
-
-			Thread.Sleep(500);
-			Console.WriteLine("select ships po raz 2");
-			var ships2 = gameDataBase.GetAllShips();
-			foreach (DbShip ship in ships2) Console.WriteLine(ship.ShipBaseStats.Name + " " + ship.Id + " " + ship.ShipBaseStats.Weapons[0].Name + " " + ship.ShipBaseStats.ShipRarity);
-			//UWAGA NA UZYWANIE LIST!!! DLA KAZDEGO NOWEGO OBIEKTU ROB NOWA LISTE BO INACZEJ DOSTAJE DALNA I WYWALA CALA JOIN TABLE!!! 
-			//REFERENCJE W TYCH LISTACH MOGA BYC TE SAME ALE INSTANCJE LIST MUSZA BYC ROZNE!!!
-			
-			Console.ReadKey();
-
-			Environment.Exit(0);*/
-
-			/*baseModifiers = GameDataBase.GetBaseModifiers();
-			allFactions = GameDataBase.GetAllFactions();*/
 		}
 		//====================================================================================================================================================================================
 		//====================================================================================================================================================================================
@@ -958,16 +888,23 @@ namespace GAME_Server {
 
 			Console.WriteLine("======== Game test =========");
 			Game game = new Game(p1gameBoard, p2gameBoard);
-			game.SetShipStatesForPlayer1(p1move);
-			game.SetShipStatesForPlayer2(game.EmptyMove);
-			game.ProcessPlayer1MoveOrders(p1move);
-			game.ProcessPlayer1AttackMove(p1move);
-			game.FinalizeMove();
+			try {
+				game.MakeTurn(p1move, true, new Move(), false);
+				/*game.SetShipStatesForPlayer1(p1move);
+				game.SetShipStatesForPlayer2(game.EmptyMove);
+				game.ProcessPlayer1MoveOrders(p1move);
+				game.ProcessPlayer1AttackMove(p1move);
+				game.FinalizeMove();*/
 
-			PrintGameBoards(p1gameBoard, p2gameBoard);
+				PrintGameBoards(game.Player1GameBoard, game.Player2GameBoard);
 
+				Console.ReadKey();
+			} catch(Exception e) {
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.StackTrace);
+			}
 			Console.ReadKey();
-
 			Environment.Exit(0);
 		}
 
@@ -1005,8 +942,10 @@ namespace GAME_Server {
 		private IGameDataBase gameDataBase;
 		private GameRNG gameRNG;
 		private bool clientConnected;
+		private bool threadAlreadyEnded;
 		private object loopLock = new object();
 		private object userLock = new object();
+		private object threadEndedLock = new object();
 		private Fleet selectedFleetForGame = null;
 
 		internal UserThread(TcpConnection client) {
@@ -1042,6 +981,20 @@ namespace GAME_Server {
 				}
 			}
 		}
+		public bool ThreadAlreadyEnded {
+			get {
+				bool localThreadAlreadyEnded;
+				lock (threadEndedLock) {
+					localThreadAlreadyEnded = threadAlreadyEnded;
+				}
+				return localThreadAlreadyEnded;
+			}
+			set {
+				lock (threadEndedLock) {
+					threadAlreadyEnded = value;
+				}
+			}
+		}
 
 		public Fleet SelectedFleetForGame { get => selectedFleetForGame; set => selectedFleetForGame = value; }
 		#endregion
@@ -1067,6 +1020,7 @@ namespace GAME_Server {
 					if (adminLogin) {
 						this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 						this.User.Password = "";
+						Server.AddLoggedInUser(User.Username);
 
 						AdminDataPacket adminPacket = new AdminDataPacket(
 							GameDataBase.GetAllShipTemplates().Select(dbTempl => dbTempl.ToShip()).ToList(),
@@ -1084,6 +1038,8 @@ namespace GAME_Server {
 						//set and send user data
 						this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 						this.User.Password = "";
+						Server.AddLoggedInUser(User.Username);
+
 						Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
 						Client.Send(new GamePacket(OperationType.BASE_MODIFIERS, Server.BaseModifiers));
 
@@ -1129,7 +1085,7 @@ namespace GAME_Server {
 				}
 				//if type ok do login or register
 				if (packet.OperationType == OperationType.LOGIN) {
-					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject)) {
+					if (GameDataBase.PlayerExists(playerObject) && GameDataBase.ValidateUser(playerObject) && (!Server.UserAlreadyLoggedIn(playerObject.Username))) {
 						this.User = playerObject;
 						if (GameDataBase.UserIsAdmin(playerObject)) {
 							Server.Log("Succesfully logged in ADMIN: " + playerObject.Username);
@@ -1416,7 +1372,7 @@ namespace GAME_Server {
 			DbPlayer thisUser;
 			string validationResult;
 			mainLoop: while (ClientConnected) {
-				Server.Log(User.Username + ": waiting for request");
+				Server.Log(User.Username + ": waiting for request " + Thread.CurrentThread.ManagedThreadId);
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				Server.Log(User.Username + ": received packet");
 				try {
@@ -1679,6 +1635,7 @@ namespace GAME_Server {
 			if(User != null) Server.Log(User.Username + ": sudden disconnection (disconnect event received) - ending user thread");
 			else Server.Log("sudden disconnection (disconnect event received) - ending user thread");
 			ClientConnected = false;
+			EndThread();
 		}
 
 		/// <summary>
@@ -1714,10 +1671,14 @@ namespace GAME_Server {
 		/// does necessary resource cleanup: disconnects from DB and disconnects TcpConnection
 		/// </summary>
 		internal void EndThread() {
-			if(User != null) Server.Log(User.Username + " ending connections");
-			else Server.Log("Thread ending - ending connections");
-			this.GameDataBase.Dispose();
-			this.Client.Disconnect();
+			if (!ThreadAlreadyEnded) {
+				ThreadAlreadyEnded = true;
+				if (User != null) Server.Log(User.Username + " ending connections");
+				else Server.Log("Thread ending - ending connections");
+				if (User != null) Server.RemoveLoggedInUser(User.Username);
+				this.GameDataBase.Dispose();
+				this.Client.Disconnect();
+			}
 		}
 		#endregion
 
@@ -2278,6 +2239,7 @@ namespace GAME_Server {
 					}
 					else {
 						Server.Log(UsernamesOfPlayers + ": Sudden game end before room was full - game abandoned");
+						roomFull.Set();
 						IsAbandoned = true;
 					}
 				}
