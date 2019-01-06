@@ -614,8 +614,8 @@ namespace GAME_Server {
 					foreach (var s in p.LoserFleet.Ships) Server.Log(s.Id + " Ship of template: " + s.ShipBaseStats.Name + " owned by: " + s.Owner.Username + " active: " + s.IsActive);
 				}
 
-				GameDataBase.RemoveShipWithId(fleetsP1.First().Ships.First().Id, true);
-				GameDataBase.RemoveShipWithId(fleetsP1.First().Ships[1].Id, true);
+				//GameDataBase.RemoveShipWithId(fleetsP1.First().Ships.First().Id, true);
+				//GameDataBase.RemoveShipWithId(fleetsP1.First().Ships[1].Id, true);
 				Server.Log("----------");
 				fleetsP1 = GameDataBase.GetAllFleetsOfPlayer(p1.ToPlayer());
 				fleetsP2 = GameDataBase.GetAllFleetsOfPlayer(p2.ToPlayer());
@@ -871,31 +871,43 @@ namespace GAME_Server {
 
 			PrintGameBoards(p1gameBoard, p2gameBoard);
 
-			Tuple<ShipPosition, Line> p1mm1 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.SHORT, 0), Line.MEDIUM);
-			Tuple<ShipPosition, Line> p1mm2 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.MEDIUM, 0), Line.SHORT);
-			Tuple<ShipPosition, ShipPosition> p1ma1 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.SHORT, 1), new ShipPosition(Line.SHORT, 1));
-			Tuple<ShipPosition, ShipPosition> p1ma2 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.LONG, 0), new ShipPosition(Line.SHORT, 0));	//destroy this ship
+			//Tuple<ShipPosition, Line> p1mm1 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.SHORT, 0), Line.MEDIUM);
+			//Tuple<ShipPosition, Line> p1mm2 = new Tuple<ShipPosition, Line>(new ShipPosition(Line.MEDIUM, 0), Line.SHORT);
+			Tuple<ShipPosition, ShipPosition> p1ma1 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.SHORT, 0), new ShipPosition(Line.MEDIUM, 1));
+			Tuple<ShipPosition, ShipPosition> p1ma2 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.SHORT, 1), new ShipPosition(Line.MEDIUM, 1));
+
+			Tuple<ShipPosition, ShipPosition> p1killmove = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.LONG, 0), new ShipPosition(Line.MEDIUM, 1));
+
+			Tuple<ShipPosition, ShipPosition> p2ma1 = new Tuple<ShipPosition, ShipPosition>(new ShipPosition(Line.MEDIUM, 1), new ShipPosition(Line.SHORT, 1));
 			Move p1move = new Move();
-			p1move.MoveList.Add(p1mm1);
-			p1move.MoveList.Add(p1mm2);
+			Move p2move = new Move();
+			//p1move.MoveList.Add(p1mm1);
+			//p1move.MoveList.Add(p1mm2);
 			p1move.AttackList.Add(p1ma1);
 			p1move.AttackList.Add(p1ma2);
+			p2move.AttackList.Add(p2ma1);
 
 			p1validate = GameServerValidator.ValidateMove(p1move, p1gameBoard, p2gameBoard);
+			p2validate = GameServerValidator.ValidateMove(p2move, p2gameBoard, p1gameBoard);
 			Console.WriteLine("p1 move validate: " + p1validate);
+			Console.WriteLine("p2 move validate: " + p2validate);
 			Console.WriteLine("press any key to contine with game test");
 			Console.ReadKey();
 
 			Console.WriteLine("======== Game test =========");
 			Game game = new Game(p1gameBoard, p2gameBoard);
+			game.EnableDebug = true;
 			try {
-				game.MakeTurn(p1move, true, new Move(), false);
-				/*game.SetShipStatesForPlayer1(p1move);
-				game.SetShipStatesForPlayer2(game.EmptyMove);
-				game.ProcessPlayer1MoveOrders(p1move);
-				game.ProcessPlayer1AttackMove(p1move);
-				game.FinalizeMove();*/
+				game.MakeTurn(p1move, true, p2move, true);
+				PrintGameBoards(game.Player1GameBoard, game.Player2GameBoard);
+				Console.WriteLine("press any key to contine with next move");
+				Console.ReadKey();
 
+				p1validate = GameServerValidator.ValidateMove(p1move, p1gameBoard, p2gameBoard);
+				p2validate = GameServerValidator.ValidateMove(p2move, p2gameBoard, p1gameBoard);
+				Console.WriteLine("p1 move validate: " + p1validate);
+				Console.WriteLine("p2 move validate: " + p2validate);
+				game.MakeTurn(p1move, true, p2move, true);
 				PrintGameBoards(game.Player1GameBoard, game.Player2GameBoard);
 
 				Console.ReadKey();
@@ -950,7 +962,7 @@ namespace GAME_Server {
 
 		internal UserThread(TcpConnection client) {
 			client.ConnectionEnded += UserDisconnectedHandler;
-			client.ConnectionTestReceived += ConnectionTestReceived;
+			//client.ConnectionTestReceived += ConnectionTestReceived;
 			this.Client = client;
 			this.GameDataBase = Server.GetGameDBContext();
 			this.gameRNG = new GameRNG();
@@ -995,6 +1007,7 @@ namespace GAME_Server {
 				}
 			}
 		}
+		public bool IsInGame { get; set; }
 
 		public Fleet SelectedFleetForGame { get => selectedFleetForGame; set => selectedFleetForGame = value; }
 		#endregion
@@ -1537,7 +1550,9 @@ namespace GAME_Server {
 								newCustomGameThread.Start();
 								//newCustomGameThread.Join();
 								Server.Log(User.Username + ": create game room: " + roomToCreate.RoomName + "successful, user thread blocks");
+								IsInGame = true;
 								customGameRoomToCreate.gameEnded.WaitOne();     //block until end of the game
+								IsInGame = false;
 								Server.Log(User.Username + ": has ended his game, user thread continues");
 								UnsetSelectedFleetAfterGame();
 							}
@@ -1557,7 +1572,9 @@ namespace GAME_Server {
 									if (joinSuccess) {
 										//SendSuccess();
 										Server.Log(User.Username + ": join game room: " + roomToJoin.RoomName + "successful, user thread blocks");
+										IsInGame = true;
 										customGameRoomToJoin.gameEnded.WaitOne();   //block until end of the game
+										IsInGame = false;
 										Server.Log(User.Username + ": has ended his game, user thread continues");
 										UnsetSelectedFleetAfterGame();
 									}
@@ -1583,7 +1600,9 @@ namespace GAME_Server {
 									newRankedGameThread.Start();
 									//newCustomGameThread.Join();
 									Server.Log(User.Username + ": create ranked game room successful, user thread blocks");
+									IsInGame = true;
 									newRankedRoom.gameEnded.WaitOne();     //block until end of the game
+									IsInGame = false;
 									Server.Log(User.Username + ": has ended his game, user thread continues");
 									UnsetSelectedFleetAfterGame();
 								}
@@ -1593,7 +1612,9 @@ namespace GAME_Server {
 									if (joinSuccess) {
 										//SendSuccess();
 										Server.Log(User.Username + ": join game room successful, user thread blocks");
+										IsInGame = true;
 										rankedGame.gameEnded.WaitOne();   //block until end of the game
+										IsInGame = false;
 										Server.Log(User.Username + ": has ended his game, user thread continues");
 										UnsetSelectedFleetAfterGame();
 									}
@@ -1635,7 +1656,7 @@ namespace GAME_Server {
 			if(User != null) Server.Log(User.Username + ": sudden disconnection (disconnect event received) - ending user thread");
 			else Server.Log("sudden disconnection (disconnect event received) - ending user thread");
 			ClientConnected = false;
-			EndThread();
+			if(!IsInGame) EndThread();
 		}
 
 		/// <summary>
@@ -1673,7 +1694,7 @@ namespace GAME_Server {
 		internal void EndThread() {
 			if (!ThreadAlreadyEnded) {
 				ThreadAlreadyEnded = true;
-				if (User != null) Server.Log(User.Username + " ending connections");
+				if (User != null) Server.Log(User.Username + " Thread ending - ending connections");
 				else Server.Log("Thread ending - ending connections");
 				if (User != null) Server.RemoveLoggedInUser(User.Username);
 				this.GameDataBase.Dispose();
@@ -1917,6 +1938,7 @@ namespace GAME_Server {
 						ContinueGameLoop = true;
 						GameAlreadyEnded = false;
 						ThisGame = new Game(Player1GameBoard, Player2GameBoard);
+						ThisGame.EnableDebug = true;
 						while (ContinueGameLoop) {
 							//lock (gameInProgressLock) {	//cant do this with await
 							player1MoveOK = true;
@@ -2042,8 +2064,12 @@ namespace GAME_Server {
 		/// <param name="playerConection"></param>
 		/// <returns></returns>
 		private async Task<GamePacket> GetPlayersPacket(TcpConnection playerConection, int timeout) {
-			Task<GamePacket> receivedPacket = Task.Run(() => playerConection.GetReceivedPacket(timeout));
-			return await receivedPacket;
+			try {
+				Task<GamePacket> receivedPacket = Task.Run(() => playerConection.GetReceivedPacket(timeout));
+				return await receivedPacket;
+			} catch(ConnectionEndedException) {
+				return new GamePacket(OperationType.DISCONNECT, new object());
+			}
 		}
 
 		private void SkipMove(TcpConnection playerConnThatTiemouted, string reason) {

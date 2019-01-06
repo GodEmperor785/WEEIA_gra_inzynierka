@@ -86,7 +86,7 @@ namespace GAME_Server {
 			List<int> shipsThatAlreadyMadeMove = new List<int>();
 			//first check if ShipPosition index is ok
 			foreach(Tuple<ShipPosition, Line> move in playerMove.MoveList) {	//check if index of ship out of range in origin line
-				if (move.Item1.ShipIndex >= numberOfShipsInLine[move.Item1.Line] && move.Item1.ShipIndex >= 0) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " move from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
+				if (move.Item1.ShipIndex >= numberOfShipsInLine[move.Item1.Line] || move.Item1.ShipIndex < 0) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " move from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
 			}
 			//check if there line capacity is ok
 			foreach(Tuple<ShipPosition, Line> move in playerMove.MoveList) {
@@ -105,9 +105,9 @@ namespace GAME_Server {
 			foreach(var move in playerMove.MoveList) {
 				if (shipsThatAlreadyMadeMove.Where(id => id == playerBoard.Board[move.Item1.Line][move.Item1.ShipIndex].Id).Count() > 1) return FailureReasons.ONE_SHIP_MANY_MOVES;
 			}
-			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {  //check if idexes of ships are ok
-				if(move.Item1.ShipIndex >= playerBoard.Board[move.Item1.Line].Count && move.Item1.ShipIndex >= 0) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;
-				if (move.Item2.ShipIndex >= playerBoard.Board[move.Item2.Line].Count && move.Item2.ShipIndex >= 0) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;
+			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {  //check if indexes of ships are ok
+				if (move.Item1.ShipIndex >= playerBoard.Board[move.Item1.Line].Count || move.Item1.ShipIndex < 0) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack from: " + move.Item1.Line + " " + move.Item1.ShipIndex;	//there is no source ship!
+				if (move.Item2.ShipIndex >= enemyBoard.Board[move.Item2.Line].Count || move.Item2.ShipIndex < 0) return FailureReasons.INDEX_IN_LINE_OUT_OF_RANGE + " attack to: " + move.Item2.Line + " " + move.Item2.ShipIndex;		//there is no destination ship!
 			}
 			//than check if attacking ships are not in moving ships
 			foreach(Tuple<ShipPosition, ShipPosition> move in playerMove.AttackList) {

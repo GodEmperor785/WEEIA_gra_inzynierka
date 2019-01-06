@@ -148,8 +148,10 @@ namespace Client_PC.Scenes
             {
                 try
                 {
-                    string server = "212.191.92.88";
-                    int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
+					string server = "212.191.92.88";
+					//string server = "127.0.0.1";
+					int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
+					//int port = 10000;
                     TcpClient client = new TcpClient(server, port);
                     Console.WriteLine("tcpClient created");
                     Game1.self.Connection = new TcpConnection(client, true, null, false, false, null);

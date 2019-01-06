@@ -156,7 +156,7 @@ namespace GAME_Server {
 			//chanceToHit has to be at least this - to prevent negative valueso f chanceToHit
 			double minChanceToHit = 0.01;
 			chanceToHit = Math.Max(chanceToHit, minChanceToHit);
-			Log("Chance to hit: " + chanceToHit + " distance " + distance);
+			//Log("Chance to hit: " + chanceToHit + " distance " + distance);
 			//finally roll to determine if projectile hit its target
 			return RNG.RollWithChance(chanceToHit);
 		}
@@ -179,10 +179,11 @@ namespace GAME_Server {
 			foreach (var moveOrder in move.MoveList) {
 				if (yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex] != null) {
 					Log("Move from: " + moveOrder.Item1.Line + " " + moveOrder.Item1.ShipIndex + "  to: " + moveOrder.Item2 + "  ship_id: " + yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex].Id);
-					//first add ship to destination line
-					yourBoard.Board[moveOrder.Item2].Add(yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex]);
-					//than remove ship from origin line
-					yourBoard.Board[moveOrder.Item1.Line].RemoveAt(moveOrder.Item1.ShipIndex);
+					//first cloned add ship object to destination line
+					Ship shipToMove = Server.CloneObject(yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex]);
+					yourBoard.Board[moveOrder.Item2].Add(shipToMove);
+					//than remove ship from origin line - change to null - it will be removed by finalize and ship indexes will be preserved
+					yourBoard.Board[moveOrder.Item1.Line][moveOrder.Item1.ShipIndex] = null;
 				}
 				else Log("Ship at: " + moveOrder.Item1.Line + " " + moveOrder.Item1.ShipIndex + "  was destroyed");
 			}
