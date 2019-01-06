@@ -188,11 +188,14 @@ namespace Client_PC.Scenes
         }
         public void searchClick()
         {
-            Task task = new Task(searchFunction);
-            task.Start();
-            TurnPop(false);
-            exit.Active = true;
-            startedSearching = true;
+            if (chosenDeck != null)
+            {
+                Task task = new Task(searchFunction);
+                task.Start();
+                TurnPop(false);
+                exit.Active = true;
+                startedSearching = true;
+            }
         }
 
         public void TurnPop(bool active)

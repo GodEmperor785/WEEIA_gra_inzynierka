@@ -148,9 +148,12 @@ namespace Client_PC.Scenes
             {
                 if (CurrentCard.Parent == yourGrid) // checking if it's your card so you can use it later
                 {
-                    CurrentCard.Status = Card.status.clicked;
-                    CardsInRow = 1;
-                    SetSlots(true);
+                    if (CurrentCard.CanMove)
+                    {
+                        CurrentCard.Status = Card.status.clicked;
+                        CardsInRow = 1;
+                        SetSlots(true);
+                    }
                 }
             }
             else
@@ -160,9 +163,14 @@ namespace Client_PC.Scenes
                 {
                     if (LastCard.Parent == CurrentCard.Parent) // checking if previous card in action was from the same parent
                     {
-                        LastCard.Status = Card.status.clear;
-                        CurrentCard.Status = Card.status.clicked;
-                        CardsInRow = 1;
+                        if (CurrentCard.CanMove)
+                        {
+
+
+                            LastCard.Status = Card.status.clear;
+                            CurrentCard.Status = Card.status.clicked;
+                            CardsInRow = 1;
+                        }
                     }
                     else
                     {
@@ -185,7 +193,7 @@ namespace Client_PC.Scenes
                 if (p is CardSlot)
                 {
                     CardSlot c = (CardSlot) p;
-                    if(LineDifference(c.line,CurrentCard.line) == 1)
+                    if(CurrentCard != null && LineDifference(c.line,CurrentCard.line) == 1)
                         if(c.Active)
                             c.CardClicked = clicked;
                 }
@@ -196,31 +204,48 @@ namespace Client_PC.Scenes
             ShipPosition result = null;
             if (currentGameState.YourGameBoard.Board[Line.SHORT].Contains(ship))
             {
-                result = new ShipPosition(Line.SHORT,currentGameState.YourGameBoard.Board[Line.SHORT].FindIndex(p=> p.Id == ship.Id));
+                result = new ShipPosition(Line.SHORT,getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.SHORT]));
             }
             else if(currentGameState.YourGameBoard.Board[Line.MEDIUM].Contains(ship))
             {
-                result = new ShipPosition(Line.MEDIUM, currentGameState.YourGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+                result = new ShipPosition(Line.MEDIUM, getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.SHORT]));
             }
             else if (currentGameState.YourGameBoard.Board[Line.LONG].Contains(ship))
             {
-                result = new ShipPosition(Line.LONG, currentGameState.YourGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+                result = new ShipPosition(Line.LONG, getIndexOfShip(ship, currentGameState.YourGameBoard.Board[Line.SHORT]));
             }
             else if(currentGameState.EnemyGameBoard.Board[Line.SHORT].Contains(ship))
             {
-                result = new ShipPosition(Line.SHORT, currentGameState.EnemyGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+                result = new ShipPosition(Line.SHORT, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.SHORT]));
             }
             else if (currentGameState.EnemyGameBoard.Board[Line.MEDIUM].Contains(ship))
             {
-                result = new ShipPosition(Line.MEDIUM, currentGameState.EnemyGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+                result = new ShipPosition(Line.MEDIUM, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.SHORT]));
             }
             else if (currentGameState.EnemyGameBoard.Board[Line.LONG].Contains(ship))
             {
-                result = new ShipPosition(Line.LONG, currentGameState.EnemyGameBoard.Board[Line.SHORT].FindIndex(p => p.Id == ship.Id));
+                result = new ShipPosition(Line.LONG, getIndexOfShip(ship, currentGameState.EnemyGameBoard.Board[Line.SHORT]));
             }
             else
             {
                 result = null;
+            }
+
+            return result;
+        }
+
+        public int getIndexOfShip(Ship ship, List<Ship> ships)
+        {
+            int result = 0;
+            int i = 0;
+            foreach (var s in ships)
+            {
+                if (s.Equals(ship))
+                {
+                    result = i;
+                }
+
+                i++;
             }
 
             return result;
@@ -236,6 +261,7 @@ namespace Client_PC.Scenes
                 c.Active = false;
                 SetSlots(false);
                 CurrentCard.Status = Card.status.clear;
+                LastCard = null;
             }
         }
 
@@ -319,8 +345,7 @@ namespace Client_PC.Scenes
         public void setState(GameState state)
         {
             
-            move.AttackList = new List<Tuple<ShipPosition, ShipPosition>>();
-            move.MoveList = new List<Tuple<ShipPosition, Line>>();
+            move = new Move();
             var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToList();
             var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToList();
             var longAlly = state.YourGameBoard.Board[Line.LONG].ToList();
@@ -331,13 +356,17 @@ namespace Client_PC.Scenes
 
             yourGrid.RemoveChildren();
             enemyGrid.RemoveChildren();
-            
+
+            List<IClickable> toRemove = new List<IClickable>();
             Clickable.ForEach(p =>
             {
-                if (p is Card)
-                    Clickable.Remove(p);
+                if (p is Card || p is CardSlot)
+                    toRemove.Add(p);
             });
-
+            foreach (var clickable in toRemove)
+            {
+                Clickable.Remove(clickable);
+            }
 
             CardsToRow(shortAlly, Line.SHORT, true);
             CardsToRow(medAlly, Line.MEDIUM, true);
@@ -415,6 +444,7 @@ namespace Client_PC.Scenes
             CardsInRow = 0;
             SetSlots(false);
             LastCard = null;
+            CurrentCard = null;
         }
         public void Draw(GameTime gameTime)
         {
