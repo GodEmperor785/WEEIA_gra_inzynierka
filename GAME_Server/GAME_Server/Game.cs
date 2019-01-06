@@ -275,10 +275,10 @@ namespace GAME_Server {
 		/// </summary>
 		public void FinalizeMove() {
 			//first remove ships that are nulls - they were destroyed by other players attacks
-			foreach(var line in Player1GameBoard.Board) {
+			foreach(var line in Player1GameBoardReference.Board) {
 				line.Value.RemoveAll(ship => ship == null);
 			}
-			foreach (var line in Player2GameBoard.Board) {
+			foreach (var line in Player2GameBoardReference.Board) {
 				line.Value.RemoveAll(ship => ship == null);
 			}
 			Player1GameBoard = Player1GameBoardReference;
