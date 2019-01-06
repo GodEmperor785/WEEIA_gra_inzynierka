@@ -14,6 +14,8 @@ namespace Client_PC.UI
             Child ch = new Child();
             ch.element = element;
             ch.id = Children.Count;
+            ch.parent = this;
+            ch.element.Parent = this;
             Children.Add(ch);
         }
         public void AddChild(GuiElement element, string name)

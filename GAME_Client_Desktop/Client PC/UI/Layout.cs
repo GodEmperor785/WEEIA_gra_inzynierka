@@ -14,6 +14,7 @@ namespace Client_PC.UI
         protected class Child
         {
             public GuiElement element;
+            public RelativeLayout parent;
             public int id;
             public int column;
             public int row;

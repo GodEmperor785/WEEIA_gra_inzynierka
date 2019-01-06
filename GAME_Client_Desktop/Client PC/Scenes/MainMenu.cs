@@ -28,6 +28,7 @@ namespace Client_PC.Scenes
         private string foundgame = "Found game";
         private bool searching = false;
         private bool stopSearching = false;
+        private bool startedSearching = false;
         #region popup buttons
 
         private Button up;
@@ -177,17 +178,36 @@ namespace Client_PC.Scenes
             foreach (var clickable in Clickable)
             {
                 clickable.Active = active;
-                if(popup != null)
+                if (popup != null)
+                {
                     if (clickable.Parent == popup.layout)
                         clickable.Active = !active;
+                }
+                
             }
         }
-        public void searchClick() //TODO make it threaded
+        public void searchClick()
         {
             Task task = new Task(searchFunction);
             task.Start();
+            TurnPop(false);
+            exit.Active = true;
+            startedSearching = true;
         }
 
+        public void TurnPop(bool active)
+        {
+            foreach (var clickable in Clickable)
+            {
+                if (popup != null)
+                {
+                    if (clickable.Parent == popup.layout)
+                        clickable.Active = active;
+                    if(!active)
+                        exit.Active = !active;
+                }
+            }
+        }
         public void searchFunction()
         {
             if (chosenDeck != null)
@@ -235,6 +255,7 @@ namespace Client_PC.Scenes
                                 packet = new GamePacket(OperationType.ABANDON_GAME,new object());
                                 Game1.self.Connection.Send(packet);
                                 searching = false;
+                                startedSearching = false;
                                 break;
                             }
                         }
@@ -254,8 +275,11 @@ namespace Client_PC.Scenes
             if (searching)
             {
                 stopSearching = true;
+                
                 if (timer != null)
                     timer.Dispose();
+                TurnPop(true);
+                popup.SetActive(true);
             }
             else
             {
@@ -330,8 +354,11 @@ namespace Client_PC.Scenes
             grid.UpdateP();
             if (popup != null)
             {
-                SetClickables(!popup.Active);
-                popup.SetActive(popup.Active);
+                
+                    SetClickables(!popup.Active);
+                    popup.SetActive(popup.Active);
+                if (startedSearching)
+                    TurnPop(!startedSearching);
             }
             else
             {
