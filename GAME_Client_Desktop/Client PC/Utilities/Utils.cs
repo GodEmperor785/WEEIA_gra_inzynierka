@@ -83,9 +83,9 @@ namespace Client_PC.Utilities
 
                 if (keyboardState.GetPressedKeys().Contains(Keys.F5) && !lastPressedKeys.Contains(Keys.F5))
                 {
+                    Task t = new Task(RefreshWallpaper);
+                    t.Start();
 
-                    Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice,
-                        Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
 
                 }
 
@@ -102,6 +102,11 @@ namespace Client_PC.Utilities
             return update;
         }
 
+        public static void RefreshWallpaper()
+        {
+            Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice,
+                Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
+        }
         public static Texture2D CreateTexture(GraphicsDevice device, int width, int height)
         {
             //initialize a texture

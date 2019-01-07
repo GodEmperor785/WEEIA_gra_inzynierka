@@ -25,7 +25,8 @@ namespace Client_PC.UI
         public virtual void Draw(SpriteBatch sp) { }
         public bool DrawBackground { get; set; }
         public object Parent { get; set; }
-
+        public Color Brighter { get; set; }
+        public Color Darker { get; set; }
         public bool NeedNewTexture
         {
             get
@@ -45,6 +46,8 @@ namespace Client_PC.UI
 
         public GuiElement(Point origin, int width, int height, GraphicsDevice device, GUI gui)
         {
+            Brighter = new Color(180,180,180);
+            Darker = new Color(100, 100, 100);
             Origin = origin;
             Width = width;
             Height = height;
@@ -55,6 +58,8 @@ namespace Client_PC.UI
 
         public GuiElement(int width, int height, GraphicsDevice device, GUI gui)
         {
+            Brighter = new Color(180, 180, 180);
+            Darker = new Color(100, 100, 100);
             Width = width;
             Height = height;
             Device = device;

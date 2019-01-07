@@ -143,38 +143,42 @@ namespace Client_PC.UI
 
             Graphic armorText = (Graphic) overlay.GetChild("armorText");
             armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
-            if (NeedNewTexture)
+            if (NeedNewTexture && Darker == null && Brighter == null)
                 Texture = Util.CreateTexture(Device, Width, Height);
+            else
+            {
+                Texture = Util.CreateTexture(Device, Width, Height,Brighter,Darker);
+            }
             /// blue - has chosen move
             /// green - is clicked
             /// red - is target of current action
             /// yellow - is target
 
-
+            Color z = new Color(100,100,100);
             if (Status != LastStatus)
             {
                 if (Status == status.target)
                 {
                     Texture = Util.CreateTexture(Device, Width, Height, Color.Red,
-                        new Color(100, 100, 100)
+                        z
                     );
                 }
                 else if (Status == status.isTarget)
                 {
                     Texture = Util.CreateTexture(Device, Width, Height, Color.Yellow,
-                        new Color(100, 100, 100)
+                        z
                     );
                 }
                 else if (Status == status.clicked)
                 {
                     Texture = Util.CreateTexture(Device, Width, Height, Color.Green,
-                        new Color(100, 100, 100)
+                        z
                     );
                 }
                 else if (Status == status.hasMove)
                 {
                     Texture = Util.CreateTexture(Device, Width, Height, Color.Blue,
-                        new Color(100, 100, 100)
+                        z
                     );
                 }
                 else if (Status == status.clear)
