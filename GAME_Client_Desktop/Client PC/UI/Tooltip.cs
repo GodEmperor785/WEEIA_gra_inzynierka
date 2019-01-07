@@ -17,8 +17,10 @@ namespace Client_PC.UI
             set
             {
                 text = value;
-                if (Font.MeasureString(text).X < TextBox.Width)
+
+                /*if (Font.MeasureString(text).X < TextBox.Width)
                     textToShow = text;
+                    */
             }
         }
         private Vector2 textPosition;
@@ -27,7 +29,7 @@ namespace Client_PC.UI
         public bool TextWrappable { get; set; }
         public bool ActiveChangeable { get; set; }
         public bool HeightDerivatingFromText { get; set; }
-        public Tooltip( int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
+        public Tooltip( int width, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, int height = 10) : base(width, height, device, gui)
         {
             Font = font;
             ActiveChangeable = true;
@@ -49,6 +51,7 @@ namespace Client_PC.UI
         {
             if (text != null)
             {
+                /*
                 Vector2 z = Font.MeasureString(text);
                 if (z.X < Width)
                 {
@@ -59,7 +62,8 @@ namespace Client_PC.UI
                 {
                     TextPosition = new Vector2(((TextBox.X+ 3)), (TextBox.Y + Font.MeasureString("z").Y / 2.0f));
                 }
-
+                */
+                TextPosition = new Vector2(TextBox.X+6,TextBox.Y+6);
                 parseText(text, Font);
                 if (NeedNewTexture)
                     Texture = Util.CreateTextureHollow(Device, Width, Height);
@@ -81,6 +85,10 @@ namespace Client_PC.UI
                     line = String.Empty;
                 }
                 int z = 0;
+                if (word.Contains("\n"))
+                {
+                    z = (int)Font.MeasureString(word).Y / 2;
+                }
                 if (line == String.Empty)
                 {
                     z = (int)Font.MeasureString(line + word).Y;

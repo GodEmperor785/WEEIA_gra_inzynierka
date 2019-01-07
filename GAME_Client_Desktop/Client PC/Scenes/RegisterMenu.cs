@@ -56,16 +56,16 @@ namespace Client_PC.Scenes
             {
                 TextLimit = 30
             };
-            Tooltip tooltipLogin = new Tooltip(200, 150, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Tooltip tooltipLogin = new Tooltip(200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, 150)
             {
                 Text = "Maximum 30 characters"
             };
 
-            Tooltip tooltipPassword1 = new Tooltip(200, 150, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Tooltip tooltipPassword1 = new Tooltip(200,  Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, 150)
             {
                 Text = "Maximum 30 characters"
             };
-            Tooltip tooltipPassword2 = new Tooltip(200, 150, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Tooltip tooltipPassword2 = new Tooltip(200,  Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, 150)
             {
                 Text = "Write your password once again."
             };
@@ -210,7 +210,8 @@ namespace Client_PC.Scenes
         }
 
 
-        public override void UpdateTooltips(IClickable button, Point xy)
+        /*
+         public override void UpdateTooltips(IClickable button, Point xy)
         {
             foreach (var clickable in Clickable.Where(p => p.Tooltip != null).ToList())
             {
@@ -225,6 +226,7 @@ namespace Client_PC.Scenes
                 }
             }
         }
+        */
         public void Draw(GameTime gameTime)
         {
 

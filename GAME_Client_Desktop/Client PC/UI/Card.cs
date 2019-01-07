@@ -25,8 +25,8 @@ namespace Client_PC.UI
         private Vector2 armorIconPosition;
         private Vector2 hpIconScale;
         private Vector2 armorIconScale;
-        private double hp;
-        private double armor;
+        private int hp;
+        private int armor;
         private string name;
         private Vector2 hpPosition;
         private Vector2 armorPosition;
@@ -83,8 +83,8 @@ namespace Client_PC.UI
                 Scale = armorIconScale,
                 Position = armorIconPosition
             };
-            hp = ship.Hp;
-            armor = ship.Armor;
+            hp = (int)ship.Hp;
+            armor = (int)ship.Armor;
             overlay.AddChild(armorGraphic,"armorIcon");
             Graphic hpText = new Graphic()
             {
@@ -98,6 +98,30 @@ namespace Client_PC.UI
             };
             overlay.AddChild(hpText,"hpText");
             overlay.AddChild(armorText,"armorText");
+            Tooltip = createTooltip();
+        }
+
+        private Tooltip createTooltip()
+        {
+            int width = 450;
+            Tooltip tooltip = new Tooltip(width,Game1.self.GraphicsDevice,Gui,Gui.smediumFont,true);
+            tooltip.Text = "Name:    " + ship.Name+" \n"
+                           +"Faction:    "+ship.Faction.Name+" \n"
+                           +"Rarity:    "+ship.Rarity.GetRarityName()+" \n"
+                           +"Weapons: \n";
+            tooltip.Text += "Name    Chance to hit    Damage" + " \n";
+            foreach (var shipWeapon in ship.Weapons)
+            {
+                tooltip.Text += shipWeapon.Name + "    "+shipWeapon.ChanceToHit*100+"%    "+shipWeapon.Damage +" \n";
+            }
+            tooltip.Text += "Defences:\n";
+            tooltip.Text += "Name    Type    Defence value: \n";
+            foreach (var defenceSystem in ship.Defences)
+            {
+                tooltip.Text += defenceSystem.Name + "    " + defenceSystem.SystemType.GetDefenceSystemTypeName() + "    " +
+                                defenceSystem.DefenceValue + " \n";
+            }
+            return tooltip;
         }
         public override void Draw(SpriteBatch spriteBatch)
         {

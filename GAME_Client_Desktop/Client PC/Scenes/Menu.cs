@@ -158,7 +158,18 @@ namespace Client_PC.Scenes
 
         public virtual void UpdateTooltips(IClickable button, Point xy)
         {
-
+            foreach (var clickable in Clickable.Where(p => p.Tooltip != null).ToList())
+            {
+                Game1.self.tooltipToDraw = null;
+            }
+            if (button != null)
+            {
+                if (button.Tooltip != null)
+                {
+                    Game1.self.tooltipToDraw = button.Tooltip;
+                    button.Tooltip.Update(xy);
+                }
+            }
         }
         public virtual IClickable GetClickable(Point xy)
         {
