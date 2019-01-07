@@ -16,6 +16,14 @@ namespace Client_PC.UI
     {
         public enum status { clear,clicked,target,hasMove,isTarget}
 
+        public Dictionary<Rarity, Color> RarityColor = new Dictionary<Rarity, Color>
+        {
+            {Rarity.COMMON, new Color(180, 180, 180)},
+            {Rarity.RARE, new Color(29, 131, 247)},
+            {Rarity.VERY_RARE, new Color(135, 69, 172)},
+            {Rarity.LEGENDARY, new Color(255, 123, 17)}
+        };
+        
         public status Status { get; set; } = status.clear;
         private status LastStatus = status.clear;
         private Texture2D skin;
@@ -143,11 +151,9 @@ namespace Client_PC.UI
 
             Graphic armorText = (Graphic) overlay.GetChild("armorText");
             armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
-            if (NeedNewTexture && Darker == null && Brighter == null)
-                Texture = Util.CreateTexture(Device, Width, Height);
-            else
-            {
-                Texture = Util.CreateTexture(Device, Width, Height,Brighter,Darker);
+            if (NeedNewTexture)
+            { 
+                Texture = Util.CreateTexture(Device, Width, Height,RarityColor[ship.Rarity],Darker);
             }
             /// blue - has chosen move
             /// green - is clicked
