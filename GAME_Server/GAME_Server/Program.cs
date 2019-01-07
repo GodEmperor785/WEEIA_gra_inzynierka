@@ -74,6 +74,8 @@ namespace GAME_Server {
 
 		internal static bool continueAcceptingConnections = true;
 
+		private static string logFilePath;
+
 		static void Main(string[] args) {
 			try {
 				Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");   //to change exception language to english
@@ -81,10 +83,13 @@ namespace GAME_Server {
 				Log("Getting configuration...");
 				var useSslVar = ConfigurationManager.AppSettings["useSsl"];
 				bool useSsl = Convert.ToBoolean(useSslVar);
+				logFilePath = ConfigurationManager.AppSettings["pathToLogFile"];
 				Log("Server use SSL: " + useSsl);
+				Log("Path to fog file: " + logFilePath);
 
+				//TestRandomness();
 				//DoGameBoardValidationTest();
-				
+
 				InitilizeGameDataFromDB(false, true);       //change both to true to run ONLY DB test inserts, false and true to continue on debug DB, both false to dont change DB and use existing one
 
 				//TcpListener listener = new TcpListener(ipAddress, port);
@@ -696,6 +701,19 @@ namespace GAME_Server {
 			return Convert.ChangeType(packetToCast, properType);
 		}
 
+		private static bool LogToFile(string msg) {
+			try {
+				if (logFilePath != null) {
+					File.AppendAllText(logFilePath, msg);
+					return true;
+				}
+				else return false;
+			}
+			catch (Exception e) {
+				return false;
+			}
+		}
+
 		/// <summary>
 		/// To be used instead of <see cref="Console.WriteLine"/>, prints message to chosen log - console, text area etc. Appends date at the beginning of message
 		/// </summary>
@@ -704,6 +722,7 @@ namespace GAME_Server {
 			string msg = DateTime.Now + ": " + message;
 			lock (logLock) {
 				Console.WriteLine(msg);
+				if(!LogToFile(msg + Environment.NewLine)) Console.WriteLine("Write to file " + logFilePath + " failed!");
 			}
 		}
 
@@ -714,6 +733,7 @@ namespace GAME_Server {
 		internal static void LogNoNewLine(string message) {
 			lock (logLock) {
 				Console.Write(message);
+				LogToFile(message);
 			}
 		}
 
@@ -939,6 +959,35 @@ namespace GAME_Server {
 				foreach (Ship s in line.Value) Console.Write(s.Id + "\t");
 				Console.Write(Environment.NewLine);
 			}
+		}
+
+		private void TestRandomness() {
+			Dictionary<Rarity, double> chances = new Dictionary<Rarity, double>() {
+					{ Rarity.COMMON, 0.5 },
+					{ Rarity.RARE, 0.2 },
+					{ Rarity.VERY_RARE, 0.2 },
+					{ Rarity.LEGENDARY, 0.1 }
+				};
+			Dictionary<Rarity, int> counts = new Dictionary<Rarity, int>() {
+					{ Rarity.COMMON, 0 },
+					{ Rarity.RARE, 0 },
+					{ Rarity.VERY_RARE, 0 },
+					{ Rarity.LEGENDARY, 0 }
+				};
+
+			GameRNG rng = new GameRNG();
+			int totalRolls = 10000000;
+
+			for (int i = 0; i < totalRolls; i++) {
+				Rarity rolled = rng.GetRandomRarityWithChances(chances);
+				counts[rolled]++;
+			}
+			foreach (var pair in counts) {
+				Log(pair.Key.GetRarityName() + " count = " + pair.Value + " " + ((double)pair.Value / (double)totalRolls));
+			}
+		
+			Console.ReadKey();
+			Environment.Exit(0);
 		}
 
 	}
