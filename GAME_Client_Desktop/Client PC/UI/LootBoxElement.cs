@@ -45,7 +45,7 @@ namespace Client_PC.UI
                 this.rarity = Rarity.rare;
             Tooltip = new Tooltip(400, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true, 300);
             
-            Tooltip.Text = "Name:" + Lootbox.Name + "Rarity:" + rarity + "Cost:" + Lootbox.Cost;
+            Tooltip.Text = "Name:    " + Lootbox.Name+"\n" + "Rarity:    " + rarity+"\n" + "Cost:    " + Lootbox.Cost;
 
         }
 

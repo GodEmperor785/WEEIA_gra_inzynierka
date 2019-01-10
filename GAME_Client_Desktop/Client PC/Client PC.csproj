@@ -108,6 +108,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Credits\graphics.txt" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>

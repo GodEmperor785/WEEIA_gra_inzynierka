@@ -35,12 +35,14 @@ namespace Client_PC.UI
         public SpriteFont Font { get ; set ; }
         public bool TextWrappable { get; set; }
         public bool HeightDerivatingFromText { get; set; }
+        public bool WidthDerivatingFromText { get; set; }
 
         public Label(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin, width, height, device, gui)
         {
             Font = font;
             TextWrappable = wrapable;
             HeightDerivatingFromText = false;
+            WidthDerivatingFromText = false;
         }
         public Label(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(width, height, device, gui)
         {
@@ -141,6 +143,11 @@ namespace Client_PC.UI
 
             Height = usedHeight + 20;
         }
+
+        private void AdaptToTextWidth(String text, SpriteFont Font)
+        {
+            Width =(int) Font.MeasureString(text).Length() + 20;
+        }
         public override void Draw(SpriteBatch spriteBatch)
         {
             this.Update();
@@ -148,7 +155,10 @@ namespace Client_PC.UI
             if(DrawBackground)
                 spriteBatch.Draw(Texture, Boundary, Color.White);
             if(text != null)
-                spriteBatch.DrawString(Font, parseText(Text,Font), TextPosition, Color.Black);
+                if(!WidthDerivatingFromText)
+                    spriteBatch.DrawString(Font, parseText(Text,Font), TextPosition, Color.Black);
+                else
+                    spriteBatch.DrawString(Font, Text, TextPosition, Color.Black);
             //spriteBatch.End();
         }
 
@@ -156,6 +166,8 @@ namespace Client_PC.UI
         {
             if(HeightDerivatingFromText)
                 AdaptToText(Text, Font);
+            if (WidthDerivatingFromText)
+                AdaptToTextWidth(Text, Font);
             Update(text,ref textPosition,Font);
             if (NeedNewTexture)
                 Texture = Util.CreateTexture(Device, Width, Height, new Color(180, 180, 180),new Color(100, 100, 100), alpha : 50);

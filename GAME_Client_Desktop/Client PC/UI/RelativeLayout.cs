@@ -24,6 +24,7 @@ namespace Client_PC.UI
             ch.element = element;
             ch.id = Children.Count;
             ch.name = name;
+            ch.element.Parent = this;
             Children.Add(ch);
         }
     }

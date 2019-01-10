@@ -264,7 +264,7 @@ namespace Client_PC.UI
                     element = element,
                     column = 0
                 };
-
+                ch.element.Parent = this;
                 ch.id = Children.Count;
                 ch.row = Rows;
                 
@@ -311,7 +311,7 @@ namespace Client_PC.UI
                     element = element,
                     column = 0
                 };
-
+                ch.element.Parent = this;
                 ch.id = Children.Count;
                 ch.row = Rows;
 

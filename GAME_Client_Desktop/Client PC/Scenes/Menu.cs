@@ -17,7 +17,9 @@ namespace Client_PC.Scenes
         protected List<IClickable> Clickable;
         protected GUI Gui;
         protected bool AbleToClick = false;
+        protected Popup popup;
         protected Keys[] LastPressedKeys;
+        
         private ButtonState lastState;
         public Menu()
         {
@@ -58,8 +60,11 @@ namespace Client_PC.Scenes
         {
             foreach (var clickable in Clickable)
             {
-                if (!(clickable is Card))
-                    clickable.Active = active;
+               // if (!(clickable is Card))
+                clickable.Active = active;
+                if(popup != null)
+                    if (clickable.Parent == popup.grid || clickable.Parent == popup.layout)
+                        clickable.Active = !active;
             }
 
         }
@@ -131,7 +136,7 @@ namespace Client_PC.Scenes
             Point xy = new Point(x, y);
             IClickable button = GetClickable(xy);
             List<IClickable>c = new List<IClickable>();
-            if (button != null)
+            if ((button != null && button is Card) || (button != null && button.Active)) 
             {
                 c.Add(button);
                 button.IsOver = true;

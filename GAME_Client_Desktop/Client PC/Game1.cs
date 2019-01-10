@@ -223,6 +223,11 @@ namespace Client_PC
             gameWindow.Start();
         }
 
+        public void SetMoney(int amount)
+        {
+            shopMenu.SetMoney(amount);
+        }
+
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload

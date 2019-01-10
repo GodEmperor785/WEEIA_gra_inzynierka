@@ -326,6 +326,7 @@ namespace Client_PC.Scenes
             Game1.self.Connection.Send(packet);
             packet = Game1.self.Connection.GetReceivedPacket();
             List<LootBox> loots = (List<LootBox>) packet.Packet;
+            Game1.self.SetMoney(Game1.self.player.Money);
             Game1.self.SetShop(loots);
             Game1.self.state = Game1.State.ShopMenu;
         }

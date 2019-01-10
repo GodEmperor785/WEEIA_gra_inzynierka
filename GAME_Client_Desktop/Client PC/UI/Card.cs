@@ -64,12 +64,12 @@ namespace Client_PC.UI
             overlay = new RelativeLayout();
             this.Width = width;
             this.Height = height;
-            using (FileStream fileStream = new FileStream("Content/Icons/hp.png", FileMode.Open))
+            using (FileStream fileStream = new FileStream("Content/Icons/Health.png", FileMode.Open))
             {
                 hpIcon = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
                 fileStream.Dispose();
             }
-            using (FileStream fileStream = new FileStream("Content/Icons/armor.jpg", FileMode.Open))
+            using (FileStream fileStream = new FileStream("Content/Icons/Armor.png", FileMode.Open))
             {
                 armorIcon = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
                 fileStream.Dispose();
@@ -153,7 +153,7 @@ namespace Client_PC.UI
             armorText.Position = armorIcon.Position + new Vector2(0.175f * Width, -0.025f * Height);
             if (NeedNewTexture)
             { 
-                Texture = Util.CreateTexture(Device, Width, Height,RarityColor[ship.Rarity],Darker);
+                Texture = Util.CreateTexture(Device, Width, Height,RarityColor[ship.Rarity],InsideColor);
             }
             /// blue - has chosen move
             /// green - is clicked
