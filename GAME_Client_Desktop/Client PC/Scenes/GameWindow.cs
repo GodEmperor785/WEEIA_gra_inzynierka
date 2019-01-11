@@ -60,12 +60,14 @@ namespace Client_PC.Scenes
         private bool gameloop = false;
         private bool readyToSend = false;
         private bool readyToSet = false;
-        private Thread th;
+        private Task th;
         private List<Card> AllyCards;
         private List<Card> EnemyCards;
         private Move move;
         private Button turnButton;
         private GameState currentGameState;
+        private Label lbl1;
+        private Button b1;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -81,7 +83,23 @@ namespace Client_PC.Scenes
             yourCards = new Grid();
             move = new Move();
 
-
+            #region Popup
+            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 100, 400, Game1.self.GraphicsDevice, Gui);
+            Grid popupGrid = new Grid();
+            lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Exit"
+            };
+            lbl1.DrawBackground = false;
+            b1.DrawBackground = false;
+            popup.grid = popupGrid;
+            popupGrid.AddChild(lbl1, 0, 0);
+            popupGrid.AddChild(b1, 1, 0);
+            b1.clickEvent += onPopupExit;
+            Clickable.Add(b1);
+            popup.SetToGrid();
+            #endregion
 
 
             enemyGrid.WitdhAndHeightColumnDependant = false;
@@ -131,8 +149,20 @@ namespace Client_PC.Scenes
             layout.AddChild(yourGrid);
             layout.AddChild(yourCards);
             layout.AddChild(turnButton);
-            th = new Thread(ContactLoop);
+            th = new Task(ContactLoop);
             layout.Update();
+
+        }
+        public void onPopupExit()
+        {
+            popup.SetActive(false);
+            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            {
+                clickable.Active = true;
+            }
+
+            Game1.self.state = Game1.State.MainMenu;
+            Game1.self.popupToDraw = null;
 
         }
 
@@ -325,6 +355,16 @@ namespace Client_PC.Scenes
                         readyToSet = true;
                         turnButton.Active = true;
                     }
+
+                    if (packet.OperationType == OperationType.GAME_END)
+                    {
+                        GameResult result = (GameResult)packet.Packet;
+                        lbl1.Text = " " + result.Message;
+                        popup.SetActive(true);
+                        Game1.self.popupToDraw = popup;
+                        SetClickables(false);
+                        break;
+                    }
                 }
                 if (readyToSend)
                 {
@@ -392,10 +432,7 @@ namespace Client_PC.Scenes
         
         }
 
-        protected override void SetClickables(bool active)
-        {
-            Clickable.ForEach(p => { p.Active = active; });
-        }
+        
 
         public void sendState()
         {

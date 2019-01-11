@@ -30,7 +30,7 @@ namespace Client_PC.Scenes
         private bool stopSearching = false;
         private bool startedSearching = false;
         #region popup buttons
-
+        List<IClickable> ClickableToRemove = new List<IClickable>();
         private Button up;
         private Button down;
         private Button exit;
@@ -107,7 +107,9 @@ namespace Client_PC.Scenes
             };
             up.Origin = new Point(leftOrigin + leftOffset, topOrigin + topOffset);
             up.clickEvent += upClick;
+
             Clickable.Add(up);
+            ClickableToRemove.Add(up);
             down = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "down"
@@ -123,10 +125,13 @@ namespace Client_PC.Scenes
             search.ActiveChangeable = false;
             search.clickEvent += searchClick;
             Clickable.Add(search);
+            ClickableToRemove.Add(search);
             exit.clickEvent += exitClick;
             Clickable.Add(exit);
+            ClickableToRemove.Add(exit);
             down.clickEvent += downClick;
             Clickable.Add(down);
+            ClickableToRemove.Add(down);
             g = new Grid(1, 5, buttonWidth, buttonHeight);
             g.Origin = new Point(leftOrigin + leftOffset, up.Origin.Y + up.Height + 10);
             Game1.self.Decks.ForEach(p =>
@@ -136,6 +141,7 @@ namespace Client_PC.Scenes
                 d.clickEvent += DeckClick;
                 d.ActiveChangeable = true;
                 Clickable.Add(d);
+                ClickableToRemove.Add(d);
                 g.AddChild(d);
             });
 
@@ -246,6 +252,10 @@ namespace Client_PC.Scenes
                                     popup.SetActive(false);
                                     SetClickables(true);
                                     Game1.self.popupToDraw = null;
+                                    ClickableToRemove.ForEach(p =>  Clickable.Remove(p));
+                                    searching = false;
+                                    startedSearching = false;
+                                    stopSearching = false;
                                     break;
                                 }
                                 else

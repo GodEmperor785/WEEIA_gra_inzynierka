@@ -28,8 +28,9 @@ namespace Client_PC.Scenes
         private int CardWidth = 133;
         private PlayerGameBoard gmBoard;
         private bool readyToSend;
-        private Popup popup;
         private Label tipLabel;
+        private Label lbl;
+        private bool isOver;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -90,7 +91,7 @@ namespace Client_PC.Scenes
             };
             popupExitButton.clickEvent += onExit;
             Clickable.Add(popupExitButton);
-            Label lbl = new Label(200,200,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            lbl = new Label(200,200,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "You lost the game due to not choosing shape of fleet for longer than 2 minutes"
             };
@@ -124,32 +125,45 @@ namespace Client_PC.Scenes
         public void onSave()
         {
             //TODO not tested
-            grid.UpdateActive(false);
-            List<Ship> closestShips = new List<Ship>();
-            List<Ship> midShips = new List<Ship>();
-            List<Ship> furthestShips = new List<Ship>();
-            for (int i = 0; i < 5; i++)
+            if (cardsGrid.ChildrenCount == 0)
             {
-                CardSlot slot = (CardSlot) grid.GetChild(0, i);
-                if(slot.HasCard)
-                    closestShips.Add(slot.Card.GetShip());
-            }
-            for (int i = 0; i < 5; i++)
-            {
-                CardSlot slot = (CardSlot)grid.GetChild(1, i);
-                if (slot.HasCard)
-                    midShips.Add(slot.Card.GetShip());
-            }
-            for (int i = 0; i < 5; i++)
-            {
-                CardSlot slot = (CardSlot)grid.GetChild(2, i);
-                if (slot.HasCard)
-                    furthestShips.Add(slot.Card.GetShip());
-            }
+                grid.UpdateActive(false);
+                List<Ship> closestShips = new List<Ship>();
+                List<Ship> midShips = new List<Ship>();
+                List<Ship> furthestShips = new List<Ship>();
+                for (int i = 0; i < 5; i++)
+                {
+                    CardSlot slot = (CardSlot) grid.GetChild(0, i);
+                    if (slot.HasCard)
+                        closestShips.Add(slot.Card.GetShip());
+                }
 
-            gmBoard = new PlayerGameBoard(closestShips, midShips, furthestShips);
-            
-            readyToSend = true;
+                for (int i = 0; i < 5; i++)
+                {
+                    CardSlot slot = (CardSlot) grid.GetChild(1, i);
+                    if (slot.HasCard)
+                        midShips.Add(slot.Card.GetShip());
+                }
+
+                for (int i = 0; i < 5; i++)
+                {
+                    CardSlot slot = (CardSlot) grid.GetChild(2, i);
+                    if (slot.HasCard)
+                        furthestShips.Add(slot.Card.GetShip());
+                }
+
+                gmBoard = new PlayerGameBoard(closestShips, midShips, furthestShips);
+
+                readyToSend = true;
+            }
+            else
+            {
+                lbl.Text = "You have to place all your cards.";
+                isOver = false;
+                popup.SetActive(true);
+                Game1.self.popupToDraw = popup;
+                SetClickables(false);
+            }
         }
         public void setFleet(Fleet fleet)
         {
@@ -158,7 +172,16 @@ namespace Client_PC.Scenes
 
         public void onExit()
         {
-            Game1.self.state = Game1.State.MainMenu;
+            if (isOver)
+                Game1.self.state = Game1.State.MainMenu;
+            popup.SetActive(false);
+            foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+            {
+                clickable.Active = true;
+            }
+
+            Game1.self.popupToDraw = null;
+
         }
         private void upClick()
         {
@@ -213,11 +236,13 @@ namespace Client_PC.Scenes
                     if (packet.OperationType == OperationType.SUCCESS) // Fleet accepted and can start playing
                     {
                         Game1.self.state = Game1.State.GameWindow;
+                        grid.RemoveChildren();
                         Game1.self.StartGame();
                         break;
                     }
                     else if (packet.OperationType == OperationType.FAILURE) // Failed to set fleet therefore loses game 
                     {
+                        isOver = true;
                         popup.SetActive(true);
                         Game1.self.popupToDraw = popup;
                         SetClickables(false);

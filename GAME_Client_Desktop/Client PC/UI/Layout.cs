@@ -32,6 +32,12 @@ namespace Client_PC.UI
         {
             Children = new List<Child>();
         }
+
+        public int ChildrenCount
+        {
+            get { return Children.Count; }
+        }
+
         protected List<Child> Children;
         public bool DrawBorder { get; set; }
         public int BorderSize { get; set; }
