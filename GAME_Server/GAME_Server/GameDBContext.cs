@@ -27,8 +27,8 @@ namespace GAME_Server {
 		//public DbSet<DbFleetSizeExpMapping> FleetSizeExpMappings { get; set; }
 
 		public GameDBContext() : base("GameContext") {
-			Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());				//recreate always
-			//Database.SetInitializer<GameDBContext>(null);                                                       //use existing database
+			//Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());				//recreate always
+			Database.SetInitializer<GameDBContext>(null);                                                       //use existing database
 
 			//Database.SetInitializer<GameDBContext>(new DropCreateDatabaseIfModelChanges<GameDBContext>());
 			//Database.SetInitializer<GameDBContext>(new CreateDatabaseIfNotExists<GameDBContext>());

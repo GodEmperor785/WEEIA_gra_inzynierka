@@ -82,12 +82,12 @@
     <Compile Include="GameDBContext.cs" />
     <Compile Include="GameRNG.cs" />
     <Compile Include="IGameDataBase.cs" />
-    <Compile Include="InMemoryGameDataBase.cs" />
     <Compile Include="MySqlDataBase.cs" />
     <Compile Include="PasswordManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameServerValidator.cs" />
+    <Compile Include="Tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

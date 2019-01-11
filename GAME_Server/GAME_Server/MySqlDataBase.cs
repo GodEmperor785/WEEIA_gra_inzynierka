@@ -15,7 +15,6 @@ namespace GAME_Server {
 		#region basic queries
 		private IQueryable<DbShipTemplate> BasicShipTemplateQuery {
 			get {
-				//return from shipTemplates in DbContext.ShipTemplates select shipTemplates;
 				return DbContext.ShipTemplates.Include(x => x.Faction).Include(x => x.Weapons).Include(x => x.Weapons.Select(d => d.Faction))
 					.Include(x => x.Defences).Include(x => x.Defences.Select(d => d.Faction));
 			}
@@ -23,7 +22,6 @@ namespace GAME_Server {
 
 		private IQueryable<DbShip> BasicShipQuery {
 			get {
-				//return from ships in DbContext.Ships select ships;
 				return DbContext.Ships.Include(x => x.Owner).Include(x => x.ShipBaseStats.Faction).Include(x => x.ShipBaseStats).Include(x => x.ShipBaseStats.Weapons)
 					.Include(x => x.ShipBaseStats.Weapons.Select(w => w.Faction)).Include(x => x.ShipBaseStats.Defences).Include(x => x.ShipBaseStats.Defences.Select(d => d.Faction));
 			}
@@ -31,7 +29,6 @@ namespace GAME_Server {
 
 		private IQueryable<DbPlayer> BasicPlayerQuery {
 			get {
-				//return from players in DbContext.Players select players;
 				return DbContext.Players.Include(x => x.OwnedShips);
 			}
 		}
@@ -77,14 +74,12 @@ namespace GAME_Server {
 
 		private IQueryable<DbWeapon> BasicWeaponQuery {
 			get {
-				//return from weapons in DbContext.Weapons select weapons;
 				return DbContext.Weapons.Include(x => x.Faction);
 			}
 		}
 
 		private IQueryable<DbDefenceSystem> BasicDefenceSystemQuery {
 			get {
-				//return from defences in DbContext.DefenceSystems select defences;
 				return DbContext.DefenceSystems.Include(x => x.Faction);
 			}
 		}
@@ -102,6 +97,11 @@ namespace GAME_Server {
 			}
 		}
 
+		/// <summary>
+		/// gets specific GameHistory entry
+		/// </summary>
+		/// <param name="entryId"></param>
+		/// <returns></returns>
 		private DbGameHistory HistoryQuery(int entryId) {
 			var q = DbContext.GameHistories.Include(x => x.Winner).Include(x => x.WinnerFleet).Include(x => x.WinnerFleet.Owner).Include(x => x.WinnerFleet.Ships)
 				.Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats)).Include(x => x.WinnerFleet.Ships.Select(s => s.ShipBaseStats.Faction))
@@ -157,11 +157,6 @@ namespace GAME_Server {
 		}
 
 		public void AddShip(DbShip ship) {
-			//DbShip newShip = new DbShip(ship);
-
-			//foreach (DbWeapon weapon in newShip.Weapons) weapon.Ships.Add(newShip);
-			//foreach (DbDefenceSystem defence in newShip.Defences) defence.Ships.Add(newShip);
-
 			DbContext.Ships.Add(ship);
 			SaveChanges();
 		}
@@ -217,7 +212,7 @@ namespace GAME_Server {
 		/// adds fleet to Db, does NOT validate the fleet, this should be done earlier (including <see cref="FleetNameIsUnique"/>)
 		/// </summary>
 		/// <param name="fleet"></param>
-		public void AddFleet(Fleet fleet, Player owner) {                                                 //NOT TESTED
+		public void AddFleet(Fleet fleet, Player owner) {
 			DbContext.Fleets.Add(ConvertFleetToDbFleet(fleet, owner, true));
 			SaveChanges();
 		}
@@ -253,6 +248,11 @@ namespace GAME_Server {
 			return query.FirstOrDefault();
 		}
 
+		/// <summary>
+		/// Returns list of <see cref="DbFleet"/>, you need to remove not active SHIPS (fleets are already filtered on being active) via <see cref="DbFleet.ToFleetOnlyActiveShips()"/>
+		/// </summary>
+		/// <param name="player"></param>
+		/// <returns></returns>
 		public List<DbFleet> GetAllFleetsOfPlayer(Player player) {
 			/*var q1 = DbContext.Fleets.Include(o => o.Owner).Include(fs => fs.Ships).Include(so => so.Ships.Select(s => s.Owner)).Include(sb => sb.Ships.Select(ssb => ssb.ShipBaseStats))
 				.Include(x => x.Ships.Select(s => s.ShipBaseStats.Faction)).Where(x => x.Owner.Id == player.Id);
@@ -286,6 +286,12 @@ namespace GAME_Server {
 			return baseModifiers.ToBaseModifiers();
 		}
 
+		/// <summary>
+		/// Returns specific <see cref="DbFleet"/>, you need to remove not active SHIPS via <see cref="DbFleet.ToFleetOnlyActiveShips()"/>
+		/// This method does NOT filter on <see cref="DbFleet.IsActive"/>
+		/// </summary>
+		/// <param name="player"></param>
+		/// <returns></returns>
 		public DbFleet GetFleetWithId(int id) {
 			var q1 = BasicFleetQueryPt1.Where(x => x.Id == id).FirstOrDefault();
 			var q2 = BasicFleetQueryPt2.Where(x => x.Id == id).FirstOrDefault();
@@ -380,9 +386,6 @@ namespace GAME_Server {
 		/// <param name="expReq"></param>
 		/// <returns></returns>
 		public DbShipTemplate GetRandomShipTemplateOfRarity(Rarity rarity, int expReq) {
-			/*var query = BasicShipTemplateQuery.Where(shipTempl => ( (shipTempl.ShipRarity == rarity) && (shipTempl.ExpUnlock <= expReq) ));
-			int shipsOfSelectedRarityCount = query.Count();
-			return query.ElementAt(DbRNG.Next(0, shipsOfSelectedRarityCount));*/
 			List<DbShipTemplate> availableShips = GetShipTemplatesWithRarityAndReqExp(rarity, expReq);
 			return availableShips.ElementAt(DbRNG.Next(0, availableShips.Count));
 		}
@@ -402,8 +405,6 @@ namespace GAME_Server {
 		/// <param name="playerId"></param>
 		/// <returns></returns>
 		public List<DbGameHistory> GetPlayersGameHistory(int playerId) {
-			/*var query = BasicHistoryQuery(playerId);
-			return query.ToList();*/
 			var query = BasicPlayersHistoryQuery.Where(history => history.Winner.Id == playerId || history.Loser.Id == playerId);
 			return query.ToList();
 		}
@@ -617,7 +618,6 @@ namespace GAME_Server {
 								select players).FirstOrDefault();
 			if (playerFromDb == null) return false;
 			else if (PasswordManager.VerifyPassword(playerFromDb.Password, player.Password)) return true;
-			//else if (playerFromDb.Password == player.Password) return true;
 			else return false;
 		}
 

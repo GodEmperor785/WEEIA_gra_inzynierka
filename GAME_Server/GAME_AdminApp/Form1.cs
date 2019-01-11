@@ -50,6 +50,7 @@ namespace GAME_AdminApp {
 			GamePacket packet = AdminApp.Connection.GetReceivedPacket();
 			AdminApp.GameData = (AdminDataPacket)packet.Packet;
 
+			//initialize dropdown lists after receiving data from server
 			AdminApp.AppForm.InitializeShipDropDownLists();
 			AdminApp.AppForm.InitializeWeaponsDropDownLists();
 			AdminApp.AppForm.InitializeDefencesDropDownLists();
@@ -57,6 +58,7 @@ namespace GAME_AdminApp {
 			AdminApp.AppForm.InitializeUsers();
 			AdminApp.AppForm.InitializeLootboxes();
 			AdminApp.AppForm.Show();
+
 			this.Hide();
 		}
 

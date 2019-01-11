@@ -66,7 +66,7 @@ namespace GAME_Server {
 
 		/// <summary>
 		/// attack processing should be done before move processing, because game boards need to be updated by attack values before moving
-		/// yourBoard and enemyBoard should be REFERENCE PlayerGameBoards!
+		/// yourBoard must NOT be reference, enemy must BE reference
 		/// </summary>
 		/// <param name="move"></param>
 		/// <param name="yourBoard"></param>
@@ -153,10 +153,9 @@ namespace GAME_Server {
 			//equation 3:
 			//like above but remove evasion and if weapon.WeaponType != MISSILE than divide chanceToHit by evasion
 
-			//chanceToHit has to be at least this - to prevent negative valueso f chanceToHit
+			//chanceToHit has to be at least this - to prevent negative values of chanceToHit
 			double minChanceToHit = 0.01;
 			chanceToHit = Math.Max(chanceToHit, minChanceToHit);
-			//Log("Chance to hit: " + chanceToHit + " distance " + distance);
 			//finally roll to determine if projectile hit its target
 			return RNG.RollWithChance(chanceToHit);
 		}

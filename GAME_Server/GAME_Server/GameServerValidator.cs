@@ -8,7 +8,7 @@ using GAME_Validator;
 
 namespace GAME_Server {
 	/// <summary>
-	/// used to validate GameRoom specific object and object that need to be validated with DataBase
+	/// used to validate GameRoom specific objects and objects that need to be validated with DataBase
 	/// </summary>
 	public static class GameServerValidator {
 

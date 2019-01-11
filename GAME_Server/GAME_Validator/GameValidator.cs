@@ -3,6 +3,9 @@ using System.Linq;
 using GAME_connection;
 
 namespace GAME_Validator {
+	/// <summary>
+	/// Provides validation of game objects that do NOT require database connection and are NOT game logic
+	/// </summary>
 	public static class GameValidator {
 		public static readonly string OK = "OK";
 

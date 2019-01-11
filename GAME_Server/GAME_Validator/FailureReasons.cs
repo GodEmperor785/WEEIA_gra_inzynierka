@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace GAME_Validator {
+	/// <summary>
+	/// Provides reasons for failures used by Server and AdminApp
+	/// </summary>
 	public static class FailureReasons {
 		public static readonly string INVALID_PACKET = "Invalid type of received packet";
 		public static readonly string INVALID_PACKET_TYPE = "Invalid packet OperationType received";
