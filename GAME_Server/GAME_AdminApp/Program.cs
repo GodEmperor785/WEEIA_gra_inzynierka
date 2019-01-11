@@ -10,8 +10,6 @@ using System.Configuration;
 
 namespace GAME_AdminApp {
 	public static class AdminApp {
-		//https://www.sourcecodester.com/book/7127/multiple-forms-c.html
-		//https://stackoverflow.com/questions/15535214/removing-a-specific-row-in-tablelayoutpanel
 
 		private static bool alreadyClosed;
 		private static object alreadyClosedLock = new object();
