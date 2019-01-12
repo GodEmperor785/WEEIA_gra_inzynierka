@@ -39,8 +39,8 @@ namespace Client_PC.Scenes
 
         #region popupCustomPlay
         private InputBox nameInputBox;
+        private Label labelError;
 
-        
 
         #endregion
 
@@ -221,7 +221,7 @@ namespace Client_PC.Scenes
             Create.clickEvent += onCreate;
             Clickable.Add(Create);
             ClickableToRemove.Add(Create);
-            Label labelError = new Label(new Point(nameInputBox.Origin.X + nameInputBox.Width + leftOffset, nameInputBox.Origin.Y),buttonWidth * 2,buttonHeight * 3, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            labelError = new Label(new Point(nameInputBox.Origin.X + nameInputBox.Width + leftOffset, nameInputBox.Origin.Y),buttonWidth * 2,buttonHeight * 3, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 Text = "To create room write the name and click Create button, to join room write it's name and click Join button"
             };
@@ -323,22 +323,103 @@ namespace Client_PC.Scenes
 
                 chosenDeck = null;
                 Game1.self.popupToDraw = null;
+                ClickableToRemove.ForEach(p=> Clickable.Remove(p));
             }
         }
 
         public void onCreate()
         {
-            Task t = new Task(CreateFunction);
-            t.Start();
+            if (chosenDeck != null && nameInputBox.Text.Length > 0)
+            {
+                Task t = new Task(CreateFunction);
+                t.Start();
+            }
         }
 
         public void onJoin()
         {
-
+            if (chosenDeck != null && nameInputBox.Text.Length > 0)
+            {
+                GamePacket packet = new GamePacket(OperationType.SELECT_FLEET, chosenDeck.GetFleet());
+                Game1.self.Connection.Send(packet);
+                packet = Game1.self.Connection.GetReceivedPacket();
+                if (packet.OperationType == OperationType.SUCCESS)
+                {
+                    CustomGameRoom room = new CustomGameRoom(nameInputBox.Text);
+                    packet = new GamePacket(OperationType.PLAY_CUSTOM_JOIN, room);
+                    Game1.self.Connection.Send(packet);
+                    packet = Game1.self.Connection.GetReceivedPacket();
+                    if (packet.OperationType == OperationType.SUCCESS)
+                    {
+                        Game1.self.SetFleetMenu(chosenDeck.GetFleet());
+                        Game1.self.ReadyToPlay = true;
+                        Game1.self.popupToDraw = null;
+                        ClickableToRemove.ForEach(p => Clickable.Remove(p));
+                    }
+                    else
+                    {
+                        labelError.Text = "There is no free room with that name";
+                    }
+                }
+            }
         }
         public void CreateFunction()
         {
+            if (chosenDeck != null)
+            {
+                searching = false;
+                GamePacket packet = new GamePacket(OperationType.SELECT_FLEET, chosenDeck.GetFleet());
+                Game1.self.Connection.Send(packet);
+                packet = Game1.self.Connection.GetReceivedPacket();
+                if (packet.OperationType == OperationType.SUCCESS)
+                {
+                    CustomGameRoom room = new CustomGameRoom(nameInputBox.Text,"",true,Game1.self.player.Username);
+                    packet = new GamePacket(OperationType.PLAY_CUSTOM_CREATE, room);
+                    Game1.self.Connection.Send(packet);
+                    packet = Game1.self.Connection.GetReceivedPacket();
+                    if (packet.OperationType == OperationType.SUCCESS)
+                    {
+                        searching = true;
+                        while (searching)
+                        {
+                            packet = Game1.self.Connection.GetReceivedPacket(10);
+                            if (packet != null)
+                            {
+                                if (packet.OperationType == OperationType.SUCCESS)
+                                {
+                                    if (timer != null)
+                                        timer.Dispose();
+                                    Game1.self.SetFleetMenu(chosenDeck.GetFleet());
+                                    Game1.self.ReadyToPlay = true;
+                                    searching = false;
+                                    popup.SetActive(false);
+                                    SetClickables(true);
+                                    Game1.self.popupToDraw = null;
+                                    ClickableToRemove.ForEach(p => Clickable.Remove(p));
+                                    searching = false;
+                                    startedSearching = false;
+                                    stopSearching = false;
+                                    popup.layout = null;
+                                    break;
+                                }
+                                else
+                                    continue;
+                            }
 
+                            if (stopSearching)
+                            {
+                                stopSearching = false;
+                                packet = new GamePacket(OperationType.ABANDON_GAME, new object());
+                                Game1.self.Connection.Send(packet);
+                                searching = false;
+                                startedSearching = false;
+                                break;
+                            }
+                        }
+                    }
+
+                }
+            }
         }
 
         protected override void SetClickables(bool active)
@@ -467,6 +548,7 @@ namespace Client_PC.Scenes
 
                 chosenDeck = null;
                 Game1.self.popupToDraw = null;
+                ClickableToRemove.ForEach(p => Clickable.Remove(p));
             }
         }
         public void DeckClick(object sender)
