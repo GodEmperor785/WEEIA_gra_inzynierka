@@ -437,7 +437,7 @@ namespace GAME_AdminApp {
 			weaponDamageBox.Value = (decimal)weapon.Damage;
 			weaponNumberOfProjectilesBox.Value = weapon.NumberOfProjectiles;
 			weaponTypeBox.SelectedItem = weapon.WeaponType;
-			weaponApBox.Value = (decimal)weapon.Damage;
+			weaponApBox.Value = (decimal)weapon.ApEffectivity;
 			weaponRangeMultBox.Value = (decimal)weapon.RangeMultiplier;
 			weaponChanceToHitBox.Value = (decimal)weapon.ChanceToHit;
 			UpdateCalculatedChanceToHit();
@@ -510,8 +510,8 @@ namespace GAME_AdminApp {
 		private void UpdateCalculatedChanceToHit() {
 			double maxDistChanceToHit = ((double)weaponChanceToHitBox.Value - ((Math.Sqrt(5.0) / 5.0) * AdminApp.GameData.BaseModifiers.WeaponTypeRangeMultMap[(WeaponType)weaponTypeBox.SelectedItem] * ((double)weaponRangeMultBox.Value) * 1.0));
 			double minDistChanceToHit = ((double)weaponChanceToHitBox.Value - ((Math.Sqrt(1.0) / 5.0) * AdminApp.GameData.BaseModifiers.WeaponTypeRangeMultMap[(WeaponType)weaponTypeBox.SelectedItem] * ((double)weaponRangeMultBox.Value) * 1.0));
-			maxDistChanceToHit = Math.Min(maxDistChanceToHit, 0.01);
-			minDistChanceToHit = Math.Min(minDistChanceToHit, 0.01);
+			maxDistChanceToHit = Math.Max(maxDistChanceToHit, 0.01);
+			minDistChanceToHit = Math.Max(minDistChanceToHit, 0.01);
 			string calculatedChances = "max distance = " + string.Format("{0:N2}%", maxDistChanceToHit * 100.0) + "    " + "min distance = " + string.Format("{0:N2}%", minDistChanceToHit * 100.0);
 			weaponCalculatedChanceToHit.Text = calculatedChances;
 		}

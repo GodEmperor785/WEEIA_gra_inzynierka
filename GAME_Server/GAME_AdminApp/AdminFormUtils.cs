@@ -64,6 +64,7 @@ namespace GAME_AdminApp {
 				table.Controls.Add(modifyButton, 9, table.RowCount - 1);
 			}
 			else {
+				table.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
 				CheckBox selectThisWeapon = new CheckBox();
 				checkBoxToIdMap.Add(selectThisWeapon, weapon.Id);
 				table.Controls.Add(selectThisWeapon, 9, table.RowCount - 1);
@@ -105,6 +106,7 @@ namespace GAME_AdminApp {
 				table.Controls.Add(modifyButton, chg + 4, table.RowCount - 1);
 			}
 			else {
+				table.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
 				CheckBox selectThisDefence = new CheckBox();
 				checkBoxToIdMap.Add(selectThisDefence, defence.Id);
 				table.Controls.Add(selectThisDefence, chg + 4, table.RowCount - 1);

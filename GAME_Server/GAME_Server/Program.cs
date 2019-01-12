@@ -18,6 +18,12 @@ using System.Diagnostics;
 
 namespace GAME_Server {
 	internal class Server {
+		private enum DbInitializeType {
+			USE_EXISTING,
+			DROP_CREATE_DEBUG,
+			DROP_CREATE_BASIC
+		}
+
 		public static readonly int EXIT_STATUS_MANUAL_SHUTDOWN = 1;
 		public static readonly int EXIT_STATUS_SERVER_ERROR = -1;
 
@@ -47,6 +53,7 @@ namespace GAME_Server {
 		internal static bool continueAcceptingConnections = true;
 
 		private static string logFilePath;
+		private static DbInitializeType dbInitializeOption;
 
 		static void Main(string[] args) {
 			try {
@@ -56,14 +63,16 @@ namespace GAME_Server {
 				var useSslVar = ConfigurationManager.AppSettings["useSsl"];
 				bool useSsl = Convert.ToBoolean(useSslVar);
 				logFilePath = ConfigurationManager.AppSettings["pathToLogFile"];
+				dbInitializeOption = (DbInitializeType)Enum.Parse(typeof(DbInitializeType), ConfigurationManager.AppSettings["dbInitializeOption"]);
 				Log("Server use SSL: " + useSsl);
 				Log("Path to fog file: " + logFilePath);
+				Log("DB initialization option: " + dbInitializeOption);
 
 				//some tests
 				//Tests.TestRandomness();
 				//Tests.DoGameBoardValidationTest();
 
-				InitilizeGameDataFromDB(false);       //change to true to drop create with debug test db, need to change in GameDBContext - the DB initializer
+				InitilizeGameDataFromDB(dbInitializeOption);       //need to change in GameDBContext - the DB initializer
 
 				//TcpListener listener = new TcpListener(ipAddress, port);
 				TcpListener listener = new TcpListener(IPAddress.Any, port);
@@ -92,7 +101,7 @@ namespace GAME_Server {
 				Log(critical.Message);
 				Log(critical.Source);
 				Log(critical.StackTrace);
-				//Console.ReadKey();
+				Console.ReadKey();
 				Environment.Exit(EXIT_STATUS_SERVER_ERROR);
 			}
 			
@@ -292,12 +301,22 @@ namespace GAME_Server {
 		//========================= OTHER UTILS ==================================================================================================================
 
 		/// <summary>
-		/// Reads basic game data (BaseModifiers) from DB.
+		/// Reads basic game data (BaseModifiers) from DB. Use other options for test Databases
 		/// </summary>
-		private static void InitilizeGameDataFromDB(bool dropDbAndCreateDebugDb) {
-			gameDataBase = GetGameDBContext();
-			if(dropDbAndCreateDebugDb) {
+		private static void InitilizeGameDataFromDB(DbInitializeType dbOption) {
+			if (dbOption == DbInitializeType.DROP_CREATE_BASIC) {
+				AbstractDataBase.DROP_CREATE_ALWAYS = true;
+				gameDataBase = GetGameDBContext();
+				Tests.CreateBasicDb();
+			}
+			else if (dbOption == DbInitializeType.DROP_CREATE_DEBUG) {
+				AbstractDataBase.DROP_CREATE_ALWAYS = true;
+				gameDataBase = GetGameDBContext();
 				Tests.TestGameDB(false);
+			}
+			else {
+				AbstractDataBase.DROP_CREATE_ALWAYS = false;
+				gameDataBase = GetGameDBContext();
 			}
 			Server.baseModifiers = GameDataBase.GetBaseModifiers();
 		}
@@ -387,57 +406,6 @@ namespace GAME_Server {
 
 		internal static void SetBaseModifiers(BaseModifiers newMods) {
 			Server.baseModifiers = newMods;
-		}
-
-		/// <summary>
-		/// Temporary connection tester method. Should be removed later
-		/// </summary>
-		/// <param name="clientObj"></param>
-		private static void Test(object clientObj) {
-			try {
-				TcpConnection client = (TcpConnection)clientObj;
-
-				Console.WriteLine("Trying to receive...");
-				GamePacket packet = client.GetReceivedPacket();
-				Console.WriteLine("Received packet: " + packet.OperationType);
-
-				Console.WriteLine("Sleeping some time...");
-				Thread.Sleep(3000);
-
-				Console.WriteLine("Trying to send...");
-				string msg = "server test msg";
-				client.Send(new GamePacket(OperationType.LOGIN, msg));
-
-				/*Console.WriteLine("Trying to receive with timeout...");
-				try {
-					client.GetReceivedPacket(2000);
-				} catch (ReceiveTimeoutException e) {
-					Console.WriteLine("Failed to receive with timeout. Disconnected player number: " + e.PlayerNumber);
-				}*/
-
-				Console.WriteLine("Trying to receive complex packet...");
-				packet = client.GetReceivedPacket();
-				Fleet fleet = (Fleet)packet.Packet;
-				Console.WriteLine("there are " + fleet.Ships.Count + " ships in the received fleet");
-
-				Fleet clonedFleet = CloneObject(fleet);
-				Console.WriteLine("there are " + fleet.Ships.Count + " ships in the CLONED fleet");
-
-				Console.WriteLine("Waiting for client to send DISCONNECT...");
-				packet = client.GetReceivedPacket();
-				if (packet.OperationType == OperationType.DISCONNECT) {
-					Console.WriteLine("received disconnect");
-					client.Disconnect();
-				}
-				else Console.WriteLine("not ok");
-
-				Console.WriteLine("All OK! Closing...");
-				//Thread.Sleep(1000);
-				//client.Dispose();
-			} catch(ConnectionEndedException ex) {
-				Console.WriteLine("Exception: " + ex.Message + "Exception type: " + ex.ToString());
-			}
-			Console.WriteLine("Test end");
 		}
 
 	}
@@ -884,7 +852,7 @@ namespace GAME_Server {
 			DbPlayer thisUser;
 			string validationResult;
 			mainLoop: while (ClientConnected) {
-				Server.Log(User.Username + ": waiting for request " + Thread.CurrentThread.ManagedThreadId);
+				Server.Log(User.Username + ": waiting for request ");
 				GamePacket gamePacket = Client.GetReceivedPacket();
 				Server.Log(User.Username + ": received packet");
 				try {

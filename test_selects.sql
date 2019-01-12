@@ -22,6 +22,12 @@ select * from gamedatabase.fleets_ships;
 
 select * from gamedatabase.ship_templates;
 
+select s.Name, w.Name from gamedatabase.ship_templates as s, gamedatabase.weapons as w, gamedatabase.shiptemplates_weapons as sw
+	where s.Id = sw.ShipTemplateID and w.Id = sw.WeaponID;
+    
+select s.Name, d.Name from gamedatabase.ship_templates as s, gamedatabase.defence_systems as d, gamedatabase.shiptemplates_defencesystems as sd
+	where s.Id = sd.ShipTemplateID and d.Id = sd.DefenceSystemID order by s.Name;
+
 select * from gamedatabase.lootboxes;
 
 select * from gamedatabase.fleets;

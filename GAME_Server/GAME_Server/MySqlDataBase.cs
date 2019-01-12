@@ -7,7 +7,11 @@ using System.Data.Entity;
 using GAME_connection;
 
 namespace GAME_Server {
-	public class MySqlDataBase : IGameDataBase, IDisposable {
+	public abstract class AbstractDataBase {
+		public static bool DROP_CREATE_ALWAYS;
+	}
+
+	public class MySqlDataBase : AbstractDataBase, IGameDataBase {
 		#region fields, constructors and properties
 		private GameDBContext dbContext;
 		private Random rng;
@@ -132,8 +136,11 @@ namespace GAME_Server {
 		}
 		#endregion
 
+		/// <summary>
+		/// the bool arg inside this constructor means dropCreateAlways - change it if needed
+		/// </summary>
 		internal MySqlDataBase() {
-			dbContext = new GameDBContext();
+			dbContext = new GameDBContext(DROP_CREATE_ALWAYS);
 			rng = new Random();
 			//dbContext.Configuration.LazyLoadingEnabled = false;
 		}

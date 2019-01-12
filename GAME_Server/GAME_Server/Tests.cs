@@ -12,13 +12,7 @@ namespace GAME_Server {
 
 		public static IGameDataBase GameDataBase { get => gameDataBase; set => gameDataBase = value; }
 
-		/// <summary>
-		/// Adds a few entries to DB
-		/// </summary>
-		public static void TestGameDB(bool exitOnFinish) {
-			GameDataBase = Server.GetGameDBContext();
-			Server.Log("WARNING: DEBUG - DB TEST PROGRAM WILL EXIT AFTER THE TEST", true);
-			Server.Log(">>> BaseModifiers first");
+		private static DbBaseModifiers GetDbBaseModifiers() {
 			DbBaseModifiers mods = new DbBaseModifiers() {
 				Id = 1,
 				KineticRange = 1,           //each of range mults has to be from 0.0 to 1.0
@@ -49,6 +43,40 @@ namespace GAME_Server {
 				MoneyForVictory = 80,
 				MoneyForLoss = 40
 			};
+			return mods;
+		}
+
+		/// <summary>
+		/// Drop create db with only admin user, BaseModifiers and factions
+		/// </summary>
+		public static void CreateBasicDb() {
+			GameDataBase = Server.GetGameDBContext();
+			DbBaseModifiers mods = GetDbBaseModifiers();
+			GameDataBase.AddBaseModifiers(mods);
+			Server.baseModifiers = GameDataBase.GetBaseModifiers();
+
+			Faction empire = new Faction(1, "Empire");
+			Faction alliance = new Faction(2, "Alliance");
+			Faction union = new Faction(3, "Union");
+			GameDataBase.AddFaction(empire);
+			GameDataBase.AddFaction(alliance);
+			GameDataBase.AddFaction(union);
+
+			string admin = "admin";
+			DbPlayer adminDbUser = new DbPlayer(admin, PasswordManager.GeneratePasswordHash(admin), 0, Server.BaseModifiers.BaseFleetMaxSize, 0, 0, Server.BaseModifiers.StartingMoney) {
+				IsAdmin = true
+			};
+			GameDataBase.AddPlayer(adminDbUser);
+		}
+
+		/// <summary>
+		/// Adds a few entries to DB
+		/// </summary>
+		public static void TestGameDB(bool exitOnFinish) {
+			GameDataBase = Server.GetGameDBContext();
+			Server.Log("WARNING: DEBUG - DB TEST PROGRAM WILL EXIT AFTER THE TEST", true);
+			Server.Log(">>> BaseModifiers first");
+			DbBaseModifiers mods = GetDbBaseModifiers();
 			GameDataBase.AddBaseModifiers(mods);
 			Server.baseModifiers = GameDataBase.GetBaseModifiers();
 
@@ -348,36 +376,7 @@ namespace GAME_Server {
 
 		public static void DoGameBoardValidationTest() {
 			//game board test
-			Server.baseModifiers = (new DbBaseModifiers() {
-				Id = 1,
-				KineticRange = 1,           //each of range mults has to be from 0.0 to 1.0
-				LaserRange = 0.5,           //they indicate how important is range for given WeaponType to hit its target, look in Game.cs at chanceToHit calculations for more
-				MissileRange = 0.0,         //missile are invulnerable to range
-
-				KineticPD = 2,
-				KineticShield = 5,
-				KineticIF = 1.2,
-				LaserPD = 0,
-				LaserShield = 0.5,
-				LaserIF = 2,
-				MissilePD = 8,
-				MissileShield = 1,
-				MissileIF = 1.2,
-
-				BaseShipStatsExpModifier = 0.01,
-				MaxShipsPerPlayer = 150,
-				StartingMoney = 1000,
-				ExpForVictory = 20,
-				ExpForLoss = 10,
-				FleetSizeExpModifier = 0.5,
-				BaseFleetMaxSize = 1000,
-				MaxAbsoluteFleetSize = 5000,
-				MaxShipExp = 1000,
-				MaxShipsInLine = 5,
-				MaxFleetsPerPlayer = 8,
-				MoneyForVictory = 80,
-				MoneyForLoss = 40
-			}).ToBaseModifiers();
+			Server.baseModifiers = GetDbBaseModifiers().ToBaseModifiers();
 
 			Weapon chaff = new Weapon(1, "chaff", new Faction(), 5, 100, WeaponType.KINETIC, 3, 0.9, 0.3);
 			Weapon oneHitKiller = new Weapon(2, "one hit killer", new Faction(), 50000, 1, WeaponType.LASER, 10000, 0, 1);

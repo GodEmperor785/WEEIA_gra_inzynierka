@@ -24,7 +24,6 @@ namespace GAME_Server {
 		public DbSet<DbGameHistory> GameHistories { get; set; }
 		public DbSet<DbShipTemplate> ShipTemplates { get; set; }
 		public DbSet<DbLootBox> LootBoxes { get; set; }
-		//public DbSet<DbFleetSizeExpMapping> FleetSizeExpMappings { get; set; }
 
 		public GameDBContext() : base("GameContext") {
 			//Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());				//recreate always
@@ -35,6 +34,11 @@ namespace GAME_Server {
 
 			//uncomment this to enable SQL logging to console
 			//Database.Log = (string message) => { Console.WriteLine(message); };
+		}
+
+		public GameDBContext(bool dropCreateAlways) : base("GameContext") {
+			if(dropCreateAlways) Database.SetInitializer<GameDBContext>(new DropCreateDatabaseAlways<GameDBContext>());
+			else Database.SetInitializer<GameDBContext>(null);
 		}
 
 		public GameDBContext(DbConnection existingConnection, bool contextOwnsConnection) : base(existingConnection, contextOwnsConnection) { }
