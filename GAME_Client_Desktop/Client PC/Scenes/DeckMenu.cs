@@ -46,7 +46,7 @@ namespace Client_PC.Scenes
             gridTopLeft = new Grid(5, 3, ColumnWidth, rowHeight);
             gridRight = new Grid(1, 8,gridRightColumnWidth,gridRightRowHeight);
             gridRightBottom = new Grid();
-            gridCenter = new Grid(5, 6, ColumnWidth, rowHeight);
+            gridCenter = new Grid(5, 30, ColumnWidth, rowHeight);
             ;
             gridTopLeft.DrawBorder = true;
             gridRight.DrawBorder = true;
@@ -293,6 +293,8 @@ namespace Client_PC.Scenes
             FillBotShips(ships);
             FillBotGrid();
             DeckInputBox.Text = "";
+            gridCenter.ShowedRow = 0;
+            gridTopLeft.ShowedRow = 0;
         }
         private void CardClick(object sender)
         {

@@ -22,7 +22,7 @@ namespace Client_PC.UI
         public bool MaxChildren =  false;
         public bool AllVisible = true;
         public int VisibleRows;
-        private int ShowedRow = 0;
+        public int ShowedRow = 0;
         public override int  Width
         {
             get
@@ -116,7 +116,7 @@ namespace Client_PC.UI
             }
             return sum;
         }
-        private float RowOffset(int numberOfRow)
+        public float RowOffset(int numberOfRow)
         {
             float sum = 0.0f;
             int i = 0;
@@ -442,11 +442,23 @@ namespace Client_PC.UI
             int newRow = ShowedRow + i;
             if (newRow >= 0 && newRow < RowsSize.Count && newRow + VisibleRows <= RowsSize.Count)
             {
-                ShowedRow = newRow;
-                if(i > 0)
-                    MoveRowUp();
+                
+
+                if (i > 0)
+                {
+                    if (Children.Any(p => p.row == newRow))
+                    {
+                        ShowedRow = newRow;
+                        MoveRowUp();
+
+                    }
+                }
                 else
+                {
                     MoveRowDown();
+                    ShowedRow = newRow;
+                }
+
                 UpdateChildren();
 
             }

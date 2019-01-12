@@ -37,6 +37,13 @@ namespace Client_PC.Scenes
         private Button search;
         #endregion
 
+        #region popupCustomPlay
+        private InputBox nameInputBox;
+
+        
+
+        #endregion
+
 
 
         public override void Initialize(ContentManager Content)
@@ -68,6 +75,7 @@ namespace Client_PC.Scenes
             };
             
             Clickable.Add(p1);
+            Clickable.Add(p2);
             Clickable.Add(z);
             Clickable.Add(z2);
             Clickable.Add(z3);
@@ -80,6 +88,7 @@ namespace Client_PC.Scenes
             grid.AddChild(z2, 4, 0);
             grid.AddChild(z3,5,0);
             p1.clickEvent += Play;
+            p2.clickEvent += PlayCustom;
             z3.clickEvent += ExitClick;
             z4.clickEvent += GoToShop;
             z2.clickEvent += GoToSettings;
@@ -92,13 +101,13 @@ namespace Client_PC.Scenes
 
         public void Play()
         {
-            
-            int topOrigin = 300;
-            int leftOrigin = (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.3);
+            ClickableToRemove = new List<IClickable>();
             int leftOffset = 10;
             int topOffset = 10;
             int buttonWidth = 200;
             int buttonHeight = 50;
+            int topOrigin = (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.3);
+            int leftOrigin = (int) (Game1.self.graphics.PreferredBackBufferWidth * 0.5 - (buttonWidth + 10));
             Point popupOrigin = new Point(leftOrigin,topOrigin);
             RelativeLayout layout = new RelativeLayout();
             up = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
@@ -132,11 +141,15 @@ namespace Client_PC.Scenes
             down.clickEvent += downClick;
             Clickable.Add(down);
             ClickableToRemove.Add(down);
-            g = new Grid(1, 5, buttonWidth, buttonHeight);
+            g = new Grid(1, 8, buttonWidth, buttonHeight);
             g.Origin = new Point(leftOrigin + leftOffset, up.Origin.Y + up.Height + 10);
+            g.AllVisible = false;
+            g.MaxChildren = true;
+            g.ChildMaxAmount = 8;
+            g.VisibleRows = 5;
             Game1.self.Decks.ForEach(p =>
             {
-                Deck d = new Deck(new Point(0,0), buttonWidth, buttonHeight, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,p.Name );
+                Deck d = new Deck(new Point(), buttonWidth, buttonHeight, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,p.Name );
                 d.SetFleet(p);
                 d.clickEvent += DeckClick;
                 d.ActiveChangeable = true;
@@ -146,11 +159,9 @@ namespace Client_PC.Scenes
             });
 
             g.WitdhAndHeightColumnDependant = false;
-            g.AllVisible = false;
-            g.VisibleRows = 5;
             g.ConstantRowsAndColumns = true;
             g.UpdateP();
-            Point downPoint = new Point(leftOrigin + leftOffset, g.Origin.Y + g.RealHeight + 10);
+            Point downPoint = new Point(leftOrigin + leftOffset, g.Origin.Y + (int)g.RowOffset(5) + 10);
             down.Origin = downPoint;
             exit.Origin = new Point(down.Origin.X+10+buttonWidth, down.Origin.Y);
             search.Origin = new Point(exit.Origin.X,exit.Origin.Y - buttonHeight - 10);
@@ -164,7 +175,7 @@ namespace Client_PC.Scenes
             layout.AddChild(exit);
             layout.AddChild(search);
             layout.AddChild(labelWaiting);
-            popup = new Popup(popupOrigin,2 * buttonWidth + 30, topOffset + up.Height + g.RealHeight + 10 + down.Height + 10 + 10,Game1.self.GraphicsDevice,Gui);
+            popup = new Popup(popupOrigin,2 * buttonWidth + 30, topOffset + up.Height + (int)g.RowOffset(5) + 10 + down.Height + 10 + 10,Game1.self.GraphicsDevice,Gui);
             popup.layout = layout;
             up.Update();
             down.Update();
@@ -179,6 +190,157 @@ namespace Client_PC.Scenes
             popup.layout.UpdateActive(true);
             search.Active = false;
         }
+
+        public void PlayCustom()
+        {
+            int topOrigin = (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.3);
+            int buttonWidth = 200;
+            int leftOffset = 10;
+            int leftOrigin = (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5 - (2*buttonWidth + leftOffset * 1.5));
+            int topOffset = 10;
+            int buttonHeight = 50;
+            ClickableToRemove = new List<IClickable>();
+            RelativeLayout layout = new RelativeLayout();
+            nameInputBox = new InputBox(new Point(leftOrigin + leftOffset, topOrigin + topOffset),2* buttonWidth, 2* buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                TextLimit = 30
+            };
+            Clickable.Add(nameInputBox);
+            ClickableToRemove.Add(nameInputBox);
+            Button Join = new Button(new Point(nameInputBox.Origin.X, nameInputBox.Origin.Y+ nameInputBox.Height + topOffset),buttonWidth ,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            {
+                Text = "Join"
+            };
+            Join.clickEvent += onJoin;
+            Clickable.Add(Join);
+            ClickableToRemove.Add(Join);
+            Button Create = new Button(new Point(Join.Origin.X+buttonWidth,Join.Origin.Y),buttonWidth,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            {
+                Text = "Create"
+            };
+            Create.clickEvent += onCreate;
+            Clickable.Add(Create);
+            ClickableToRemove.Add(Create);
+            Label labelError = new Label(new Point(nameInputBox.Origin.X + nameInputBox.Width + leftOffset, nameInputBox.Origin.Y),buttonWidth * 2,buttonHeight * 3, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            {
+                Text = "To create room write the name and click Create button, to join room write it's name and click Join button"
+            };
+            Button Exit = new Button(new Point(labelError.Origin.X, labelError.Origin.Y+labelError.Height + topOffset),buttonWidth,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            {
+                Text = "Exit"
+            };
+            Exit.clickEvent += onExitCustom;
+            Clickable.Add(Exit);
+            ClickableToRemove.Add(Exit);
+
+            up = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                text = "up"
+            };
+            up.Origin = new Point(nameInputBox.Origin.X, Join.Origin.Y + Join.Height + topOffset);
+            up.clickEvent += upClick;
+
+            Clickable.Add(up);
+            ClickableToRemove.Add(up);
+
+            down = new Button(buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                text = "down"
+            };
+            down.clickEvent += downClick;
+            Clickable.Add(down);
+            ClickableToRemove.Add(down);
+
+
+            g = new Grid(1, 8, buttonWidth, buttonHeight);
+            g.Origin = new Point(Join.Origin.X, up.Origin.Y + up.Height + topOffset);
+            g.AllVisible = false;
+            g.MaxChildren = true;
+            g.ChildMaxAmount = 8;
+            g.VisibleRows = 5;
+            Game1.self.Decks.ForEach(p =>
+            {
+                Deck d = new Deck(new Point(0, 0), buttonWidth, buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, p.Name);
+                d.SetFleet(p);
+                d.clickEvent += DeckClick;
+                d.ActiveChangeable = true;
+                Clickable.Add(d);
+                ClickableToRemove.Add(d);
+                g.AddChild(d);
+            });
+
+            g.WitdhAndHeightColumnDependant = false;
+            g.ConstantRowsAndColumns = true;
+            g.UpdateP();
+            ;
+            Point downPoint = new Point(leftOrigin + leftOffset, g.Origin.Y + (int)g.RowOffset(5) + 10);
+            down.Origin = downPoint;
+            Exit.Origin = new Point(Exit.Origin.X, down.Origin.Y);
+
+
+
+            layout.AddChild(nameInputBox);
+            layout.AddChild(Join);
+            layout.AddChild(Create);
+            layout.AddChild(labelError);
+            layout.AddChild(Exit);
+            layout.AddChild(g);
+            layout.AddChild(up);
+            layout.AddChild(down);
+            popup = new Popup(new Point(leftOrigin, topOrigin), 4 * buttonWidth + leftOffset * 3, 5 * buttonHeight + topOffset * 6 + (int)g.RowOffset(5), Game1.self.GraphicsDevice, Gui);
+            popup.layout = layout;
+
+            nameInputBox.Update();
+            
+            g.UpdateP();
+            Join.Update();
+            Create.Update();
+            labelError.Update();
+            Exit.Update();
+            up.Update();
+            down.Update();
+            ;
+            popup.SetBackground();
+            Game1.self.popupToDraw = popup;
+            SetClickables(false);
+            popup.SetActive(true);
+            popup.layout.UpdateActive(true);
+        }
+
+        public void onExitCustom()
+        {
+            if (searching)
+            {
+                stopSearching = true;
+            }
+            else
+            {
+                popup.SetActive(false);
+                foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
+                {
+                    clickable.Active = true;
+                }
+
+                chosenDeck = null;
+                Game1.self.popupToDraw = null;
+            }
+        }
+
+        public void onCreate()
+        {
+            Task t = new Task(CreateFunction);
+            t.Start();
+        }
+
+        public void onJoin()
+        {
+
+        }
+        public void CreateFunction()
+        {
+
+        }
+
         protected override void SetClickables(bool active)
         {
             foreach (var clickable in Clickable)
@@ -256,6 +418,7 @@ namespace Client_PC.Scenes
                                     searching = false;
                                     startedSearching = false;
                                     stopSearching = false;
+                                    popup.layout = null;
                                     break;
                                 }
                                 else
@@ -379,6 +542,13 @@ namespace Client_PC.Scenes
                 SetClickables(true);
             }
         }
+
+        public override void UpdateLast()
+        {
+            if(nameInputBox != null)
+                nameInputBox.Update();
+        }
+
         public void Draw(GameTime gameTime)
         {
 
