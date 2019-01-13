@@ -18,6 +18,7 @@ namespace Client_PC.Scenes
     class MainMenu : Menu
     {
         private Grid grid;
+        private Grid lastGamesGrid;
         private Deck chosenDeck;
         private Grid g;
         private Popup popup;
@@ -81,6 +82,10 @@ namespace Client_PC.Scenes
             Clickable.Add(z3);
             Clickable.Add(z4);
             grid = new Grid();
+            lastGamesGrid = new Grid();
+            lastGamesGrid.Width = 200;
+            lastGamesGrid.Origin = new Point(50, (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height * 0.2f));
+            lastGamesGrid.DrawBackground = true;
             grid.AddChild(p1,0,0);
             grid.AddChild(p2,1,0);
             grid.AddChild(z, 2, 0);
@@ -448,6 +453,54 @@ namespace Client_PC.Scenes
                 
             }
         }
+
+        public void FillHistory(List<GameHistory> games)
+        {
+            var list = games.OrderByDescending(p => p.GameDate).Take(10).ToList();
+            lastGamesGrid.RemoveChildren();
+            foreach (var gameHistory in list)
+            {
+                lastGamesGrid.AddChild(gameToLabel(gameHistory));
+            }
+        }
+        private Label gameToLabel(GameHistory game)
+        {
+            Label lbl = new Label(500, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            string part1;
+            string enemy;
+            Fleet myFleet;
+            if (game.Winner == Game1.self.player)
+            {
+                part1 = "You won against ";
+                enemy = game.Loser.Username;
+                myFleet = game.WinnerFleet;
+            }
+            else if (game.WasDraw)
+            {
+                if (game.Loser == Game1.self.player)
+                {
+                    enemy = game.Winner.Username;
+                    myFleet = game.LoserFleet;
+                }
+                else
+                {
+                    enemy = game.Loser.Username;
+                    myFleet = game.WinnerFleet;
+                }
+                part1 = "You drew with ";
+            }
+            else
+            {
+                part1 = "You lost against ";
+                enemy = game.Winner.Username;
+                myFleet = game.LoserFleet;
+            }
+
+            lbl.Text = part1;
+            lbl.Text += enemy + " with fleet: " + myFleet.Name;
+            return lbl;
+        }
+
         public void searchClick()
         {
             if (chosenDeck != null)
@@ -657,6 +710,7 @@ namespace Client_PC.Scenes
         {
 
             grid.Draw(Game1.self.spriteBatch);
+            lastGamesGrid.Draw(Game1.self.spriteBatch);
 
         }
     }

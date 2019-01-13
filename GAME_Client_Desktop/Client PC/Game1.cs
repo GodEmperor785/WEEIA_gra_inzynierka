@@ -315,6 +315,18 @@ namespace Client_PC
         {
             registerMenu.Clean();
         }
+
+        public void UpdateHistory()
+        {
+            GamePacket packet = new GamePacket(OperationType.GET_PLAYER_STATS,Game1.self.player);
+            Connection.Send(packet);
+            packet = Connection.GetReceivedPacket();
+            if (packet.OperationType == OperationType.GET_PLAYER_STATS)
+            {
+                mainMenu.FillHistory(( List<GameHistory>)packet.Packet);
+            }
+            
+        }
         private void WallpaperChange()
         {
             Random rndRandom = new Random();
