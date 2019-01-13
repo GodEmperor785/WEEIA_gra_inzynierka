@@ -46,15 +46,18 @@ namespace Client_PC.Scenes
             };
             loginInputBox = new InputBox(new Point(0,0), 300, 60, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
             {
-                TextLimit = 30
+                TextLimit = 30,
+                BasicText = "Login"
             };
             passwordInputBox = new InputBox(new Point(0, 0), 300, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
-                TextLimit = 30
+                TextLimit = 30,
+                BasicText = "Password"
             };
             passwordInputBox2 = new InputBox(new Point(0, 0), 300, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
-                TextLimit = 30
+                TextLimit = 30,
+                BasicText = "Password"
             };
             Tooltip tooltipLogin = new Tooltip(200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true, 150)
             {

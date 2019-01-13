@@ -36,8 +36,10 @@ namespace Client_PC.Scenes
             };
             inputLogin = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
             inputLogin.TextLimit = 30;
+            inputLogin.BasicText = "Login";
             inputPassword = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             inputPassword.TextLimit = 30;
+            inputPassword.BasicText = "Password";
             Button loginButton = new Button(new Point(0,0),105,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Log in"

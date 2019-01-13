@@ -24,6 +24,7 @@ namespace Client_PC.UI
         public bool IsOver { get; set; }
         private string textToShow;
         public Vector2 TextPosition { get; set; }
+        private Vector2 BasicTextPosition { get; set; }
         public SpriteFont Font { get; set; }
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }
@@ -33,6 +34,7 @@ namespace Client_PC.UI
         public Tooltip Tooltip { get; set; }
         public bool IsPassword { get; set; }
         public bool HeightDerivatingFromText { get; set; }
+        public string BasicText;
         public Rectangle GetBoundary()
         {
             return Boundary;
@@ -58,6 +60,11 @@ namespace Client_PC.UI
                 textToShow = str;
             }
             Vector2 z = Font.MeasureString(textToShow);
+          //  if (!String.IsNullOrEmpty(BasicText))
+            {
+                var z2 = Font.MeasureString(BasicText);
+                BasicTextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z2.X / 2.0f, (Origin.Y + Height / 2.0f) - z2.Y / 2.0f);
+            }
             TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
             if (NeedNewTexture)
                 Texture = Util.CreateTextureHollow(Device, Width, Height);
@@ -72,6 +79,8 @@ namespace Client_PC.UI
             spriteBatch.Draw(Texture, Boundary, Color.White);
             if(!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
+            else if (!String.IsNullOrEmpty(BasicText))
+                spriteBatch.DrawString(Font, BasicText, BasicTextPosition, Color.Gray);
             //spriteBatch.End();
         }
     }

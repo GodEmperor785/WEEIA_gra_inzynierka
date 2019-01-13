@@ -127,6 +127,7 @@ namespace Client_PC.Scenes
 
             DeckInputBox = new InputBox(new Point(), gridRightBottom.Width,(int) (gridRightBottom.Height * 0.25), Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
             DeckInputBox.TextLimit = 30;
+            DeckInputBox.BasicText = "Deck name";
             up.Update();
             down.Update();
             upCenter.Update();

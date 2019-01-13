@@ -38,10 +38,10 @@ namespace Client_PC.Scenes
         #endregion
 
         #region popupCustomPlay
-        private InputBox nameInputBox;
+        private InputBox nameInputBox, creatornameInputBox;
         private Label labelError;
-
-
+        private Button Join;
+        private Button Create;
         #endregion
 
 
@@ -193,7 +193,7 @@ namespace Client_PC.Scenes
 
         public void PlayCustom()
         {
-            int topOrigin = (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.3);
+            int topOrigin = (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.2);
             int buttonWidth = 200;
             int leftOffset = 10;
             int leftOrigin = (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5 - (2*buttonWidth + leftOffset * 1.5));
@@ -203,18 +203,26 @@ namespace Client_PC.Scenes
             RelativeLayout layout = new RelativeLayout();
             nameInputBox = new InputBox(new Point(leftOrigin + leftOffset, topOrigin + topOffset),2* buttonWidth, 2* buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
-                TextLimit = 30
+                TextLimit = 30,
+                BasicText = "Room name"
+            };
+            creatornameInputBox = new InputBox(new Point(leftOrigin + leftOffset, nameInputBox.Origin.Y+nameInputBox.Height + topOffset), 2 * buttonWidth, 2 * buttonHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                TextLimit = 30,
+                BasicText = "Creator name"
             };
             Clickable.Add(nameInputBox);
             ClickableToRemove.Add(nameInputBox);
-            Button Join = new Button(new Point(nameInputBox.Origin.X, nameInputBox.Origin.Y+ nameInputBox.Height + topOffset),buttonWidth ,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            Clickable.Add(creatornameInputBox);
+            ClickableToRemove.Add(creatornameInputBox);
+            Join = new Button(new Point(nameInputBox.Origin.X, creatornameInputBox.Origin.Y+ creatornameInputBox.Height + topOffset),buttonWidth ,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 Text = "Join"
             };
             Join.clickEvent += onJoin;
             Clickable.Add(Join);
             ClickableToRemove.Add(Join);
-            Button Create = new Button(new Point(Join.Origin.X+buttonWidth,Join.Origin.Y),buttonWidth,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            Create = new Button(new Point(Join.Origin.X+buttonWidth,Join.Origin.Y),buttonWidth,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 Text = "Create"
             };
@@ -223,7 +231,8 @@ namespace Client_PC.Scenes
             ClickableToRemove.Add(Create);
             labelError = new Label(new Point(nameInputBox.Origin.X + nameInputBox.Width + leftOffset, nameInputBox.Origin.Y),buttonWidth * 2,buttonHeight * 3, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
-                Text = "To create room write the name and click Create button, to join room write it's name and click Join button"
+                Text = "To create room write the name and click Create button, to join room write it's name and click Join button." +
+                       " To join you have also to write creator's name."
             };
             Button Exit = new Button(new Point(labelError.Origin.X, labelError.Origin.Y+labelError.Height + topOffset),buttonWidth,buttonHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
@@ -278,7 +287,7 @@ namespace Client_PC.Scenes
             Exit.Origin = new Point(Exit.Origin.X, down.Origin.Y);
 
 
-
+            layout.AddChild(creatornameInputBox);
             layout.AddChild(nameInputBox);
             layout.AddChild(Join);
             layout.AddChild(Create);
@@ -287,11 +296,11 @@ namespace Client_PC.Scenes
             layout.AddChild(g);
             layout.AddChild(up);
             layout.AddChild(down);
-            popup = new Popup(new Point(leftOrigin, topOrigin), 4 * buttonWidth + leftOffset * 3, 5 * buttonHeight + topOffset * 6 + (int)g.RowOffset(5), Game1.self.GraphicsDevice, Gui);
+            popup = new Popup(new Point(leftOrigin, topOrigin), 4 * buttonWidth + leftOffset * 3, 7 * buttonHeight + topOffset * 7 + (int)g.RowOffset(5), Game1.self.GraphicsDevice, Gui);
             popup.layout = layout;
 
             nameInputBox.Update();
-            
+            creatornameInputBox.Update();
             g.UpdateP();
             Join.Update();
             Create.Update();
@@ -305,6 +314,8 @@ namespace Client_PC.Scenes
             SetClickables(false);
             popup.SetActive(true);
             popup.layout.UpdateActive(true);
+            Join.Active = false;
+            Create.Active = false;
         }
 
         public void onExitCustom()
@@ -338,7 +349,7 @@ namespace Client_PC.Scenes
 
         public void onJoin()
         {
-            if (chosenDeck != null && nameInputBox.Text.Length > 0)
+            if (chosenDeck != null && nameInputBox.Text.Length > 0 && creatornameInputBox.Text.Length > 0)
             {
                 GamePacket packet = new GamePacket(OperationType.SELECT_FLEET, chosenDeck.GetFleet());
                 Game1.self.Connection.Send(packet);
@@ -346,6 +357,7 @@ namespace Client_PC.Scenes
                 if (packet.OperationType == OperationType.SUCCESS)
                 {
                     CustomGameRoom room = new CustomGameRoom(nameInputBox.Text);
+                    room.CreatorsUsername = creatornameInputBox.Text;
                     packet = new GamePacket(OperationType.PLAY_CUSTOM_JOIN, room);
                     Game1.self.Connection.Send(packet);
                     packet = Game1.self.Connection.GetReceivedPacket();
@@ -379,6 +391,7 @@ namespace Client_PC.Scenes
                     packet = Game1.self.Connection.GetReceivedPacket();
                     if (packet.OperationType == OperationType.SUCCESS)
                     {
+                        labelError.Text = "Created room with name: " + nameInputBox.Text;
                         searching = true;
                         while (searching)
                         {
@@ -555,8 +568,17 @@ namespace Client_PC.Scenes
         {
             Deck d = (Deck)sender;
             chosenDeck = d;
-            search.ActiveChangeable = true;
-            search.Active = true;
+            if (search != null)
+            {
+                search.ActiveChangeable = true;
+                search.Active = true;
+            }
+
+            if (Join != null)
+            {
+                Join.Active = true;
+                Create.Active = true;
+            }
         }
 
         public void downClick()
