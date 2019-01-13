@@ -32,7 +32,7 @@ namespace Client_PC
     {
         public enum State
         {
-            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu, FleetMenu
+            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu, FleetMenu, CardsMenu
         }
         public static Game1 self;
         public State state = State.LoginMenu;
@@ -47,6 +47,7 @@ namespace Client_PC
         private GameWindow gameWindow;
         private ShopMenu shopMenu;
         private FleetMenu fleetMenu;
+        private CardsMenu cardsMenu;
         public float DeltaSeconds;
         public bool AbleToClick;
         internal Tooltip tooltipToDraw;
@@ -107,6 +108,8 @@ namespace Client_PC
             shopMenu.Initialize(Content);
             fleetMenu = new FleetMenu();
             fleetMenu.Initialize(Content);
+            cardsMenu = new CardsMenu();
+            cardsMenu.Initialize(Content);
             menus.Add(mainMenu);
             menus.Add(settingsMenu);
             menus.Add(loginMenu);
@@ -115,6 +118,7 @@ namespace Client_PC
             menus.Add(gameWindow);
             menus.Add(shopMenu);
             menus.Add(fleetMenu);
+            menus.Add(cardsMenu);
 
             settingsMenu.SetMenus(menus);
             base.Initialize();
@@ -278,6 +282,9 @@ namespace Client_PC
                 case State.FleetMenu:
                     fleetMenu.Update(gameTime);
                     break;
+                case State.CardsMenu:
+                    cardsMenu.Update(gameTime);
+                    break;
             }
             base.Update(gameTime);
         }
@@ -287,6 +294,10 @@ namespace Client_PC
             deckMenu.Clean();
         }
 
+        public void CleanCards()
+        {
+            cardsMenu.Clean();
+        }
 
         public void SetDecks(List<Fleet> fleets)
         {
@@ -460,6 +471,9 @@ namespace Client_PC
                     break;
                 case State.FleetMenu:
                     fleetMenu.Draw(gameTime);
+                    break;
+                case State.CardsMenu:
+                    cardsMenu.Draw(gameTime);
                     break;
             }
 

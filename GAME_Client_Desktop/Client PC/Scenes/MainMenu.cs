@@ -74,7 +74,12 @@ namespace Client_PC.Scenes
             {
                 Text = "Shop"
             };
-            
+            Button z5 = new Button(120, 100, Game1.self.GraphicsDevice, Gui, Gui.bigFont, true)
+            {
+                Text = "Cards"
+            };
+            z5.clickEvent += goToCards;
+            Clickable.Add(z5);
             Clickable.Add(p1);
             Clickable.Add(p2);
             Clickable.Add(z);
@@ -90,8 +95,9 @@ namespace Client_PC.Scenes
             grid.AddChild(p2,1,0);
             grid.AddChild(z, 2, 0);
             grid.AddChild(z4, 3, 0);
-            grid.AddChild(z2, 4, 0);
-            grid.AddChild(z3,5,0);
+            grid.AddChild(z5, 4, 0);
+            grid.AddChild(z2, 5, 0);
+            grid.AddChild(z3,6,0);
             p1.clickEvent += Play;
             p2.clickEvent += PlayCustom;
             z3.clickEvent += ExitClick;
@@ -104,6 +110,12 @@ namespace Client_PC.Scenes
             SetClickables(true);
         }
 
+        public void goToCards()
+        {
+            Game1.self.CleanCards();
+            Game1.self.state = Game1.State.CardsMenu;
+
+        }
         public void Play()
         {
             ClickableToRemove = new List<IClickable>();

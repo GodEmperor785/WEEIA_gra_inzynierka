@@ -22,6 +22,7 @@ namespace Client_PC.Scenes
         private Grid BoxesGrid;
         private Grid BoughtShipsGrid;
         private List<LootBoxElement> Lootboxes;
+        List<IClickable> ClickableToRemove = new List<IClickable>();
         private RelativeLayout layout;
         private Label CreditsAmount, lbl1;
         private Graphic g;
@@ -154,6 +155,7 @@ namespace Client_PC.Scenes
             {
                 Card c = new Card(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,p);
                 Clickable.Add(c);
+                ClickableToRemove.Add(c);
                 c.Active = true;
                 BoughtShipsGrid.AddChild(c,0,column);
                 column++;
@@ -180,6 +182,8 @@ namespace Client_PC.Scenes
                 state = State.normal;
                 BoughtShipsGrid.UpdateActive(false);
                 BoxesGrid.UpdateActive(true);
+                BoughtShipsGrid.RemoveChildren();
+                ClickableToRemove.ForEach(p=> Clickable.Remove(p));
             }
         }
 
