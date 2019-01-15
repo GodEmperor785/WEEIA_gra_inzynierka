@@ -92,14 +92,23 @@ namespace Client_PC
             Wallpaper = Utils.CreateTexture(GraphicsDevice, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             //  gd = GraphicsDevice;
-            mainMenu = new MainMenu();
-            settingsMenu = new SettingsMenu();
-            settingsMenu.Initialize(Content);
-            mainMenu.Initialize(Content);
+
             loginMenu = new LoginMenu();
             loginMenu.Initialize(Content);
             registerMenu = new RegisterMenu();
             registerMenu.Initialize(Content);
+            menus.Add(loginMenu);
+            menus.Add(registerMenu);
+            base.Initialize();
+            
+        }
+
+        public void LoginInitialize()
+        {
+            mainMenu = new MainMenu();
+            settingsMenu = new SettingsMenu();
+            settingsMenu.Initialize(Content);
+            mainMenu.Initialize(Content);
             deckMenu = new DeckMenu();
             deckMenu.Initialize(Content);
             gameWindow = new GameWindow();
@@ -112,8 +121,6 @@ namespace Client_PC
             cardsMenu.Initialize(Content);
             menus.Add(mainMenu);
             menus.Add(settingsMenu);
-            menus.Add(loginMenu);
-            menus.Add(registerMenu);
             menus.Add(deckMenu);
             menus.Add(gameWindow);
             menus.Add(shopMenu);
@@ -121,10 +128,7 @@ namespace Client_PC
             menus.Add(cardsMenu);
 
             settingsMenu.SetMenus(menus);
-            base.Initialize();
-            
         }
-
         private void setUpConnection()
         {
             if (test)

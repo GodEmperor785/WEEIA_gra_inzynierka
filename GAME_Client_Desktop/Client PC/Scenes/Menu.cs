@@ -171,6 +171,7 @@ namespace Client_PC.Scenes
             {
                 if (button.Tooltip != null)
                 {
+                    
                     Game1.self.tooltipToDraw = button.Tooltip;
                     button.Tooltip.Update(xy);
                 }

@@ -44,7 +44,28 @@ namespace Client_PC.UI
 
         public void Update(Point origin)
         {
-            Origin = origin;
+            if (origin.X > (Game1.self.graphics.PreferredBackBufferWidth - Width))
+            {
+                if (origin.Y > Game1.self.graphics.PreferredBackBufferHeight -Height)
+                {
+                    Origin = new Point(origin.X - Width, origin.Y - Height);
+                }
+                else
+                {
+                    Origin = new Point(origin.X - Width, origin.Y);
+                }
+            }
+            else
+            {
+                if (origin.Y > Game1.self.graphics.PreferredBackBufferHeight - Height)
+                {
+                    Origin = new Point(origin.X, origin.Y - Height);
+                }
+                else
+                {
+                    Origin = new Point(origin.X, origin.Y);
+                }
+            }
             Update(text, ref textPosition, Font);
         }
         protected override void Update(string text, ref Vector2 TextPosition, SpriteFont Font)

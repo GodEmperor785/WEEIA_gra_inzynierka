@@ -57,13 +57,13 @@ namespace Client_PC.Scenes
             cardsGrid.Height = (int)((int)Game1.self.graphics.PreferredBackBufferHeight * CardGridHeightMulti);
             buttonsGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight - 200);
             cardsGrid.Origin = new Point(50, buttonsGrid.Origin.Y - 200);
-            Button up = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width/2) - 60, cardsGrid.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
+            Button up = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width/2) , cardsGrid.Origin.Y), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "up"
             };
             up.clickEvent += upClick;
-            Button down = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width/2) - 60, cardsGrid.Origin.Y + 30), 60, 30, Game1.self.GraphicsDevice,
+            Button down = new Button(new Point(cardsGrid.Origin.X + (int)(cardsGrid.Width/2) , cardsGrid.Origin.Y + 30), 60, 30, Game1.self.GraphicsDevice,
                 Gui, Gui.mediumFont, true)
             {
                 Text = "down"
@@ -173,7 +173,12 @@ namespace Client_PC.Scenes
         public void onExit()
         {
             if (isOver)
+            {
                 Game1.self.state = Game1.State.MainMenu;
+                Game1.self.UpdateHistory();
+                
+            }
+
             popup.SetActive(false);
             foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
             {

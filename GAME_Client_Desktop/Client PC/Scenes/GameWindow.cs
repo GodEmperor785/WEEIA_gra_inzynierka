@@ -51,7 +51,6 @@ namespace Client_PC.Scenes
         private RelativeLayout layout;
         private Grid enemyGrid;
         private Grid yourGrid;
-        private Grid yourCards;
         private Card CurrentCard;
         private Card LastCard;
         private int CardsInRow = 0;
@@ -75,12 +74,11 @@ namespace Client_PC.Scenes
             double cardWidthPercentage = 0.25;
             double cardHeightPercentage = 0.18;
             double widthPercentage = 0.2;
-            double heightPercentage = 0.75;
+            double heightPercentage = 0.95;
             int ColumnWidth = (int) (Game1.self.graphics.PreferredBackBufferWidth * widthPercentage * cardWidthPercentage);
             int RowHeight = (int) (Game1.self.graphics.PreferredBackBufferHeight * heightPercentage * cardHeightPercentage);
             enemyGrid = new Grid(3,5, ColumnWidth, RowHeight);
             yourGrid = new Grid(3,5, ColumnWidth, RowHeight);
-            yourCards = new Grid();
             move = new Move();
 
             #region Popup
@@ -104,22 +102,18 @@ namespace Client_PC.Scenes
 
             enemyGrid.WitdhAndHeightColumnDependant = false;
             yourGrid.WitdhAndHeightColumnDependant = false;
-            yourCards.WitdhAndHeightColumnDependant = false;
 
             enemyGrid.Width = (int) (Game1.self.graphics.PreferredBackBufferWidth * widthPercentage);
             yourGrid.Width = (int)(Game1.self.graphics.PreferredBackBufferWidth * widthPercentage);
 
             enemyGrid.Height = (int)(Game1.self.graphics.PreferredBackBufferHeight * heightPercentage);
             yourGrid.Height = (int)(Game1.self.graphics.PreferredBackBufferHeight * heightPercentage);
-            yourCards.Height = (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.15);
 
             enemyGrid.DrawBorder = true;
             yourGrid.DrawBorder = true;
-            yourCards.DrawBorder = true;
 
             enemyGrid.BorderSize = 3;
             yourGrid.BorderSize = 3;
-            yourCards.BorderSize = 3;
 
             enemyGrid.rowOffset = (int) (enemyGrid.Height * 0.025);
             yourGrid.rowOffset = (int)(enemyGrid.Height * 0.025);
@@ -128,18 +122,16 @@ namespace Client_PC.Scenes
             yourGrid.columnOffset = (int) (yourGrid.Width * 0.125);
 
 
-            yourCards.Width = (int)(enemyGrid.Width + yourGrid.Width + (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.4));
-            turnButton = new Button(new Point(1000,400), 200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            yourGrid.Origin = new Point(10,10);
+            enemyGrid.Origin = new Point(Game1.self.graphics.PreferredBackBufferWidth - 10 - enemyGrid.Width, 10 );
+            turnButton = new Button(enemyGrid.Origin.X - (yourGrid.Origin.X +(int) yourGrid.Width) - 40, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text="End turn"
             };
-
+            turnButton.Origin = new Point(yourGrid.Origin.X + (int)yourGrid.Width + 20, yourGrid.Origin.Y+ yourGrid.Height / 2 - turnButton.Height / 2);
             turnButton.clickEvent += EndTurnClick;
             Clickable.Add(turnButton);
-            yourGrid.Origin = new Point(10,10);
-            enemyGrid.Origin = new Point(10 + yourGrid.Width + (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.4), 10 );
 
-            yourCards.Origin = new Point(10,yourGrid.Origin.Y + yourGrid.Height + (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.02));
 
             cardWidth = (int) (yourGrid.Width * cardWidthPercentage);
             cardHeight = (int) (yourGrid.Height * cardHeightPercentage);
@@ -147,7 +139,6 @@ namespace Client_PC.Scenes
 
             layout.AddChild(enemyGrid);
             layout.AddChild(yourGrid);
-            layout.AddChild(yourCards);
             layout.AddChild(turnButton);
             th = new Task(ContactLoop);
             layout.Update();
@@ -162,6 +153,7 @@ namespace Client_PC.Scenes
             }
 
             Game1.self.state = Game1.State.MainMenu;
+            Game1.self.UpdateHistory();
             Game1.self.popupToDraw = null;
 
         }

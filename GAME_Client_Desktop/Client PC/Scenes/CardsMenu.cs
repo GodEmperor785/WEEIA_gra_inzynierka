@@ -24,7 +24,7 @@ namespace Client_PC.Scenes
             cardWidth = 100;
             cardHeight = (int)(cardWidth * (200f/133f));
             int columns = (Game1.self.graphics.PreferredBackBufferWidth - 200) / (cardWidth+5);
-            grid = new Grid(columns, 26,cardWidth, cardHeight);
+            grid = new Grid(columns, Game1.self.Modifiers.MaxShipsPerPlayer / columns + 1,cardWidth, cardHeight);
             grid.DrawBorder = true;
             grid.BorderSize = 3;
             grid.WitdhAndHeightColumnDependant = false;
@@ -34,7 +34,7 @@ namespace Client_PC.Scenes
             grid.VisibleRows = 5;
             grid.ConstantRowsAndColumns = true;
             grid.MaxChildren = true;
-            grid.ChildMaxAmount = 150;
+            grid.ChildMaxAmount = Game1.self.Modifiers.MaxShipsPerPlayer;
             grid.Origin = new Point(100,100);
             Gui = new GUI(Content);
             layout = new RelativeLayout();

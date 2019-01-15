@@ -46,7 +46,8 @@ namespace Client_PC.Scenes
             gridTopLeft = new Grid(5, 3, ColumnWidth, rowHeight);
             gridRight = new Grid(1, 8,gridRightColumnWidth,gridRightRowHeight);
             gridRightBottom = new Grid();
-            gridCenter = new Grid(5, 30, ColumnWidth, rowHeight);
+            int columns = 5;
+            gridCenter = new Grid(columns, Game1.self.Modifiers.MaxShipsPerPlayer / columns + 1, ColumnWidth, rowHeight);
             ;
             gridTopLeft.DrawBorder = true;
             gridRight.DrawBorder = true;
@@ -187,7 +188,7 @@ namespace Client_PC.Scenes
 
             gridCenter.ConstantRowsAndColumns = true;
             gridCenter.MaxChildren = true;
-            gridCenter.ChildMaxAmount = 150;
+            gridCenter.ChildMaxAmount = Game1.self.Modifiers.MaxShipsPerPlayer;
 
             gridRight.ConstantRowsAndColumns = true;
             gridRight.MaxChildren = true;
