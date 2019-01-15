@@ -66,7 +66,7 @@ namespace Client_PC.UI
             Update(text, ref textPosition, Font);
             if (NeedNewTexture)
             {
-                Texture = Util.CreateTexture(Device, Width, Height);
+                Texture = Util.CreateTexture(Device, Width, Height, Util.OutsideColorOriginal, Util.InsideColorOriginal);
                 inactive = Util.CreateTexture(Device, Width, Height, new Color(200, 200, 200), new Color(160, 160, 160));
                 over = Util.CreateTexture(Device, Width, Height, new Color(20, 150, 70), new Color(100, 100, 100));
             }

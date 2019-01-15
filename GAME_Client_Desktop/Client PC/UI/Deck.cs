@@ -31,6 +31,8 @@ namespace Client_PC.UI
         private Fleet fleet;
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
+        public bool Chosen { get; set; }
+        private Texture2D inactive, over, focusedTexture;
         public Rectangle GetBoundary()
         {
             return Boundary;
@@ -61,6 +63,15 @@ namespace Client_PC.UI
             Update(Text, ref textPosition, Font);
             focused = Game1.self.FocusedElement == this;
             bool changeOfFocus = focused != lastStateOfFocus;
+            if (NeedNewTexture)
+            {
+                Texture = Util.CreateTexture(Device, Width, Height, Util.OutsideColorOriginal, Util.InsideColorOriginal);
+                inactive = Util.CreateTexture(Device, Width, Height, new Color(200, 200, 200), new Color(160, 160, 160));
+                over = Util.CreateTexture(Device, Width, Height, new Color(20, 150, 70), new Color(100, 100, 100));
+                focusedTexture = Util.CreateTexture(Device, Width, Height, new Color(140, 140, 140),
+                    new Color(60, 60, 60));
+            }
+            /*
             if (focused)
             {
                 if(changeOfFocus || NeedNewTexture)
@@ -73,7 +84,7 @@ namespace Client_PC.UI
                 Texture = Util.CreateTexture(Device, Width, Height, new Color(180, 180, 180),
                     new Color(100, 100, 100));
             }
-
+            */
             lastStateOfFocus = focused;
         }
 
@@ -96,13 +107,25 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch sp)
         {
             //sp.Begin();
-            if (Game1.self.FocusedElement == this)
+            
+
+
+
+            if (Chosen)
             {
-                sp.Draw(Texture, Boundary, Color.White);
+                sp.Draw(focusedTexture, Boundary, Color.White);
             }
             else
             {
-                sp.Draw(Texture, Boundary, Color.White);
+                if (IsOver)
+                {
+                    sp.Draw(over,Boundary,Color.White);
+                }
+                else
+                {
+                    sp.Draw(Texture, Boundary, Color.White);
+                    
+                }
             }
             if (!String.IsNullOrEmpty(Text))
                 sp.DrawString(Font, Text, TextPosition, Color.Black);

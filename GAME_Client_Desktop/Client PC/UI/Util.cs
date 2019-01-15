@@ -10,6 +10,8 @@ namespace Client_PC.UI
 {
     class Util
     {
+        public static Color InsideColorOriginal = new Color(104, 104, 104);
+        public static Color OutsideColorOriginal = new Color(180,180,180);
         public static Texture2D CreateTexture(GraphicsDevice device, int width, int height,int bordersize = 10,int alpha = 255)
         {
             //initialize a texture
@@ -28,7 +30,7 @@ namespace Client_PC.UI
             texture.SetData(data);
             return texture;
         }
-        public static Texture2D CreateTexture(GraphicsDevice device, int width, int height, Color brighter, Color darker, int bordersize = 10, int alpha = 255)
+        public static Texture2D CreateTexture(GraphicsDevice device, int width, int height, Color outside, Color inside, int bordersize = 10, int alpha = 255)
         {
             //initialize a texture
             Texture2D texture = new Texture2D(device, width, height);
@@ -38,7 +40,7 @@ namespace Client_PC.UI
             for (int pixel = 0; pixel < data.Count(); pixel++)
             {
                 //the function applies the color according to the specified pixel
-                data[pixel] = NewSetColor(GetPosition(pixel, width, height), width, height, false, bordersize, alpha, brighter, darker);
+                data[pixel] = NewSetColor(GetPosition(pixel, width, height), width, height, false, bordersize, alpha, outside, inside);
                 // data[pixel] = paint(pixel);
             }
 

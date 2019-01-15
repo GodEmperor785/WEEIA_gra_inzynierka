@@ -212,9 +212,14 @@ namespace Client_PC.Scenes
 
         public void CardClick(object sender)
         {
+            if (CurrentCard != null)
+            {
+                CurrentCard.Status = Card.status.clear;
+                CurrentCard.Update();
+            }
             Card c = (Card)sender;
-            c.Status = Card.status.clicked;
             CurrentCard = c;
+            CurrentCard.Status = Card.status.clicked;
             CurrentCard.Update();
             slots.Where(p=> p.Card == null).ToList().ForEach(p => p.CardClicked = true);
         }
@@ -262,6 +267,13 @@ namespace Client_PC.Scenes
         public override void UpdateButtonNull()
         {
             slots.ForEach(p=> p.CardClicked = false);
+            if (CurrentCard != null)
+            {
+                CurrentCard.Status = Card.status.clear;
+                CurrentCard.Update();
+            }
+
+            CurrentCard = null;
         }
 
         public void CardSlotClick(object sender)

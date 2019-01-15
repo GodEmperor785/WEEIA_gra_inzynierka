@@ -220,9 +220,9 @@ namespace Client_PC.Scenes
 
             */
 
-            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 100, 400, Game1.self.GraphicsDevice, Gui);
+            popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 400, 400, Game1.self.GraphicsDevice, Gui);
             Grid popupGrid = new Grid();
-            lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            lbl1 = new Label(popup.Width - 50, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
@@ -352,7 +352,9 @@ namespace Client_PC.Scenes
 
         private void DeckClick(object sender)
         {
+            Decks.ForEach(p => p.Chosen = false);
             Deck d = (Deck) sender;
+            d.Chosen = true;
             ChosenDeck = d;
             ClearTopGrid();
             ShipsInTop.Clear();
@@ -481,22 +483,24 @@ namespace Client_PC.Scenes
 
                 List<Ship> newShips = new List<Ship>();
                 ShipsInTop.ForEach(p => newShips.Add(p.GetShip()));
-                Fleet fleet = new Fleet(ChosenDeck.Text,Game1.self.player,newShips);
-                ChosenDeck.SetFleet(fleet);
+                var fl = ChosenDeck.GetFleet();
+                fl.Ships = newShips;
+                //Fleet fleet = new Fleet(ChosenDeck.Text,Game1.self.player,newShips);
+                ChosenDeck.SetFleet(fl);
                 GamePacket packet;
                 if (ChosenDeck.RecentlyAdded)
                 {
-                    packet = new GamePacket(OperationType.ADD_FLEET,fleet);
+                    packet = new GamePacket(OperationType.ADD_FLEET,fl);
                 }
                 else
                 {
-                    packet = new GamePacket(OperationType.UPDATE_FLEET, fleet);
+                    packet = new GamePacket(OperationType.UPDATE_FLEET, fl);
                 }
                 Game1.self.Connection.Send(packet);
                 GamePacket packetReceived = Game1.self.Connection.GetReceivedPacket();
                 if (packetReceived.OperationType != OperationType.SUCCESS)
                 {
-                    lbl1.Text = "Problem with adding fleet";
+                    lbl1.Text = "Problem with adding fleet \n" +packetReceived.Packet.ToString() + "\nCurrent:   "+fl.GetFleetPointsSum()+"\nMax:    "+Game1.self.Modifiers.GetPlayersMaxFleetSize(Game1.self.player).ToString();
                     popup.SetActive(true);
                     Clean();
                     Game1.self.popupToDraw = popup;

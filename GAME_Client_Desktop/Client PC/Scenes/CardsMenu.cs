@@ -17,6 +17,7 @@ namespace Client_PC.Scenes
         private int cardWidth, cardHeight;
         private List<Card> ShipsInBot;
         private Card ChosenCard;
+        private Label lbl1;
         private List<IClickable> ClickableToRemove = new List<IClickable>();
         public override void Initialize(ContentManager Content)
         {
@@ -71,9 +72,9 @@ namespace Client_PC.Scenes
 
             popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 100, 400, Game1.self.GraphicsDevice, Gui);
             Grid popupGrid = new Grid();
-            Label lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            lbl1 = new Label(200, 200, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
-                Text = "Are you sure you want to dissolve this card?"
+                Text = "Are you sure you want to dissolve this card for "
             };
             Button b1 = new Button(100, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
@@ -86,6 +87,7 @@ namespace Client_PC.Scenes
             a1.clickEvent += onDissolve;
             Clickable.Add(a1);
             lbl1.DrawBackground = false;
+            a1.DrawBackground = false;
             b1.DrawBackground = false;
             popup.grid = popupGrid;
             popupGrid.AddChild(lbl1, 0, 0);
@@ -150,6 +152,7 @@ namespace Client_PC.Scenes
         {
             ChosenCard = (Card) sender;
             popup.SetActive(true);
+            lbl1.Text = "Are you sure you want to dissolve this card for "+ ChosenCard.GetShip().Cost + " credits?";
             Game1.self.popupToDraw = popup;
             SetClickables(false);
         }

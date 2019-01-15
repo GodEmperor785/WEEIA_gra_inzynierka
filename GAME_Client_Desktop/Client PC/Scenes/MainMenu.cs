@@ -164,7 +164,7 @@ namespace Client_PC.Scenes
             g.MaxChildren = true;
             g.ChildMaxAmount = 8;
             g.VisibleRows = 5;
-            Game1.self.Decks.ForEach(p =>
+            Game1.self.Decks.Where(a=> a.Ships.Count > 0).ToList().ForEach(p =>
             {
                 Deck d = new Deck(new Point(), buttonWidth, buttonHeight, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true,p.Name );
                 d.SetFleet(p);
@@ -481,7 +481,7 @@ namespace Client_PC.Scenes
             string part1;
             string enemy;
             Fleet myFleet;
-            if (game.Winner == Game1.self.player)
+            if (game.Winner.Id == Game1.self.player.Id)
             {
                 part1 = "You won against ";
                 enemy = game.Loser.Username;
@@ -489,7 +489,7 @@ namespace Client_PC.Scenes
             }
             else if (game.WasDraw)
             {
-                if (game.Loser == Game1.self.player)
+                if (game.Loser.Id == Game1.self.player.Id)
                 {
                     enemy = game.Winner.Username;
                     myFleet = game.LoserFleet;
