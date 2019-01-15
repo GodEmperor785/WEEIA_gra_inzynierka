@@ -139,7 +139,7 @@ namespace Client_PC
                     int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
                     TcpClient client = new TcpClient(server, port);
                     Console.WriteLine("tcpClient created");
-                    Connection = new TcpConnection(client, true, null, false, false, null);
+                    Connection = new TcpConnection(client, true, Nothing, false, true);
                     Console.WriteLine("Connection established");
                 }
                 catch (Exception e)
@@ -149,6 +149,10 @@ namespace Client_PC
             }
         }
 
+        public void Nothing(String c)
+        {
+
+        }
         public void Quit()
         {
             Connection.SendDisconnect();
