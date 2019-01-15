@@ -89,6 +89,7 @@ namespace GAME_Server {
 					if (useSsl) gameClient = new TcpConnection(client, false, Server.Log, true, true, "gameServerCert.cer");        //use this to enable ssl (with public certificate)
 					else gameClient = new TcpConnection(client, false, Server.Log);
 					Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
+					gameClient.PrintSecurityInfo();
 
 					UserThread userThread = new UserThread(gameClient);
 					Thread t = new Thread(new ThreadStart(userThread.RunUserThread));

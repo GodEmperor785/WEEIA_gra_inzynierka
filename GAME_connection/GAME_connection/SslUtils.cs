@@ -59,6 +59,13 @@ namespace GAME_connection {
 			return false;
 		}
 
+		internal static void PrintSslInfo(SslStream stream, TcpConnection.Logger logger) {
+			logger("Cipher: " + stream.CipherAlgorithm + " strength: " + stream.CipherStrength);
+			logger("Hash: " + stream.HashAlgorithm + " strength: " +  stream.HashStrength);
+			logger("Key exchange: " + stream.KeyExchangeAlgorithm + " strength: " + stream.KeyExchangeStrength);
+			logger("Protocol version: " + stream.SslProtocol);
+		}
+
 	}
 
 }

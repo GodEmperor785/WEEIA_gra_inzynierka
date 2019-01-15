@@ -131,6 +131,17 @@ namespace GAME_connection {
 		}
 		#endregion
 
+		#region info
+		public void PrintSecurityInfo() {
+			if (this.NetStream is SslStream) {
+				SslUtils.PrintSslInfo(this.NetStream as SslStream, tcpConnectionLogger);
+			}
+			else {
+				tcpConnectionLogger("Connection is not using SSL/TLS");
+			}
+		}
+		#endregion
+
 		#region Creator methods
 		private static void Log(string message) {
 			Console.WriteLine(message);

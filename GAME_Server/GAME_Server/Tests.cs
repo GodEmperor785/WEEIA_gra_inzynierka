@@ -510,7 +510,7 @@ namespace GAME_Server {
 					{ Rarity.RARE, 0 },
 					{ Rarity.VERY_RARE, 0 },
 					{ Rarity.LEGENDARY, 0 }
-				};
+			};
 
 			GameRNG rng = new GameRNG();
 			int totalRolls = 10000000;
@@ -521,6 +521,33 @@ namespace GAME_Server {
 			}
 			foreach (var pair in counts) {
 				Server.Log(pair.Key.GetRarityName() + " count = " + pair.Value + " " + ((double)pair.Value / (double)totalRolls));
+			}
+
+			counts = new Dictionary<Rarity, int>() {
+				{ Rarity.COMMON, 0 },
+				{ Rarity.RARE, 0 },
+				{ Rarity.VERY_RARE, 0 },
+				{ Rarity.LEGENDARY, 0 }
+			};
+			GameDataBase = Server.GetGameDBContext();
+			int numberOfShips = 10000;
+			List<DbShip> randomShips = new List<DbShip>();
+			DbPlayer p = new DbPlayer() {
+				Id = 2,
+				Username = "random",
+				Experience = 0
+			};
+			var GameRNG = new GameRNG();
+			for (int i = 0; i < numberOfShips; i++) {    //repeat as many times as there are ships in lootbox
+				Rarity drawnRarity = GameRNG.GetRandomRarityWithChances(chances);
+				randomShips.Add(GameDataBase.GetRandomShipTemplateOfRarity(drawnRarity, p.Experience).GenerateNewShipOfThisTemplate(p));
+			}
+			foreach (var ship in randomShips) {
+				//Server.Log(ship.ShipBaseStats.Name + ", rarity = " + ship.ShipBaseStats.ShipRarity);
+				counts[ship.ShipBaseStats.ShipRarity]++;
+			}
+			foreach (var pair in counts) {
+				Server.Log(pair.Key.GetRarityName() + " count = " + pair.Value + " " + ((double)pair.Value / (double)numberOfShips));
 			}
 
 			Console.ReadKey();
