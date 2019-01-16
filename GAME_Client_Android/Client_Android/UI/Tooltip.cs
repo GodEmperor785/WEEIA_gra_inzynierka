@@ -1,0 +1,146 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Client_Android;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+namespace Client_PC.UI
+{
+    class Tooltip : GuiElement, IHasText
+    {
+        private string text;
+        private string textToShow;
+        public string Text {
+            get { return text; }
+            set
+            {
+                text = value;
+
+                /*if (Font.MeasureString(text).X < TextBox.Width)
+                    textToShow = text;
+                    */
+            }
+        }
+        private Vector2 textPosition;
+        public Vector2 TextPosition { get; set; }
+        public SpriteFont Font { get; set; }
+        public bool TextWrappable { get; set; }
+        public bool ActiveChangeable { get; set; }
+        public bool HeightDerivatingFromText { get; set; }
+        public Tooltip( int width, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, int height = 10) : base(width, height, device, gui)
+        {
+            Font = font;
+            ActiveChangeable = true;
+            text = "";
+            textToShow = "";
+            TextWrappable = wrapable;
+        }
+        public override void Update()
+        {
+            Update(text, ref textPosition, Font);
+        }
+
+        public void Update(Point origin)
+        {
+            if (origin.X > (Game1.self.graphics.PreferredBackBufferWidth - Width))
+            {
+                if (origin.Y > Game1.self.graphics.PreferredBackBufferHeight -Height)
+                {
+                    Origin = new Point(origin.X - Width, origin.Y - Height);
+                }
+                else
+                {
+                    Origin = new Point(origin.X - Width, origin.Y);
+                }
+            }
+            else
+            {
+                if (origin.Y > Game1.self.graphics.PreferredBackBufferHeight - Height)
+                {
+                    Origin = new Point(origin.X, origin.Y - Height);
+                }
+                else
+                {
+                    Origin = new Point(origin.X, origin.Y);
+                }
+            }
+            Update(text, ref textPosition, Font);
+        }
+        protected override void Update(string text, ref Vector2 TextPosition, SpriteFont Font)
+        {
+            if (text != null)
+            {
+                /*
+                Vector2 z = Font.MeasureString(text);
+                if (z.X < Width)
+                {
+                    TextPosition = new Vector2(((TextBox.X + Width / 2.0f)) - z.X / 2.0f,
+                        (TextBox.Y) + Font.MeasureString("z").Y / 2.0f);
+                }
+                else
+                {
+                    TextPosition = new Vector2(((TextBox.X+ 3)), (TextBox.Y + Font.MeasureString("z").Y / 2.0f));
+                }
+                */
+                TextPosition = new Vector2(TextBox.X+6,TextBox.Y+6);
+                parseText(text, Font);
+                if (NeedNewTexture)
+                    Texture = Util.CreateTextureHollow(Device, Width, Height);
+            }
+        }
+        protected override String parseText(String text, SpriteFont Font)
+        {
+            String line = String.Empty;
+            String returnString = String.Empty;
+            String[] wordArray = text.Split(' ');
+            int usedHeight = 0;
+            Height = 20;
+            foreach (String word in wordArray)
+            {
+                
+                if (Font.MeasureString(line + word).Length() > TextBox.Width - 10)
+                {
+                    returnString = returnString + line + '\n';
+                    line = String.Empty;
+                }
+                int z = 0;
+                if (word.Contains("\n"))
+                {
+                    z = (int)Font.MeasureString(word).Y / 2;
+                }
+                if (line == String.Empty)
+                {
+                    z = (int)Font.MeasureString(line + word).Y;
+                }
+                
+                if (((usedHeight + z) > TextBox.Height))
+                {
+                    //
+                    this.Height += z;
+                    line = line + word + ' ';
+                    usedHeight += z;
+                }
+                else if (!((usedHeight += z) > TextBox.Height))
+                {
+                    line = line + word + ' ';
+                }
+
+                
+            }
+
+            Height += 5;
+            return returnString + line;
+        }
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            //spriteBatch.Begin();
+            spriteBatch.Draw(Texture, Boundary, Color.Beige);
+            if (!String.IsNullOrEmpty(text))
+                spriteBatch.DrawString(Font, parseText(text,Font), textPosition, Color.Black);
+           // spriteBatch.End();
+        }
+    }
+}
