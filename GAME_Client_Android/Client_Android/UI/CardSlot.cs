@@ -20,7 +20,6 @@ namespace Client_PC.UI
         public delegate void ElementClicked(object sender);
         public event ElementClicked clickEvent;
         public Line line;
-        public int number;
         public bool IsOver { get; set; }
 
         public Rectangle GetBoundary()

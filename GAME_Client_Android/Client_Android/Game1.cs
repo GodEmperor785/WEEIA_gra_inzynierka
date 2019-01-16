@@ -54,8 +54,8 @@ namespace Client_Android
         public GAME_connection.TcpConnection Connection;
         private bool test = true; // false if dont connect with server
         public bool ReadyToPlay;
-
-        public Game1()
+        public Activity1 activitySelf;
+        public Game1(Activity1 activity)
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -64,7 +64,7 @@ namespace Client_Android
             graphics.PreferredBackBufferWidth = 1920;
             graphics.PreferredBackBufferHeight = 1080;
             graphics.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
-            
+            activitySelf = activity;
             setUpConnection();
         }
 
@@ -95,7 +95,7 @@ namespace Client_Android
 
         public void LoginInitialize()
         {
-            /*
+            
             mainMenu = new MainMenu();
             settingsMenu = new SettingsMenu();
             settingsMenu.Initialize(Content);
@@ -119,7 +119,7 @@ namespace Client_Android
             menus.Add(cardsMenu);
 
             settingsMenu.SetMenus(menus);
-            */
+            
         }
 
 
@@ -336,6 +336,7 @@ namespace Client_Android
         public void Quit()
         {
             Connection.SendDisconnect();
+            activitySelf.HideKeyboard();
             this.Exit();
         }
         /// <summary>

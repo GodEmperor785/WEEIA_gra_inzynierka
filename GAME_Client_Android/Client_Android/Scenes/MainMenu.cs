@@ -22,7 +22,6 @@ namespace Client_PC.Scenes
         private Grid lastGamesGrid;
         private Deck chosenDeck;
         private Grid g;
-        private Popup popup;
         private Label labelWaiting;
         private Timer timer;
         private int time;

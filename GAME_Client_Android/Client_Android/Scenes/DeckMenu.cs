@@ -29,7 +29,6 @@ namespace Client_PC.Scenes
         private List<Card> ShipsInTop;
         private List<Card> ShipsInBot;
         private List<Ship> ships;
-        private Popup popup;
         private Label lbl1;
         public override void Initialize(ContentManager Content)
         {

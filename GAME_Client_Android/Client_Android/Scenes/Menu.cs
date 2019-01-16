@@ -40,6 +40,7 @@ namespace Client_PC.Scenes
                 if (touch.State == TouchLocationState.Pressed)
                 {
                     CheckClickables(touch.Position);
+                    CheckTooltips(touch.Position);
                 }
 
                 if (touch.State == TouchLocationState.Moved)
@@ -125,6 +126,7 @@ namespace Client_PC.Scenes
                     {
                         Game1.self.FocusedElement = null;
                         UpdateButtonNull();
+                        hideKeyboard();
                     }
 
                     UpdateClickables();
@@ -132,6 +134,10 @@ namespace Client_PC.Scenes
             }
         }
 
+        private void hideKeyboard()
+        {
+            Game1.self.activitySelf.HideKeyboard();
+        }
         public virtual void Test(Point xy)
         {
             var click1 = Clickable.FirstOrDefault(p => p.GetBoundary().Contains(xy));

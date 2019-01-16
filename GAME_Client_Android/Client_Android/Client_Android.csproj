@@ -161,16 +161,16 @@
     <AndroidAsset Include="Assets\Icons\Health.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidAsset>
-    <AndroidAsset Include="Assets\Lootbox\Common.png">
+    <AndroidAsset Include="Assets\Loots\Common.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidAsset>
-    <AndroidAsset Include="Assets\Lootbox\Lootbox.png">
+    <AndroidAsset Include="Assets\Loots\lootbox.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidAsset>
-    <AndroidAsset Include="Assets\Lootbox\Rare.png">
+    <AndroidAsset Include="Assets\Loots\Rare.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidAsset>
-    <AndroidAsset Include="Assets\Lootbox\Uncommon.png">
+    <AndroidAsset Include="Assets\Loots\Uncommon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidAsset>
   </ItemGroup>

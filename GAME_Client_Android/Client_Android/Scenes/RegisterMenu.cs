@@ -19,7 +19,6 @@ namespace Client_PC.Scenes
         private InputBox passwordInputBox;
         private InputBox passwordInputBox2;
         private InputBox loginInputBox;
-        private Popup popup;
         private Label lbl1;
         private Button registerButton;
         public override void Initialize(ContentManager Content)

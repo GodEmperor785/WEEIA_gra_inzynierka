@@ -10,7 +10,6 @@ namespace Client_PC.UI
 {
     class Graphic : GuiElement
     {
-        public Texture2D Texture { get; set; }
         public Vector2 Scale { get; set; }
         public Vector2 Position { get; set; }
         public string Text { get; set; }

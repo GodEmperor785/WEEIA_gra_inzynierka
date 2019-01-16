@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Client_Android;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 namespace Client_PC.UI
 {
     class InputBox : GuiElement, IClickable, IHasText
@@ -29,7 +28,6 @@ namespace Client_PC.UI
         public SpriteFont Font { get; set; }
         public bool Active { get; set; }
         public bool ActiveChangeable { get; set; }
-        public object Parent { get; set; }
         public int TextLimit { get; set; }
         public bool TextWrappable { get; set; }
         public Tooltip Tooltip { get; set; }
@@ -72,8 +70,12 @@ namespace Client_PC.UI
         }
         public void OnClick()
         {
+            Game1.self.activitySelf.ShowKeyboard();
             Game1.self.FocusedElement = this;
         }
+
+
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Begin();

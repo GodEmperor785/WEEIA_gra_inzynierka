@@ -26,7 +26,6 @@ namespace Client_PC.UI
         public bool RecentlyAdded { get; set; }
         private bool focused;
         private bool lastStateOfFocus;
-        public object Parent { get; set; }
         public Tooltip Tooltip { get; set; }
         public bool HeightDerivatingFromText { get; set; }
         private Fleet fleet;

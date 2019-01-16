@@ -28,9 +28,7 @@ namespace Client_PC.UI
         private int IdSelected;
         private Grid grid;
         public bool ShowChildren = false;
-        public int Id { get; set; }
         public bool Active { get; set; }
-        public object Parent { get; set; }
         public bool ActiveChangeable { get; set; }
         public Tooltip Tooltip { get; set; }
         public Dropdown(Point origin, int width, int height, GraphicsDevice device, GUI gui) : base(origin,width,height,device,gui)

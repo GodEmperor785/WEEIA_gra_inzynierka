@@ -18,7 +18,6 @@ namespace Client_PC.Scenes
     class LoginMenu : Menu
     {
         private Grid grid;
-        private Popup popup;
         private InputBox inputLogin;
         private InputBox inputPassword;
         private Label lbl1;

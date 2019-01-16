@@ -65,12 +65,12 @@ namespace Client_PC.UI
             overlay = new RelativeLayout();
             this.Width = width;
             this.Height = height;
-            using (FileStream fileStream = new FileStream("Content/Icons/Health.png", FileMode.Open))
+            using (var fileStream = Game.Activity.Assets.Open("Icons/Health.png"))
             {
                 hpIcon = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
                 fileStream.Dispose();
             }
-            using (FileStream fileStream = new FileStream("Content/Icons/Armor.png", FileMode.Open))
+            using (var fileStream = Game.Activity.Assets.Open("Icons/Armor.png"))
             {
                 armorIcon = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
                 fileStream.Dispose();
@@ -211,7 +211,8 @@ namespace Client_PC.UI
         public void OnClick()
         {
             if(Active)
-                clickEvent(this);
+                if(clickEvent != null)
+                    clickEvent(this);
         }
 
         public Ship GetShip()

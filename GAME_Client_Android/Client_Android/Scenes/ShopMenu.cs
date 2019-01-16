@@ -47,8 +47,9 @@ namespace Client_PC.Scenes
             {
                 text = "Back"
             };
-            using (FileStream fileStream = new FileStream("Content/Icons/Credits.png", FileMode.Open))
+            using (var fileStream = Game.Activity.Assets.Open("Icons/Credits.png"))
             {
+                
                 credits = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
                 fileStream.Dispose();
             }
