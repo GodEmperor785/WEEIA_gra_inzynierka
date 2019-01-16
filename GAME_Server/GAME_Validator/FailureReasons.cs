@@ -21,6 +21,7 @@ namespace GAME_Validator {
 		public static readonly string FLEET_NAME_NOT_UNIQUE = "Fleet name not unique";
 		public static readonly string FLEET_SHIP_COUNT_LIMIT = "Too many ships in fleet";
 		public static readonly string FLEET_SIZE_LIMIT = "Cost of ships in fleet too big";
+		public static readonly string NO_SHIPS_IN_FLEET = "Fleet needs to have at least 1 ship in it";
 		public static readonly string DUPLICATES_NOT_ALLOWED = "no duplicates in lists are allowed";
 		public static readonly string ZERO_SHIPS_IN_FLEET = "fleet must contain at least one ship";
 		public static readonly string FACTION_MUST_BE_SAME = "All elements must belong to the same faction";
