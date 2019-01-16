@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using GAME_Validator;
 using System.Diagnostics;
+using System.Security.Authentication;
 
 namespace GAME_Server {
 	internal class Server {
@@ -82,20 +83,28 @@ namespace GAME_Server {
 				cliThread.Start();
 
 				while (continueAcceptingConnections) {
-					Log("Server is waiting for client...");
-					TcpClient client = listener.AcceptTcpClient();
-					TcpConnection gameClient;
-					//gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
-					if (useSsl) gameClient = new TcpConnection(client, false, Server.Log, true, true, "gameServerCert.cer");        //use this to enable ssl (with public certificate)
-					else gameClient = new TcpConnection(client, false, Server.Log);
-					Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
-					gameClient.PrintSecurityInfo();
+					try {
+						Log("Server is waiting for client...");
+						TcpClient client = listener.AcceptTcpClient();
+						TcpConnection gameClient;
+						//gameClient = new TcpConnection(client, false, Server.Log, true, true, "hamachi.cer");		//uncomment this to enable ssl (with hamachi certificate)
+						if (useSsl) gameClient = new TcpConnection(client, false, Server.Log, true, true, "gameServerCert.cer");        //use this to enable ssl (with public certificate)
+						else gameClient = new TcpConnection(client, false, Server.Log);
+						Log("Client connected - ip: " + gameClient.RemoteIpAddress + " port: " + gameClient.RemotePortNumber);
+						gameClient.PrintSecurityInfo();
 
-					UserThread userThread = new UserThread(gameClient);
-					Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
-					userThreads.Add(t);
-					userThreadObjects.Add(userThread);
-					t.Start();
+						UserThread userThread = new UserThread(gameClient);
+						Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
+						userThreads.Add(t);
+						userThreadObjects.Add(userThread);
+						t.Start();
+					}
+					catch (AuthenticationException aEx) {
+						Log("User SSL/TLS authentication failed! " + aEx.Message, true);
+					}
+					catch (IOException ioEx) {
+						Log("Remote disconnected before authentication end! " + ioEx.Message, true);
+					}
 				}
 			} catch(Exception critical) {
 				Log("UNHANDLED EXCEPTION HAPPENED - STOPPING SERVER", true);

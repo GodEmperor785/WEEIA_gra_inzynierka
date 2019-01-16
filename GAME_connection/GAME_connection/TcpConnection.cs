@@ -127,6 +127,9 @@ namespace GAME_connection {
 			} catch(AuthenticationException) {
 				client.Close();
 				throw;
+			} catch(IOException) {
+				client.Close();
+				throw;
 			}
 		}
 		#endregion

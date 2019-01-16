@@ -36,6 +36,7 @@ namespace GAME_Server {
 			}
 			int fleetSize = 0;
 			List<int> shipsIds = new List<int>();
+			if (fleet.Ships.Count == 0) return FailureReasons.NO_SHIPS_IN_FLEET;
 			if (fleet.Ships.Count > (Server.BaseModifiers.MaxShipsInLine * 3)) return FailureReasons.FLEET_SHIP_COUNT_LIMIT;    //too many ships in fleet
 			if (fleet.Ships.Count == 0) return FailureReasons.ZERO_SHIPS_IN_FLEET;
 			Faction fleetFaction = fleet.Ships.First().Faction;		//first ship defines faction
