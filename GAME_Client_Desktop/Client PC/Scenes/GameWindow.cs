@@ -296,8 +296,10 @@ namespace Client_PC.Scenes
                 CurrentCard.Status = Card.status.hasMove;
                 SetSlots(false);
                 if(CurrentCard.Parent == yourGrid)
-                LastCard = null;
+                    LastCard = null;
             }
+
+            UpdateButtonNull();
         }
 
         private int LineDifference(Line l1, Line l2)
