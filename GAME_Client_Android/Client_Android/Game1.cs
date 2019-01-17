@@ -313,6 +313,7 @@ namespace Client_Android
 
         public void SetFleetMenu(Fleet fleet)
         {
+            fleetMenu.ReDo();
             fleetMenu.setFleet(fleet);
             fleetMenu.Fill();
         }

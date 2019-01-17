@@ -140,7 +140,7 @@ namespace Client_PC.Scenes
             layout.AddChild(enemyGrid);
             layout.AddChild(yourGrid);
             layout.AddChild(turnButton);
-            th = new Task(ContactLoop);
+            
             layout.Update();
 
         }
@@ -307,6 +307,7 @@ namespace Client_PC.Scenes
         public void Start()
         {
             gameloop = true;
+            th = new Task(ContactLoop);
             th.Start();
         }
         public override void UpdateClickables()

@@ -327,6 +327,7 @@ namespace Client_PC
 
         public void SetFleetMenu(Fleet fleet)
         {
+            fleetMenu.ReDo();
             fleetMenu.setFleet(fleet);
             fleetMenu.Fill();
         }

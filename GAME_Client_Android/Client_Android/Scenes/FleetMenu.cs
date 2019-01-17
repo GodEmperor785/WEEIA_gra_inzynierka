@@ -31,6 +31,7 @@ namespace Client_PC.Scenes
         private Label tipLabel;
         private Label lbl;
         private bool isOver;
+        private List<IClickable> ClickableToRemove;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -120,6 +121,35 @@ namespace Client_PC.Scenes
             buttonsGrid.UpdateP();
             SetClickables(true);
             layout.Update();
+        }
+
+        public void ReDo()
+        {
+
+
+            ClickableToRemove = new List<IClickable>();
+            Clickable.ForEach(p =>
+            {
+                if (p is Card || p is CardSlot)
+                    ClickableToRemove.Add(p);
+            });
+            ClickableToRemove.ForEach(p => Clickable.Remove(p));
+            grid.RemoveChildren();
+            slots = new List<CardSlot>();
+            for (int row = 0; row < 3; row++)
+            {
+                for (int column = 0; column < 5; column++)
+                {
+                    CardSlot c = new CardSlot(CardWidth, CardHeight, Game1.self.GraphicsDevice, Gui);
+                    grid.AddChild(c, row, column);
+                    c.clickEvent += CardSlotClick;
+                    slots.Add(c);
+                    Clickable.Add(c);
+                }
+            }
+
+            grid.UpdateP();
+
         }
 
         public void onSave()

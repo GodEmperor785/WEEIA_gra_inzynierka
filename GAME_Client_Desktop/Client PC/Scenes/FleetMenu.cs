@@ -28,9 +28,11 @@ namespace Client_PC.Scenes
         private int CardWidth = 133;
         private PlayerGameBoard gmBoard;
         private bool readyToSend;
+        private List<IClickable> ClickableToRemove;
         private Label tipLabel;
         private Label lbl;
         private bool isOver;
+        private bool isInitialized = false;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -39,6 +41,7 @@ namespace Client_PC.Scenes
             buttonsGrid = new Grid();
             cardsGrid = new Grid(5, 3, CardWidth, CardHeight);
             slots = new List<CardSlot>();
+            ClickableToRemove = new List<IClickable>();
             for (int row = 0; row < 3; row++)
             {
                 for (int column = 0; column < 5; column++)
@@ -120,8 +123,37 @@ namespace Client_PC.Scenes
             buttonsGrid.UpdateP();
             SetClickables(true);
             layout.Update();
+            isInitialized = true;
         }
 
+        public void ReDo()
+        {
+            if (isInitialized)
+            {
+                ClickableToRemove = new List<IClickable>();
+                Clickable.ForEach(p =>
+                {
+                    if(p is Card || p is CardSlot)
+                        ClickableToRemove.Add(p);
+                });
+                ClickableToRemove.ForEach(p=> Clickable.Remove(p));
+                grid.RemoveChildren();
+                slots = new List<CardSlot>();
+                for (int row = 0; row < 3; row++)
+                {
+                    for (int column = 0; column < 5; column++)
+                    {
+                        CardSlot c = new CardSlot(CardWidth, CardHeight, Game1.self.GraphicsDevice, Gui);
+                        grid.AddChild(c, row, column);
+                        c.clickEvent += CardSlotClick;
+                        slots.Add(c);
+                        Clickable.Add(c);
+                    }
+                }
+
+                grid.UpdateP();
+            }
+        }
         public void onSave()
         {
             //TODO not tested
