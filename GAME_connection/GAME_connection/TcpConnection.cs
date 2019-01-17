@@ -29,6 +29,8 @@ namespace GAME_connection {
 
 		private static readonly int connectionTestIntervalMilis = 5000;
 
+		Random rid = new Random();
+
 		private TcpClient tcpClient;
 		//private NetworkStream netStream;
 		private Stream netStream;
@@ -59,6 +61,7 @@ namespace GAME_connection {
 
 		public delegate void Logger(string message);
 		private bool debug;
+		public bool fullDebug;
 		internal Logger tcpConnectionLogger;
 
 		private int playerNumber = 0;
@@ -204,7 +207,9 @@ namespace GAME_connection {
 			if (connectionEnded) throw new ConnectionEndedException("Trying to send when connection is closed", PlayerNumber);
 			try {
 				lock (sendLock) {
+					if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- start sending: " + packet.OperationType + " thread: " + Thread.CurrentThread.Name);
 					serializer.Serialize(netStream, packet);
+					if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- sent: " + packet.OperationType + " thread: " + Thread.CurrentThread.Name);
 				}
 			} catch (IOException ex) {
 				if(debug) tcpConnectionLogger("Connection ended - on write");
@@ -234,10 +239,16 @@ namespace GAME_connection {
 			int queueCount;
 			messageReceivedEvent.WaitOne();     //wait until there is a message
 			queueCount = QueueCount;
-			if (connectionEnded && queueCount == 0) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
+			if (connectionEnded && queueCount == 0) {
+				if (debug) tcpConnectionLogger("Trying to receive when connection is closed");
+				throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
+			}
 			try {
 				lock (queueLock) {
-					return receivedPackets.Dequeue();
+					if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- getting packet" + " thread: " + Thread.CurrentThread.Name);
+					GamePacket packet = receivedPackets.Dequeue();
+					if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- packet got" + " thread: " + Thread.CurrentThread.Name);
+					return packet;
 				}
 			} catch (Exception) {
 				throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
@@ -251,19 +262,31 @@ namespace GAME_connection {
 		/// <returns></returns>
 		public GamePacket GetReceivedPacket(int timeoutMilis) {
 			int queueCount;
+			if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- starting to wait for packet");
 			messageReceivedEvent.WaitOne(timeoutMilis);     //wait until there is a message with timeout
+			if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- packet reception event");
 			queueCount = QueueCount;
 			if (queueCount > 0) {
 				try {
 					lock (queueLock) {
-						return receivedPackets.Dequeue();
+						if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- getting packet with timeout" + " thread: " + Thread.CurrentThread.Name);
+						var packet = receivedPackets.Dequeue();
+						if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- packet got" + " thread: " + Thread.CurrentThread.Name);
+						return packet;
 					}
-				} catch (Exception) {
+				}
+				catch (Exception) {
 					throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 				}
 			}
-			else if (queueCount == 0 && connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
-			else return null;
+			else if (queueCount == 0 && connectionEnded) {
+				if (debug) tcpConnectionLogger("Trying to receive when connection is closed");
+				throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
+			}
+			else {
+				if (debug) tcpConnectionLogger("no packet received in timeout " + timeoutMilis);
+				return null;
+			}
 		}
 
 		public int QueueCount {
@@ -284,7 +307,9 @@ namespace GAME_connection {
 		private void DoReceiving() {
 			while(KeepReceiving) {
 				try {
+					if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- do receiving");
 					GamePacket receivedPacket = Receive();
+					if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- do receiving, got: " + receivedPacket.OperationType);
 					if (receivedPacket.OperationType == OperationType.CONNECTION_TEST) OnConnectionTestReceived(EventArgs.Empty);
 					else if (receivedPacket.OperationType == OperationType.ABANDON_GAME) OnGameAbandoned(EventArgs.Empty);
 					else if (receivedPacket.OperationType == OperationType.GAME_END) {
@@ -293,8 +318,9 @@ namespace GAME_connection {
 					}
 					else if (receivedPacket.OperationType == OperationType.SURRENDER) OnSurrender(new GameEventArgs(PlayerNumber));
 					else {
-						//if (debug) tcpConnectionLogger("Received packet: " + receivedPacket.OperationType);
+						if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- Received packet: " + receivedPacket.OperationType);
 						EnqueuePacket(receivedPacket);
+						if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- enqueued");
 					}
 					if (receivedPacket.OperationType == OperationType.DISCONNECT) {
 						KeepReceiving = false;        //stop receiving if disconnect
@@ -329,10 +355,10 @@ namespace GAME_connection {
 		/// <param name="packet"></param>
 		public void EnqueuePacket(GamePacket packet) {
 			lock (queueLock) {
-				//if (debug) tcpConnectionLogger("equeuing packet: " + packet.OperationType + ", queue count = " + QueueCount);
+				if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- equeuing packet: " + packet.OperationType + ", queue count = " + QueueCount);
 				receivedPackets.Enqueue(packet);
 				messageReceivedEvent.Set();
-				//if (debug) tcpConnectionLogger("packet enqueued: " + packet.OperationType + ", queue count = " + QueueCount);
+				if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- enqueued: " + packet.OperationType + ", queue count = " + QueueCount);
 			}
 		}
 
@@ -343,7 +369,11 @@ namespace GAME_connection {
 		private GamePacket Receive() {
 			if (connectionEnded) throw new ConnectionEndedException("Trying to receive when connection is closed", PlayerNumber);
 			lock (receiveLock) {
-				return (GamePacket)serializer.Deserialize(netStream);
+				int ridn = rid.Next();
+				if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- rcv start " + ridn);
+				GamePacket receivedPacket = (GamePacket)serializer.Deserialize(netStream);
+				if (fullDebug) tcpConnectionLogger(PlayerNumber + "-- rcv got: " + receivedPacket.OperationType + " " + ridn);
+				return receivedPacket;
 			}
 		}
 
@@ -409,7 +439,7 @@ namespace GAME_connection {
 				try {
 					if(!connectionEnded) Send(GamePacket.CreateConnectionTestPacket());
 					connectionEndedEvent.WaitOne(connectionTestIntervalMilis);
-					//Thread.Sleep(connectionTestIntervalMilis);
+					Thread.Sleep(connectionTestIntervalMilis);
 				} catch (IOException ex) {
 					if (debug) tcpConnectionLogger("Connection ended");
 					//Console.WriteLine(ex.StackTrace);
@@ -501,11 +531,8 @@ namespace GAME_connection {
 			NetStream.Dispose();
 			TcpClient.Dispose();
 
-			//if(debug) tcpConnectionLogger("0");
 			if (connectionTester != null) connectionTester.Join();
-			//if(debug) tcpConnectionLogger("1");
 			if (receiver.ManagedThreadId != Thread.CurrentThread.ManagedThreadId) receiver.Join();
-			//if(debug) tcpConnectionLogger("2");
 			AlreadyDisconnected = true;
 		}
 		#endregion

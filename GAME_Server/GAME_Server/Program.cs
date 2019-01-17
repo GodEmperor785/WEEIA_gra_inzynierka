@@ -95,6 +95,7 @@ namespace GAME_Server {
 
 						UserThread userThread = new UserThread(gameClient);
 						Thread t = new Thread(new ThreadStart(userThread.RunUserThread));
+						userThread.thisThreadObject = t;
 						userThreads.Add(t);
 						userThreadObjects.Add(userThread);
 						t.Start();
@@ -440,6 +441,8 @@ namespace GAME_Server {
 		private object threadEndedLock = new object();
 		private Fleet selectedFleetForGame = null;
 
+		internal Thread thisThreadObject;
+
 		internal UserThread(TcpConnection client) {
 			client.ConnectionEnded += UserDisconnectedHandler;
 			//client.ConnectionTestReceived += ConnectionTestReceived;
@@ -513,6 +516,7 @@ namespace GAME_Server {
 					if (adminLogin) {
 						this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 						this.User.Password = "";
+						thisThreadObject.Name = this.User.Username + "-UserThread";
 						Server.AddLoggedInUser(User.Username);
 
 						AdminDataPacket adminPacket = new AdminDataPacket(
@@ -531,6 +535,7 @@ namespace GAME_Server {
 						//set and send user data
 						this.User = GameDataBase.GetPlayerWithUsername(this.User.Username).ToPlayer();
 						this.User.Password = "";
+						thisThreadObject.Name = this.User.Username + "-UserThread";
 						Server.AddLoggedInUser(User.Username);
 
 						Client.Send(new GamePacket(OperationType.PLAYER_DATA, this.User));
@@ -1025,8 +1030,9 @@ namespace GAME_Server {
 								Server.Log(User.Username + ": wants to create a new custom game with name: " + roomToCreate.RoomName);
 								GameRoomThread customGameRoomToCreate = new GameRoomThread(Client, User, GameDataBase, true, this, roomToCreate);
 								Server.CreateCustomRoom(roomToCreate, customGameRoomToCreate);
-								SendSuccess();
 								Thread newCustomGameThread = new Thread(new ThreadStart(customGameRoomToCreate.RunGameThread));
+								customGameRoomToCreate.thisThreadObject = newCustomGameThread;
+								SendSuccess();
 								newCustomGameThread.Start();
 								//newCustomGameThread.Join();
 								Server.Log(User.Username + ": create game room: " + roomToCreate.RoomName + "successful, user thread blocks");
@@ -1076,6 +1082,7 @@ namespace GAME_Server {
 									GameRoomThread newRankedRoom = new GameRoomThread(Client, User, GameDataBase, false, this);
 									Server.CreateRankedGame(newRankedRoom);
 									Thread newRankedGameThread = new Thread(new ThreadStart(newRankedRoom.RunGameThread));
+									newRankedRoom.thisThreadObject = newRankedGameThread;
 									SendSuccess();
 									newRankedGameThread.Start();
 									//newCustomGameThread.Join();
@@ -1246,6 +1253,10 @@ namespace GAME_Server {
 		
 		private double matchmakingScore;
 
+		CancellationToken cancelOnDisconnect;
+
+		internal Thread thisThreadObject;
+
 		private AutoResetEvent roomFull;	//indicates that waiting for second player is over
 		internal ManualResetEvent gameEnded;
 
@@ -1264,6 +1275,7 @@ namespace GAME_Server {
 			Player1Fleet = player1ThreadObj.SelectedFleetForGame;
 			roomFull = new AutoResetEvent(false);
 			gameEnded = new ManualResetEvent(false);
+			cancelOnDisconnect = new CancellationToken();
 			if(isCustom) {
 				customRoomDescriptor = customGameObj;
 			}
@@ -1362,19 +1374,47 @@ namespace GAME_Server {
 				}
 				else {  //room is full and game can start
 					UsernamesOfPlayers = Player1.Username + "__vs__" + Player2.Username;
+					thisThreadObject.Name = UsernamesOfPlayers + "-GameRoomThread";
 					Server.Log(UsernamesOfPlayers + ": room is full, starting game");
 					SendSuccess(Player1Conn);
 					SendSuccess(Player2Conn);
+					Server.Log(UsernamesOfPlayers + ": successes sent");
 
 					string validateResult;
 					fleetSetupOk = true;
-					GamePacket player1Packet, player2Packet;
+					GamePacket player1Packet = null, player2Packet = null;
 
 					//first get, process and validate players fleet setups
+					/*Thread getterThread = new Thread(new ThreadStart(() => {
+						try {
+							player1Packet = Player1Conn.GetReceivedPacket(SETUP_FLEET_TIMEOUT);
+							Server.Log(UsernamesOfPlayers + "packet form player 1 received");
+						}
+						catch (ConnectionEndedException) {
+							player1Packet = new GamePacket(OperationType.DISCONNECT, new object());
+						}
+					}));
+					Thread getterThread2 = new Thread(new ThreadStart(() => {
+						try {
+							player2Packet = Player2Conn.GetReceivedPacket(SETUP_FLEET_TIMEOUT);
+							Server.Log(UsernamesOfPlayers + "packet form player 2 received");
+						}
+						catch (ConnectionEndedException) {
+							player2Packet = new GamePacket(OperationType.DISCONNECT, new object());
+						}
+					}));
+					getterThread.Start();
+					getterThread2.Start();
+					Server.Log(UsernamesOfPlayers + ": tastks started");
+					getterThread.Join();
+					getterThread2.Join();*/
+
 					Task<GamePacket> player1Task = GetPlayersPacket(Player1Conn, SETUP_FLEET_TIMEOUT);
 					Task<GamePacket> player2Task = GetPlayersPacket(Player2Conn, SETUP_FLEET_TIMEOUT);
+					Server.Log(UsernamesOfPlayers + ": waiting for setups");
 					player1Packet = await player1Task;
 					player2Packet = await player2Task;
+					Server.Log(UsernamesOfPlayers + ": both setups received");
 					if (player1Packet != null) {
 						try {
 							if (CheckDisconnectContinueGame(player1Packet, 1)) {
@@ -1412,6 +1452,7 @@ namespace GAME_Server {
 					}
 					else EndGameOnError(2, FailureReasons.RECEIVE_TIMEOUT);
 
+					Server.Log(UsernamesOfPlayers + ": both setups checked");
 					Move player1Move = new Move();
 					Move player2Move = new Move();
 					if (fleetSetupOk) {
@@ -1525,9 +1566,13 @@ namespace GAME_Server {
 		/// <returns></returns>
 		private async Task<GamePacket> GetPlayersPacket(TcpConnection playerConection, int timeout) {
 			try {
-				Task<GamePacket> receivedPacket = Task.Run(() => playerConection.GetReceivedPacket(timeout));
+				Server.Log(UsernamesOfPlayers + ": waiting for packet of player with number " + playerConection.PlayerNumber);
+				Task<GamePacket> receivedPacket = Task.Run(() => playerConection.GetReceivedPacket(timeout), cancelOnDisconnect);
+				await receivedPacket;
+				Server.Log(UsernamesOfPlayers + ": task of waiting for packet of player with number " + playerConection.PlayerNumber + " FINISHED");
 				return await receivedPacket;
 			} catch(ConnectionEndedException) {
+				Server.Log(UsernamesOfPlayers + ": disconnect while waiting for packet of player with number " + playerConection.PlayerNumber);
 				return new GamePacket(OperationType.DISCONNECT, new object());
 			}
 		}
