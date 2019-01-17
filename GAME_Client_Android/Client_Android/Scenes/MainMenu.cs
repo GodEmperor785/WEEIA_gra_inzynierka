@@ -83,7 +83,6 @@ namespace Client_PC.Scenes
             Clickable.Add(p1);
             Clickable.Add(p2);
             Clickable.Add(z);
-            Clickable.Add(z2);
             Clickable.Add(z3);
             Clickable.Add(z4);
             grid = new Grid();
@@ -96,13 +95,11 @@ namespace Client_PC.Scenes
             grid.AddChild(z, 2, 0);
             grid.AddChild(z4, 3, 0);
             grid.AddChild(z5, 4, 0);
-            grid.AddChild(z2, 5, 0);
-            grid.AddChild(z3,6,0);
+            grid.AddChild(z3,5,0);
             p1.clickEvent += Play;
             p2.clickEvent += PlayCustom;
             z3.clickEvent += ExitClick;
             z4.clickEvent += GoToShop;
-            z2.clickEvent += GoToSettings;
             z.clickEvent += GoToDeck;
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();

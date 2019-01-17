@@ -22,6 +22,7 @@ namespace Client_PC.Scenes
         protected Popup popup;
         protected Keys[] LastPressedKeys;
         protected int MoveId;
+        protected Vector2 location;
         
         private ButtonState lastState;
         public Menu()
@@ -39,8 +40,8 @@ namespace Client_PC.Scenes
             {
                 if (touch.State == TouchLocationState.Pressed)
                 {
-                    CheckClickables(touch.Position);
                     CheckTooltips(touch.Position);
+                    location = touch.Position;
                 }
 
                 if (touch.State == TouchLocationState.Moved)
@@ -50,6 +51,8 @@ namespace Client_PC.Scenes
 
                 if (touch.State == TouchLocationState.Released)
                 {
+                    if(location != null)
+                        CheckClickables(location);
                     Clickable.ForEach(p=> p.IsOver = false);
                     Game1.self.tooltipToDraw = null;
                 }

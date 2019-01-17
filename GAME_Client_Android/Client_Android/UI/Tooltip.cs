@@ -45,11 +45,11 @@ namespace Client_PC.UI
 
         public void Update(Point origin)
         {
-            if (origin.X > (Game1.self.graphics.PreferredBackBufferWidth - Width))
+            if (origin.X - Width - 50 > 0 )
             {
-                if (origin.Y > Game1.self.graphics.PreferredBackBufferHeight -Height)
+                if (origin.Y - Height - 50 > 0 )
                 {
-                    Origin = new Point(origin.X - Width, origin.Y - Height);
+                    Origin = new Point(origin.X - Width, origin.Y - Height - 50); //ok
                 }
                 else
                 {
@@ -58,9 +58,9 @@ namespace Client_PC.UI
             }
             else
             {
-                if (origin.Y > Game1.self.graphics.PreferredBackBufferHeight - Height)
+                if (origin.Y - Height - 50 > 0)
                 {
-                    Origin = new Point(origin.X, origin.Y - Height);
+                    Origin = new Point(origin.X, origin.Y - Height - 50);
                 }
                 else
                 {

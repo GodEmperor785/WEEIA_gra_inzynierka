@@ -22,6 +22,7 @@ namespace Client_Android
         View pView = null;
         private Game1 g;
         private int counter = 0;
+        private Keycode lastKeycode;
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
@@ -96,19 +97,37 @@ namespace Client_Android
                             if (inputBox.Text.Length > 0)
                                 inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
                         }
+                        else if (e.KeyCode == Keycode.ShiftLeft || e.KeyCode == Keycode.ShiftRight || e.KeyCode == Keycode.AltLeft || e.KeyCode == Keycode.AltRight)
+                        {
+
+                        }
                         else
                         {
-                            var inp =  (char)e.Event.GetUnicodeChar(MetaKeyStates.NumLockOn);
+                            char input;
+                            if (lastKeycode == Keycode.ShiftLeft || lastKeycode == Keycode.ShiftRight)
+                            {
+                                input = (char)e.Event.GetUnicodeChar(MetaKeyStates.ShiftLeftOn);
+                            }
+                            else if (lastKeycode == Keycode.AltLeft || lastKeycode == Keycode.AltRight)
+                            {
+                                input = (char)e.Event.GetUnicodeChar(MetaKeyStates.AltLeftOn);
+                            }
+                            else
+                            {
+                                input =  (char)e.Event.GetUnicodeChar(MetaKeyStates.NumLockOn);
+                            }
                             var inp2 = ((char)e.KeyCode).ToString();
-                            inputBox.Text += inp.ToString();
+                            inputBox.Text += input.ToString();
                         }
 
                     }
-                    else if (e.KeyCode == Keycode.Back)
+                    else if (e.KeyCode == Keycode.Del)
                     {
                         if (inputBox.Text.Length > 0)
                             inputBox.Text = inputBox.Text.Substring(0, inputBox.Text.Length - 1);
                     }
+
+                    lastKeycode = e.KeyCode;
                 }
 
                 counter++;

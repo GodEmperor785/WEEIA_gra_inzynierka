@@ -23,38 +23,40 @@ namespace Client_PC.Scenes
         private Button registerButton;
         public override void Initialize(ContentManager Content)
         {
+            int width = 180;
+            int heigth = 90;
             Gui = new GUI(Content);
-            registerButton = new Button(new Point(0,0),120,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            registerButton = new Button(new Point(0,0), width, heigth, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 text = "Register"
             };
-            Button backButton = new Button(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Button backButton = new Button(new Point(0, 0), width, heigth, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "Back"
             };
-            Label loginLabel = new Label(new Point(0,0), 120, 60,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            Label loginLabel = new Label(new Point(0,0), width, heigth, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
             {
                 Text = "Login"
             };
-            Label passwordLabel = new Label(new Point(0, 0), 120, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label passwordLabel = new Label(new Point(0, 0), width, heigth, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password"
             };
-            Label passwordLabel2 = new Label(new Point(0, 0), 120, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label passwordLabel2 = new Label(new Point(0, 0), width, heigth, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password again"
             };
-            loginInputBox = new InputBox(new Point(0,0), 300, 60, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
+            loginInputBox = new InputBox(new Point(0,0), 2*width, heigth, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false )
             {
                 TextLimit = 30,
                 BasicText = "Login"
             };
-            passwordInputBox = new InputBox(new Point(0, 0), 300, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            passwordInputBox = new InputBox(new Point(0, 0), 2*width, heigth, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30,
                 BasicText = "Password"
             };
-            passwordInputBox2 = new InputBox(new Point(0, 0), 300, 60, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
+            passwordInputBox2 = new InputBox(new Point(0, 0), 2*width, heigth, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false)
             {
                 TextLimit = 30,
                 BasicText = "Password"

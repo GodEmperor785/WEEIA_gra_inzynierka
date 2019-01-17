@@ -26,29 +26,31 @@ namespace Client_PC.Scenes
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            Label labelLogin = new Label(new Point(0,0),100,50,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            int height =100;
+            int width = 200;
+            Label labelLogin = new Label(new Point(0,0), width, height, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Login"
             };
-            Label labelPassword = new Label(new Point(0, 0), 115, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Label labelPassword = new Label(new Point(0, 0), width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Password"
             };
-            inputLogin = new InputBox(new Point(0,0),100,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
+            inputLogin = new InputBox(new Point(0,0), width, height, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,false );
             inputLogin.TextLimit = 30;
             inputLogin.BasicText = "Login";
-            inputPassword = new InputBox(new Point(0, 0), 100, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
+            inputPassword = new InputBox(new Point(0, 0), width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, false);
             inputPassword.TextLimit = 30;
             inputPassword.BasicText = "Password";
-            Button loginButton = new Button(new Point(0,0),105,45,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            Button loginButton = new Button(new Point(0,0), width, height, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "Log in"
             };
-            Button registerButton = new Button(new Point(0, 0), 105, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Button registerButton = new Button(new Point(0, 0), width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Register"
             };
-            Button exitButton = new Button(new Point(0, 0), 105, 45, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            Button exitButton = new Button(new Point(0, 0), width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 Text = "Exit"
             };
