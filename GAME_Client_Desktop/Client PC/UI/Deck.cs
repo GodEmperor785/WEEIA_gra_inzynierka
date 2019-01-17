@@ -55,6 +55,7 @@ namespace Client_PC.UI
 
         public Fleet GetFleet()
         {
+            fleet.Name = Text;
             return fleet;
         }
 
