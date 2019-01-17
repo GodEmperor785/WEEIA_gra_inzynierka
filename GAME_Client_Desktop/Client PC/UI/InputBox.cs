@@ -35,6 +35,7 @@ namespace Client_PC.UI
         public bool IsPassword { get; set; }
         public bool HeightDerivatingFromText { get; set; }
         public string BasicText;
+        private Texture2D focused;
         public Rectangle GetBoundary()
         {
             return Boundary;
@@ -51,24 +52,32 @@ namespace Client_PC.UI
             TextWrappable = wrapable;
             IsPassword = false;
         }
+
         public override void Update()
         {
             if (IsPassword)
             {
                 int length = textToShow.Length;
-                string str = new string('*',length);
+                string str = new string('*', length);
                 textToShow = str;
             }
+
             Vector2 z = Font.MeasureString(textToShow);
-          //  if (!String.IsNullOrEmpty(BasicText))
+            //  if (!String.IsNullOrEmpty(BasicText))
             {
                 var z2 = Font.MeasureString(BasicText);
-                BasicTextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z2.X / 2.0f, (Origin.Y + Height / 2.0f) - z2.Y / 2.0f);
+                BasicTextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z2.X / 2.0f,
+                    (Origin.Y + Height / 2.0f) - z2.Y / 2.0f);
             }
-            TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f, (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
+            TextPosition = new Vector2(((Origin.X + Width / 2.0f)) - z.X / 2.0f,
+                (Origin.Y + Height / 2.0f) - z.Y / 2.0f);
             if (NeedNewTexture)
+            {
                 Texture = Util.CreateTextureHollow(Device, Width, Height);
+                focused = Util.CreateTexture(Device, Width, Height, new Color(20, 150, 70), new Color(100, 100, 100));
+            }
         }
+
         public void OnClick()
         {
             Game1.self.FocusedElement = this;
@@ -76,7 +85,10 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Begin();
-            spriteBatch.Draw(Texture, Boundary, Color.White);
+            if (Game1.self.FocusedElement == this)
+                spriteBatch.Draw(focused, Boundary, Color.White);
+            else
+                spriteBatch.Draw(Texture, Boundary, Color.White);
             if(!String.IsNullOrEmpty(text))
                 spriteBatch.DrawString(Font, textToShow, TextPosition, Color.Black);
             else if (!String.IsNullOrEmpty(BasicText))
