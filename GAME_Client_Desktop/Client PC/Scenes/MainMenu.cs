@@ -631,7 +631,12 @@ namespace Client_PC.Scenes
         }
         public void DeckClick(object sender)
         {
+            foreach (var clickable  in Clickable.Where(p=> p is Deck))
+            {
+                (clickable as Deck).Chosen = false;
+            }
             Deck d = (Deck)sender;
+            d.Chosen = true;
             chosenDeck = d;
             if (search != null)
             {
@@ -714,8 +719,11 @@ namespace Client_PC.Scenes
 
         public override void UpdateLast()
         {
-            if(nameInputBox != null)
+            if (nameInputBox != null)
+            {
                 nameInputBox.Update();
+                creatornameInputBox.Update();
+            }
         }
 
         public void Draw(GameTime gameTime)
