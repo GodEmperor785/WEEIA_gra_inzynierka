@@ -105,6 +105,9 @@ namespace GAME_Server {
 					catch (IOException ioEx) {
 						Log("Remote disconnected before authentication end! " + ioEx.Message, true);
 					}
+					catch (Exception ex) {
+						Log("Unhandled exception in connection accepting loop! " + ex.Message, true);
+					}
 				}
 			} catch(Exception critical) {
 				Log("UNHANDLED EXCEPTION HAPPENED - STOPPING SERVER", true);

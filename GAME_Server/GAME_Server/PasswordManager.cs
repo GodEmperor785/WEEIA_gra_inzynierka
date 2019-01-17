@@ -35,7 +35,7 @@ namespace GAME_Server {
 			Array.Copy(hash, 0, array, SALT_SIZE, HASH_SIZE);
 			return array;
 		}
-
+		
 		internal static bool VerifyPassword(string savedHashedPassword, string checkedPlainTextPassword) {
 			byte[] storedPasswdHash = Convert.FromBase64String(savedHashedPassword);
 
