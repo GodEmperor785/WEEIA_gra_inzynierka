@@ -204,12 +204,6 @@ namespace Client_PC.Scenes
 
         public void onExit()
         {
-            if (isOver)
-            {
-                Game1.self.state = Game1.State.MainMenu;
-                Game1.self.UpdateHistory();
-                
-            }
 
             popup.SetActive(false);
             foreach (var clickable in Clickable.Except(Clickable.Where(p => p.Parent == popup.grid)))
@@ -219,6 +213,12 @@ namespace Client_PC.Scenes
 
             Game1.self.popupToDraw = null;
 
+            if (isOver)
+            {
+                Game1.self.state = Game1.State.MainMenu;
+                Game1.self.UpdateHistory();
+                
+            }
         }
         private void upClick()
         {

@@ -380,7 +380,12 @@ namespace Client_PC.Scenes
                         Game1.self.SetFleetMenu(chosenDeck.GetFleet());
                         Game1.self.ReadyToPlay = true;
                         Game1.self.popupToDraw = null;
+                        popup.SetActive(false);
+                        SetClickables(true);
+                        Game1.self.popupToDraw = null;
+                        popup.layout = null;
                         ClickableToRemove.ForEach(p => Clickable.Remove(p));
+                        packet = Game1.self.Connection.GetReceivedPacket(100);
                     }
                     else
                     {
