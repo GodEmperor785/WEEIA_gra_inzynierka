@@ -55,6 +55,7 @@ namespace Client_Android
         private bool test = true; // false if dont connect with server
         public bool ReadyToPlay;
         public Activity1 activitySelf;
+        public string ServerIp = "212.191.92.88";
         public Game1(Activity1 activity)
         {
             graphics = new GraphicsDeviceManager(this);
@@ -129,9 +130,8 @@ namespace Client_Android
             {
                 try
                 {
-                    string server = "212.191.92.88";
-                    int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
-                    TcpClient client = new TcpClient(server, port);
+                    int port = TcpConnection.DEFAULT_PORT_CLIENT;
+                    TcpClient client = new TcpClient(Game1.self.ServerIp, port);
                     Connection = new TcpConnection(client, true, Nothing, false, true);
                 }
                 catch (Exception e)

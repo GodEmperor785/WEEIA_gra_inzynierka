@@ -32,6 +32,7 @@ namespace Client_PC.Scenes
         private Label lbl;
         private bool isOver;
         private List<IClickable> ClickableToRemove;
+        private Button save;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -71,7 +72,7 @@ namespace Client_PC.Scenes
             };
             down.clickEvent += downClick;
 
-            Button save = new Button(200,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            save = new Button(200,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 text = "Ready"
             };
@@ -187,6 +188,7 @@ namespace Client_PC.Scenes
                 gmBoard = new PlayerGameBoard(closestShips, midShips, furthestShips);
 
                 readyToSend = true;
+                save.Active = false;
             }
             else
             {

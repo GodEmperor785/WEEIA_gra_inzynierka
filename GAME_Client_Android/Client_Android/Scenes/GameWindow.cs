@@ -299,6 +299,7 @@ namespace Client_PC.Scenes
                 if(CurrentCard.Parent == yourGrid)
                 LastCard = null;
             }
+            UpdateButtonNull();
         }
 
         private int LineDifference(Line l1, Line l2)
