@@ -130,8 +130,12 @@ namespace GAME_connection {
 			} catch(IOException) {
 				client.Close();
 				throw;
+			} catch(Exception) {
+				client.Close();
+				throw;
 			}
 		}
+
 		#endregion
 
 		#region info
