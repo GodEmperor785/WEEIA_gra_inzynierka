@@ -64,6 +64,7 @@ namespace Client_PC
         List<Menu> menus = new List<Menu>();
         public BaseModifiers Modifiers;
         public GAME_connection.TcpConnection Connection;
+        public string ServerIp = "212.191.92.88";
         private bool test = true; // false if dont connect with server
         public bool ReadyToPlay;
 
@@ -135,9 +136,8 @@ namespace Client_PC
             {
                 try
                 {
-                    string server = "212.191.92.88";
-                    int port = GAME_connection.TcpConnection.DEFAULT_PORT_CLIENT;
-                    TcpClient client = new TcpClient(server, port);
+                    int port = TcpConnection.DEFAULT_PORT_CLIENT;
+                    TcpClient client = new TcpClient(Game1.self.ServerIp, port);
                     Console.WriteLine("tcpClient created");
                     Connection = new TcpConnection(client, true, Nothing, false, true);
                     Console.WriteLine("Connection established");
