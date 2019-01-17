@@ -69,7 +69,7 @@ namespace Client_PC.UI
             if (NeedNewTexture)
             {
                 Texture = Util.CreateTextureHollow(Device, Width, Height);
-                focused = Util.CreateTexture(Device, Width, Height, new Color(20, 150, 70), new Color(100, 100, 100));
+                focused = Util.CreateTextureHollow(Device, Width, Height, new Color(20, 150, 70), new Color(100, 100, 100));
             }
         }
         public void OnClick()

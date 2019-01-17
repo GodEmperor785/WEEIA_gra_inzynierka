@@ -90,12 +90,14 @@ namespace Client_PC.Scenes
             {
                 text = "Exit to menu"
             };
+            popupExitButton.DrawBackground = false;
             popupExitButton.clickEvent += onExit;
             Clickable.Add(popupExitButton);
             lbl = new Label(200,200,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text = "You lost the game due to not choosing shape of fleet for longer than 2 minutes"
             };
+            lbl.DrawBackground = false;
             popupGrid.AddChild(lbl,0,0);
             popupGrid.AddChild(popupExitButton,1,0);
             Point popupOrigin = new Point(Game1.self.graphics.PreferredBackBufferWidth / 2 - 100, Game1.self.graphics.PreferredBackBufferHeight / 2 - 150);
@@ -284,6 +286,15 @@ namespace Client_PC.Scenes
                     {
                         isOver = true;
                         popup.SetActive(true);
+                        Game1.self.popupToDraw = popup;
+                        SetClickables(false);
+                        break;
+                    }
+                    else if (packet.OperationType == OperationType.GAME_END)
+                    {
+                        isOver = true;
+                        popup.SetActive(true);
+                        lbl.Text = "Your enemy left the game, you win";
                         Game1.self.popupToDraw = popup;
                         SetClickables(false);
                         break;

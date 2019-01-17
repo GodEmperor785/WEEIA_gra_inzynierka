@@ -29,7 +29,7 @@ namespace Client_PC.Scenes
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
-            BoxesGrid = new Grid(3,1, (int)(Game1.self.graphics.PreferredBackBufferWidth* 0.25),(int)(Game1.self.graphics.PreferredBackBufferWidth* 0.4));
+            BoxesGrid = new Grid(3,1, (int)(Game1.self.graphics.PreferredBackBufferWidth* 0.3),(int)(Game1.self.graphics.PreferredBackBufferHeight* 0.4));
             BoxesGrid.DrawBackground = false;
             BoxesGrid.WitdhAndHeightColumnDependant = false;
             BoxesGrid.ConstantRowsAndColumns = true;
@@ -41,7 +41,7 @@ namespace Client_PC.Scenes
             grid.Origin = new Point(300,300);
             //grid.Origin = new Point((Game1.self.graphics.PreferredBackBufferWidth - 200) / 2, Game1.self.graphics.PreferredBackBufferHeight - 300);
             //Game1.self.graphics.PreferredBackBufferWidth
-            BoxesGrid.Origin = new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.1), (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.1));
+            BoxesGrid.Origin = new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.05), (int)(Game1.self.graphics.PreferredBackBufferWidth * 0.1));
             Button exitButton = new Button(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "Back"
