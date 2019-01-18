@@ -23,6 +23,7 @@ namespace Client_PC.Scenes
         private Label lbl1;
         private Button b1;
         private bool triedReconnection;
+        private int tries = 0;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -132,38 +133,38 @@ namespace Client_PC.Scenes
             SetClickables(!popup.Active);
             if (Game1.self.Connection == null)
             {
-                lbl1.Text = "Unable to connect to server";
-                b1.clickEvent += Reconnect;
-                b1.text = "Reconnect";
-                popup.SetActive(true);
-                Clean();
-                Game1.self.popupToDraw = popup;
-                SetClickables(false);
+                if (tries > 10)
+                {
+                    lbl1.Text = "Unable to connect to server";
+                    b1.clickEvent += Reconnect;
+                    b1.text = "Reconnect";
+                    popup.SetActive(true);
+                    Clean();
+                    Game1.self.popupToDraw = popup;
+                    SetClickables(false);
+                }
+                else
+                {
+                    tries++;
+                    ReconnectBare();
+                }
             }
             else
             {
-
+                
             }
         }
 
+        public void ReconnectBare()
+        {
+            Game1.self.setUpConnection();
+        }
         public void Reconnect()
         {
             if (!triedReconnection)
             {
-                try
-                {
-                    int port = TcpConnection.DEFAULT_PORT_CLIENT;
-                    TcpClient client = new TcpClient(Game1.self.ServerIp, port);
-                    Console.WriteLine("tcpClient created");
-                    Game1.self.Connection = new TcpConnection(client, true, null, false, false, null);
-                    Console.WriteLine("Connection established");
-                    onPopupExit();
-                }
-                catch (Exception e)
-                {
-
-                }
-
+                Game1.self.setUpConnection();
+                onPopupExit();
                 triedReconnection = true;
             }
         }

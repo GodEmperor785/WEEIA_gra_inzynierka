@@ -130,17 +130,15 @@ namespace Client_PC
 
             settingsMenu.SetMenus(menus);
         }
-        private void setUpConnection()
+        public void setUpConnection()
         {
             if (test)
             {
                 try
                 {
                     int port = TcpConnection.DEFAULT_PORT_CLIENT;
-                    TcpClient client = new TcpClient(Game1.self.ServerIp, port);
-                    Console.WriteLine("tcpClient created");
+                    TcpClient client = new TcpClient(ServerIp, port);
                     Connection = new TcpConnection(client, true, Nothing, false, true);
-                    Console.WriteLine("Connection established");
                 }
                 catch (Exception e)
                 {
