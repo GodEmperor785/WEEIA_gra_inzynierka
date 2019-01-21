@@ -1184,6 +1184,7 @@ namespace GAME_Server {
 				if (User != null) Server.Log(User.Username + " Thread ending - ending connections");
 				else Server.Log("Thread ending - ending connections");
 				if (User != null) Server.RemoveLoggedInUser(User.Username);
+				Client.ConnectionEnded -= UserDisconnectedHandler;	//unsubscribe the event to prevent leaks
 				this.GameDataBase.Dispose();
 				this.Client.Disconnect();
 			}
@@ -1791,10 +1792,17 @@ namespace GAME_Server {
 		internal void EndGameThread() {
 			ContinueGameLoop = false;
 			lock (gameEndLock) {
-				ClearPlayerNumberInConnection(Player1Conn);
-				if(IsFull) ClearPlayerNumberInConnection(Player2Conn);
+				UnsubscribeTcpConnectionEvents(Player1Conn);
+				if (IsFull) UnsubscribeTcpConnectionEvents(Player2Conn);
 				gameEnded.Set();
 			}
+		}
+
+		private void UnsubscribeTcpConnectionEvents(TcpConnection playerConn) {
+			playerConn.GameAbandoned -= GameAbandonedHandler;
+			playerConn.ConnectionEnded -= PlayerDisconnectedHandler;
+			playerConn.Surrender -= SurrenderHandler;
+			ClearPlayerNumberInConnection(playerConn);
 		}
 
 		internal double GetMatchmakingScore() {
