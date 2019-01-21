@@ -42,7 +42,7 @@ namespace Client_PC.UI
 
         public void SetBackground()
         {
-            Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height,Util.OutsideColorOriginal,Util.InsideColorOriginal,9);
+            Background = Util.CreateTexture(Game1.self.GraphicsDevice, Width, Height, new Color(39, 98, 143), Util.InsideColorOriginal, 11);
         }
 
         public override void Draw(SpriteBatch sp)

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Client_PC.UI;
 using GAME_connection;
 using Microsoft.Xna.Framework;
@@ -34,6 +34,8 @@ namespace Client_PC.Scenes
         private bool isOver;
         private bool isInitialized = false;
         private Button save;
+        private Timer timer;
+        private int time;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -79,11 +81,11 @@ namespace Client_PC.Scenes
                 text = "Ready"
             };
             save.clickEvent += onSave;
-            tipLabel = new Label(new Point(grid.Origin.X + grid.Width + 50,grid.Origin.Y), Game1.self.graphics.PreferredBackBufferWidth - 150 - grid.Width, grid.RealHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+            tipLabel = new Label(new Point(grid.Origin.X + grid.Width + 50,grid.Origin.Y), Game1.self.graphics.PreferredBackBufferWidth - 150 - grid.Width, 150,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
             {
                 Text="You have 2 minutes to choose your fleet's shape. There's no difference between positions in rows, all the ships in the end will be put to the left border."
             };
-            tipLabel.HeightDerivatingFromText = true;
+           // tipLabel.HeightDerivatingFromText = true;
            // tipLabel.Update();
             layout.AddChild(tipLabel);
 
@@ -153,9 +155,21 @@ namespace Client_PC.Scenes
                         Clickable.Add(c);
                     }
                 }
-
+                var autoEvent = new AutoResetEvent(false);
+                time = 0;
+                timer = new Timer(timerStart, autoEvent, 0, 1000);
                 grid.UpdateP();
             }
+        }
+
+        public void timerStart(object stateInfo)
+        {
+            tipLabel.Text =
+                "You have 2 minutes to choose your fleet's shape. There's no difference between positions in rows, all the ships in the end will be put to the left border.\n";
+            time++;
+            tipLabel.Text += "Elapsed time: " + time + " seconds\n ";
+            tipLabel.Update();
+
         }
         public void onSave()
         {
@@ -186,7 +200,8 @@ namespace Client_PC.Scenes
                     if (slot.HasCard)
                         furthestShips.Add(slot.Card.GetShip());
                 }
-
+                if (timer != null)
+                    timer.Dispose();
                 gmBoard = new PlayerGameBoard(closestShips, midShips, furthestShips);
                 
                 readyToSend = true;
@@ -287,6 +302,8 @@ namespace Client_PC.Scenes
                     }
                     else if (packet.OperationType == OperationType.FAILURE) // Failed to set fleet therefore loses game 
                     {
+                        if (timer != null)
+                            timer.Dispose();
                         isOver = true;
                         popup.SetActive(true);
                         Game1.self.popupToDraw = popup;

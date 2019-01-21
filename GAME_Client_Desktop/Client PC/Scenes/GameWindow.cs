@@ -65,8 +65,10 @@ namespace Client_PC.Scenes
         private Move move;
         private Button turnButton;
         private GameState currentGameState;
-        private Label lbl1;
+        private Label lbl1, timeLabel;
         private Button b1;
+        private int time;
+        private Timer timer;
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -80,7 +82,7 @@ namespace Client_PC.Scenes
             enemyGrid = new Grid(3,5, ColumnWidth, RowHeight);
             yourGrid = new Grid(3,5, ColumnWidth, RowHeight);
             move = new Move();
-
+            
             #region Popup
             popup = new Popup(new Point((int)(Game1.self.graphics.PreferredBackBufferWidth * 0.5), (int)(Game1.self.graphics.PreferredBackBufferHeight * 0.5)), 100, 400, Game1.self.GraphicsDevice, Gui);
             Grid popupGrid = new Grid();
@@ -132,6 +134,7 @@ namespace Client_PC.Scenes
             turnButton.clickEvent += EndTurnClick;
             Clickable.Add(turnButton);
 
+            timeLabel = new Label(new Point(turnButton.Origin.X, turnButton.Origin.Y - turnButton.Height - 10),turnButton.Width,turnButton.Height,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true );
 
             cardWidth = (int) (yourGrid.Width * cardWidthPercentage);
             cardHeight = (int) (yourGrid.Height * cardHeightPercentage);
@@ -140,7 +143,7 @@ namespace Client_PC.Scenes
             layout.AddChild(enemyGrid);
             layout.AddChild(yourGrid);
             layout.AddChild(turnButton);
-            
+            layout.AddChild(timeLabel);
             layout.Update();
 
         }
@@ -311,6 +314,17 @@ namespace Client_PC.Scenes
             gameloop = true;
             th = new Task(ContactLoop);
             th.Start();
+            var autoEvent = new AutoResetEvent(false);
+            time = 0;
+            timer = new Timer(timerStart, autoEvent, 0, 1000);
+        }
+        public void timerStart(object stateInfo)
+        {
+            timeLabel.Text = "You have " + (180 - time) +" seconds left to end turn before giving up";
+            time++;
+            
+
+
         }
         public override void UpdateClickables()
         {
@@ -349,6 +363,7 @@ namespace Client_PC.Scenes
                         currentGameState = state;
                         readyToSet = true;
                         turnButton.Active = true;
+                        time = 0;
                     }
 
                     if (packet.OperationType == OperationType.GAME_END)
@@ -358,6 +373,8 @@ namespace Client_PC.Scenes
                         popup.SetActive(true);
                         Game1.self.popupToDraw = popup;
                         SetClickables(false);
+                        if (timer != null)
+                            timer.Dispose();
                         break;
                     }
                 }

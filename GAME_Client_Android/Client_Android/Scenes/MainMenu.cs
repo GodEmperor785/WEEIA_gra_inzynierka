@@ -30,6 +30,7 @@ namespace Client_PC.Scenes
         private bool searching = false;
         private bool stopSearching = false;
         private bool startedSearching = false;
+        private int historyLabelHeight = 80;
         #region popup buttons
         List<IClickable> ClickableToRemove = new List<IClickable>();
         private Button up;
@@ -88,7 +89,7 @@ namespace Client_PC.Scenes
             grid = new Grid();
             lastGamesGrid = new Grid();
             lastGamesGrid.Width = 200;
-            lastGamesGrid.Origin = new Point(50, (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height * 0.2f));
+            lastGamesGrid.Origin = new Point(50, 100);
             lastGamesGrid.DrawBackground = true;
             grid.AddChild(p1,0,0);
             grid.AddChild(p2,1,0);
@@ -474,7 +475,8 @@ namespace Client_PC.Scenes
 
         public void FillHistory(List<GameHistory> games)
         {
-            var list = games.OrderByDescending(p => p.GameDate).Take(10).ToList();
+            int count = (Game1.self.graphics.PreferredBackBufferHeight - (200 + historyLabelHeight)) / historyLabelHeight;
+            var list = games.OrderByDescending(p => p.GameDate).Take(count).ToList();
             lastGamesGrid.RemoveChildren();
             foreach (var gameHistory in list)
             {
@@ -483,10 +485,11 @@ namespace Client_PC.Scenes
         }
         private Label gameToLabel(GameHistory game)
         {
-            Label lbl = new Label(500, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
-            string part1;
+            Label lbl = new Label(500, historyLabelHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            string part1, part0;
             string enemy;
             Fleet myFleet;
+            part0 = game.GameDate.ToString() + " \n";
             if (game.Winner.Id == Game1.self.player.Id)
             {
                 part1 = "You won against ";
@@ -514,7 +517,8 @@ namespace Client_PC.Scenes
                 myFleet = game.LoserFleet;
             }
 
-            lbl.Text = part1;
+            lbl.Text = part0;
+            lbl.Text += part1;
             lbl.Text += enemy + " with fleet: " + myFleet.Name;
             return lbl;
         }
