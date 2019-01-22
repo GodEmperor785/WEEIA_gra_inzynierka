@@ -1380,168 +1380,175 @@ namespace GAME_Server {
 					SendSuccess(Player1Conn);
 					SendSuccess(Player2Conn);
 					Server.Log(UsernamesOfPlayers + ": successes sent");
+					bool canContinue = true;
 
-					string validateResult;
-					fleetSetupOk = true;
-					GamePacket player1Packet = null, player2Packet = null;
+					//texture exchange
+					Task<bool> exchangeTask = ExchangePlayerTextures();
+					canContinue = await exchangeTask;
 
-					//first get, process and validate players fleet setups
-					/*Thread getterThread = new Thread(new ThreadStart(() => {
-						try {
-							player1Packet = Player1Conn.GetReceivedPacket(SETUP_FLEET_TIMEOUT);
-							Server.Log(UsernamesOfPlayers + "packet form player 1 received");
-						}
-						catch (ConnectionEndedException) {
-							player1Packet = new GamePacket(OperationType.DISCONNECT, new object());
-						}
-					}));
-					Thread getterThread2 = new Thread(new ThreadStart(() => {
-						try {
-							player2Packet = Player2Conn.GetReceivedPacket(SETUP_FLEET_TIMEOUT);
-							Server.Log(UsernamesOfPlayers + "packet form player 2 received");
-						}
-						catch (ConnectionEndedException) {
-							player2Packet = new GamePacket(OperationType.DISCONNECT, new object());
-						}
-					}));
-					getterThread.Start();
-					getterThread2.Start();
-					Server.Log(UsernamesOfPlayers + ": tastks started");
-					getterThread.Join();
-					getterThread2.Join();*/
+					if (canContinue) {
+						string validateResult;
+						fleetSetupOk = true;
+						GamePacket player1Packet = null, player2Packet = null;
 
-					Task<GamePacket> player1Task = GetPlayersPacket(Player1Conn, SETUP_FLEET_TIMEOUT);
-					Task<GamePacket> player2Task = GetPlayersPacket(Player2Conn, SETUP_FLEET_TIMEOUT);
-					Server.Log(UsernamesOfPlayers + ": waiting for setups");
-					player1Packet = await player1Task;
-					player2Packet = await player2Task;
-					Server.Log(UsernamesOfPlayers + ": both setups received");
-					if (player1Packet != null) {
-						try {
-							if (CheckDisconnectContinueGame(player1Packet, 1)) {
-								if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.SETUP_FLEET, player1Packet, Player1Conn)) {
-									Player1GameBoard = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
-									validateResult = GameServerValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
-									if (validateResult != GameServerValidator.OK) {
-										EndGameOnError(1, validateResult);
+						//first get, process and validate players fleet setups
+						/*Thread getterThread = new Thread(new ThreadStart(() => {
+							try {
+								player1Packet = Player1Conn.GetReceivedPacket(SETUP_FLEET_TIMEOUT);
+								Server.Log(UsernamesOfPlayers + "packet form player 1 received");
+							}
+							catch (ConnectionEndedException) {
+								player1Packet = new GamePacket(OperationType.DISCONNECT, new object());
+							}
+						}));
+						Thread getterThread2 = new Thread(new ThreadStart(() => {
+							try {
+								player2Packet = Player2Conn.GetReceivedPacket(SETUP_FLEET_TIMEOUT);
+								Server.Log(UsernamesOfPlayers + "packet form player 2 received");
+							}
+							catch (ConnectionEndedException) {
+								player2Packet = new GamePacket(OperationType.DISCONNECT, new object());
+							}
+						}));
+						getterThread.Start();
+						getterThread2.Start();
+						Server.Log(UsernamesOfPlayers + ": tastks started");
+						getterThread.Join();
+						getterThread2.Join();*/
+
+						Task<GamePacket> player1Task = GetPlayersPacket(Player1Conn, SETUP_FLEET_TIMEOUT);
+						Task<GamePacket> player2Task = GetPlayersPacket(Player2Conn, SETUP_FLEET_TIMEOUT);
+						Server.Log(UsernamesOfPlayers + ": waiting for setups");
+						player1Packet = await player1Task;
+						player2Packet = await player2Task;
+						Server.Log(UsernamesOfPlayers + ": both setups received");
+						if (player1Packet != null) {
+							try {
+								if (CheckDisconnectContinueGame(player1Packet, 1)) {
+									if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.SETUP_FLEET, player1Packet, Player1Conn)) {
+										Player1GameBoard = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
+										validateResult = GameServerValidator.ValidatePlayerBoard(Player1GameBoard, Player1Fleet);
+										if (validateResult != GameServerValidator.OK) {
+											EndGameOnError(1, validateResult);
+										}
+										else SendSuccess(Player1Conn);  //if setup OK send success
 									}
-									else SendSuccess(Player1Conn);  //if setup OK send success
 								}
 							}
-						}
-						catch (InvalidCastException) {
-							EndGameOnError(1, FailureReasons.INVALID_PACKET);
-						}
-					}
-					else EndGameOnError(1, FailureReasons.RECEIVE_TIMEOUT);
-					if (player2Packet != null) {
-						try {
-							if (CheckDisconnectContinueGame(player2Packet, 2)) {
-								if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.SETUP_FLEET, player2Packet, Player2Conn)) {
-									Player2GameBoard = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
-									validateResult = GameServerValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
-									if (validateResult != GameServerValidator.OK) {
-										EndGameOnError(2, validateResult);
-									}
-									else SendSuccess(Player2Conn);  //if setup OK send success
-								}
+							catch (InvalidCastException) {
+								EndGameOnError(1, FailureReasons.INVALID_PACKET);
 							}
 						}
-						catch (InvalidCastException) {
-							EndGameOnError(2, FailureReasons.INVALID_PACKET);
+						else EndGameOnError(1, FailureReasons.RECEIVE_TIMEOUT);
+						if (player2Packet != null) {
+							try {
+								if (CheckDisconnectContinueGame(player2Packet, 2)) {
+									if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.SETUP_FLEET, player2Packet, Player2Conn)) {
+										Player2GameBoard = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
+										validateResult = GameServerValidator.ValidatePlayerBoard(Player2GameBoard, Player2Fleet);
+										if (validateResult != GameServerValidator.OK) {
+											EndGameOnError(2, validateResult);
+										}
+										else SendSuccess(Player2Conn);  //if setup OK send success
+									}
+								}
+							}
+							catch (InvalidCastException) {
+								EndGameOnError(2, FailureReasons.INVALID_PACKET);
+							}
 						}
-					}
-					else EndGameOnError(2, FailureReasons.RECEIVE_TIMEOUT);
+						else EndGameOnError(2, FailureReasons.RECEIVE_TIMEOUT);
 
-					Server.Log(UsernamesOfPlayers + ": both setups checked");
-					Move player1Move = new Move();
-					Move player2Move = new Move();
-					if (fleetSetupOk) {
-						ContinueGameLoop = true;
-						GameAlreadyEnded = false;
-						ThisGame = new Game(Player1GameBoard, Player2GameBoard);
-						ThisGame.EnableDebug = true;
-						while (ContinueGameLoop) {
-							player1MoveOK = true;
-							player2MoveOK = true;
-							//first send gamestate to players (yourBoard, enemyBoard)
-							Player1Conn.Send(new GamePacket(OperationType.GAME_STATE, ThisGame.Player1GameState));
-							Player2Conn.Send(new GamePacket(OperationType.GAME_STATE, ThisGame.Player2GameState));
-							//than wait for moves and p[rocess them - if invalid move - skip it
-							Task<GamePacket> player1MoveTask = GetPlayersPacket(Player1Conn, MAKE_MOVE_TIMEOUT);
-							Task<GamePacket> player2MoveTask = GetPlayersPacket(Player2Conn, MAKE_MOVE_TIMEOUT);
-							player1Packet = await player1MoveTask;
-							player2Packet = await player2MoveTask;
-							if (player1Packet != null) {
-								try {
-									if (CheckDisconnectContinueGame(player1Packet, 1)) {
-										if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.MAKE_MOVE, player1Packet, Player1Conn)) {
-											player1Move = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
-											validateResult = GameServerValidator.ValidateMove(player1Move, ThisGame.Player1GameBoard, ThisGame.Player2GameBoard);
-											if (validateResult != GameServerValidator.OK) {
-												SkipMove(Player1Conn, "invalid move: " + validateResult);
+						Server.Log(UsernamesOfPlayers + ": both setups checked");
+						Move player1Move = new Move();
+						Move player2Move = new Move();
+						if (fleetSetupOk) {
+							ContinueGameLoop = true;
+							GameAlreadyEnded = false;
+							ThisGame = new Game(Player1GameBoard, Player2GameBoard);
+							ThisGame.EnableDebug = true;
+							while (ContinueGameLoop) {
+								player1MoveOK = true;
+								player2MoveOK = true;
+								//first send gamestate to players (yourBoard, enemyBoard)
+								Player1Conn.Send(new GamePacket(OperationType.GAME_STATE, ThisGame.Player1GameState));
+								Player2Conn.Send(new GamePacket(OperationType.GAME_STATE, ThisGame.Player2GameState));
+								//than wait for moves and p[rocess them - if invalid move - skip it
+								Task<GamePacket> player1MoveTask = GetPlayersPacket(Player1Conn, MAKE_MOVE_TIMEOUT);
+								Task<GamePacket> player2MoveTask = GetPlayersPacket(Player2Conn, MAKE_MOVE_TIMEOUT);
+								player1Packet = await player1MoveTask;
+								player2Packet = await player2MoveTask;
+								if (player1Packet != null) {
+									try {
+										if (CheckDisconnectContinueGame(player1Packet, 1)) {
+											if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.MAKE_MOVE, player1Packet, Player1Conn)) {
+												player1Move = Server.CastPacketToProperType(player1Packet.Packet, OperationsMap.OperationMapping[player1Packet.OperationType]);
+												validateResult = GameServerValidator.ValidateMove(player1Move, ThisGame.Player1GameBoard, ThisGame.Player2GameBoard);
+												if (validateResult != GameServerValidator.OK) {
+													SkipMove(Player1Conn, "invalid move: " + validateResult);
+												}
+												else SendSuccess(Player1Conn);  //if move OK send success
 											}
-											else SendSuccess(Player1Conn);  //if move OK send success
 										}
 									}
-								}
-								catch (InvalidCastException) {
-									SkipMove(Player1Conn, FailureReasons.INVALID_PACKET);
-								}
-							}
-							else {
-								SkipMove(Player1Conn, "make move timeout");
-							}
-							if (player2Packet != null) {
-								try {
-									if (CheckDisconnectContinueGame(player2Packet, 2)) {
-										if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.MAKE_MOVE, player2Packet, Player2Conn)) {
-											player2Move = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
-											validateResult = GameServerValidator.ValidateMove(player2Move, ThisGame.Player2GameBoard, ThisGame.Player1GameBoard);
-											if (validateResult != GameServerValidator.OK) {
-												SkipMove(Player2Conn, "invalid move: " + validateResult);
-											}
-											else SendSuccess(Player2Conn);  //if move OK send success
-										}
+									catch (InvalidCastException) {
+										SkipMove(Player1Conn, FailureReasons.INVALID_PACKET);
 									}
 								}
-								catch (InvalidCastException) {
-									SkipMove(Player2Conn, FailureReasons.INVALID_PACKET);
+								else {
+									SkipMove(Player1Conn, "make move timeout");
 								}
-							}
-							else {
-								SkipMove(Player2Conn, "make move timeout");
-							}
+								if (player2Packet != null) {
+									try {
+										if (CheckDisconnectContinueGame(player2Packet, 2)) {
+											if (CheckIfCorrectPacketAndIfNotEnqueueBack(OperationType.MAKE_MOVE, player2Packet, Player2Conn)) {
+												player2Move = Server.CastPacketToProperType(player2Packet.Packet, OperationsMap.OperationMapping[player2Packet.OperationType]);
+												validateResult = GameServerValidator.ValidateMove(player2Move, ThisGame.Player2GameBoard, ThisGame.Player1GameBoard);
+												if (validateResult != GameServerValidator.OK) {
+													SkipMove(Player2Conn, "invalid move: " + validateResult);
+												}
+												else SendSuccess(Player2Conn);  //if move OK send success
+											}
+										}
+									}
+									catch (InvalidCastException) {
+										SkipMove(Player2Conn, FailureReasons.INVALID_PACKET);
+									}
+								}
+								else {
+									SkipMove(Player2Conn, "make move timeout");
+								}
 
-							ThisGame.MakeTurn(player1Move, player1MoveOK, player2Move, player2MoveOK);
+								ThisGame.MakeTurn(player1Move, player1MoveOK, player2Move, player2MoveOK);
 
-							//check game result and possibly end the game
-							Victory gameResultAfterThisTurn = ThisGame.CheckGameEndResult();
-							if (gameResultAfterThisTurn == Victory.PLAYER_1) {
-								UpdateLoserAndWiner(Player2, Player1);
-								Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, YOU_WON_MESSAGE)));
-								Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, YOU_LOST_MESSAGE)));
-								SetGameEnded();
+								//check game result and possibly end the game
+								Victory gameResultAfterThisTurn = ThisGame.CheckGameEndResult();
+								if (gameResultAfterThisTurn == Victory.PLAYER_1) {
+									UpdateLoserAndWiner(Player2, Player1);
+									Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, YOU_WON_MESSAGE)));
+									Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, YOU_LOST_MESSAGE)));
+									SetGameEnded();
+								}
+								else if (gameResultAfterThisTurn == Victory.PLAYER_2) {
+									UpdateLoserAndWiner(Player1, Player2);
+									Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, YOU_WON_MESSAGE)));
+									Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, YOU_LOST_MESSAGE)));
+									SetGameEnded();
+								}
+								else if (gameResultAfterThisTurn == Victory.DRAW) {
+									UpdateDraw();
+									Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, DRAW_MESSAGE)));
+									Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, DRAW_MESSAGE)));
+									SetGameEnded();
+								}
+								//else if Victory.NOT_YET and game continues
 							}
-							else if (gameResultAfterThisTurn == Victory.PLAYER_2) {
-								UpdateLoserAndWiner(Player1, Player2);
-								Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(true, YOU_WON_MESSAGE)));
-								Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, YOU_LOST_MESSAGE)));
-								SetGameEnded();
-							}
-							else if (gameResultAfterThisTurn == Victory.DRAW) {
-								UpdateDraw();
-								Player1Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, DRAW_MESSAGE)));
-								Player2Conn.Send(new GamePacket(OperationType.GAME_END, new GameResult(false, DRAW_MESSAGE)));
-								SetGameEnded();
-							}
-							//else if Victory.NOT_YET and game continues
 						}
-					}
 
-					if (!GameAlreadyEnded) {
-						Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
-						EndGameThread();
+						if (!GameAlreadyEnded) {
+							Server.Log(UsernamesOfPlayers + ": game finished, ending game room...");
+							EndGameThread();
+						}
 					}
 				}
 			}
@@ -1559,6 +1566,29 @@ namespace GAME_Server {
 			}
 		}
 		#endregion
+
+		private async Task<bool> ExchangePlayerTextures() {
+			try {
+				//first receive both packets
+				GamePacket player1Packet = null, player2Packet = null;
+				Task<GamePacket> player1Task = GetPlayersPacket(Player1Conn, SETUP_FLEET_TIMEOUT);
+				Task<GamePacket> player2Task = GetPlayersPacket(Player2Conn, SETUP_FLEET_TIMEOUT);
+				Server.Log(UsernamesOfPlayers + ": waiting for textures");
+				player1Packet = await player1Task;
+				player2Packet = await player2Task;
+				//then send to other player
+				Server.Log(UsernamesOfPlayers + ": textures received, sending to other player");
+				Player1Conn.Send(player2Packet);
+				Player2Conn.Send(player1Packet);
+				Server.Log(UsernamesOfPlayers + ": texture exhange complete");
+				return true;
+			} catch(ConnectionEndedException ex) {
+				int playerNum = ex.PlayerNumber;
+				Server.Log(UsernamesOfPlayers + ": Player with number " + playerNum + " disconnected during texture exchange. Endin game");
+				EndGameBeforeProperEnd(playerNum, "Other player disconnected during texture exchange");
+				return false;
+			}
+		}
 
 		/// <summary>
 		/// async method to get players packet in parallel with second call of this method

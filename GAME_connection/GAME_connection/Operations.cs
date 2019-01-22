@@ -65,7 +65,9 @@ namespace GAME_connection {
 		UPDATE_USER,
 		DEACTIVATE_USER,
 		ADD_LOOTBOX,
-		UPDATE_LOOTBOX
+		UPDATE_LOOTBOX,
+
+		TEXTURES_EXCHANGE
 	}
 
 	/// <summary>
@@ -105,6 +107,7 @@ namespace GAME_connection {
 				{ OperationType.BUY, typeof(LootBox) },                             //lootbox to buy										- important for server, server respons with S/F
 				{ OperationType.BOUGHT_SHIPS, typeof(List<Ship>) },                 //ships from lootbox									- important for client, SUCCESS before this
 				{ OperationType.SELL_SHIP, typeof(Ship) },                          //ship to sell for money								- important for server, server respons with S/F
+				{ OperationType.TEXTURES_EXCHANGE, typeof(Textures) },              //list of used tectures									- server only forwards packet to other player
 
 				{ OperationType.GET_SHIP_TEMPLATES, typeof(List<Ship>) },           //list of all ship templates							- important for client
 				{ OperationType.ADD_SHIP_TEMPLATE, typeof(Ship) },                  //ship template to add									- important for server, server respons with S/F
