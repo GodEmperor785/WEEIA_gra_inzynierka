@@ -166,6 +166,7 @@ namespace Client_PC.UI
         #region AddChild
         public void AddChild(GuiElement element, int row,int column)
         {
+            
             Child ch = new Child
             {
                 element = element,
@@ -177,6 +178,8 @@ namespace Client_PC.UI
             Children.Add(ch);
             Update();
             UpdateChildren();
+            
+            
         }
 
         public void AddChild(GuiElement element, int row, int column, int columnWidth)
@@ -446,7 +449,7 @@ namespace Client_PC.UI
 
                 if (i > 0)
                 {
-                    if (Children.Any(p => p.row == newRow))
+                    if (Children.Any(p => p.row == (newRow - 1)))
                     {
                         ShowedRow = newRow;
                         MoveRowUp();

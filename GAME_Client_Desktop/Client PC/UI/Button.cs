@@ -37,6 +37,7 @@ namespace Client_PC.UI
 
         public delegate void ElementClicked();
         public delegate void ElementClickedInt(int n);
+        public delegate void ElementClickedObject(object sender);
         public event ElementClicked clickEvent;
         public SpriteFont Font { get; set; }
         public bool Active { get; set; }
@@ -48,6 +49,7 @@ namespace Client_PC.UI
         public bool HeightDerivatingFromText { get; set; }
 
         public event ElementClickedInt clickEventInt;
+        public event ElementClickedObject clickEventObject;
         private Texture2D inactive, over;
         public Button(Point origin, int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable) : base(origin,width,height,device,gui)
         {
@@ -113,7 +115,8 @@ namespace Client_PC.UI
                 clickEvent();
             else if (clickEventInt != null)
                 clickEventInt(Id);
-
+            else if (clickEventObject != null)
+                clickEventObject(this);
             
         }
 

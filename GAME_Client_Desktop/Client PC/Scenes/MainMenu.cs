@@ -696,6 +696,7 @@ namespace Client_PC.Scenes
 
         public void GoToSettings()
         {
+            Game1.self.SetSettings();
             Game1.self.state = Game1.State.OptionsMenu;
         }
 

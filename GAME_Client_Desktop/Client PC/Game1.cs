@@ -30,6 +30,7 @@ namespace Client_PC
     /// </summary>
     public class Game1 : Game
     {
+        public List<Ship> CardTypes;
         public enum State
         {
             LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu, FleetMenu, CardsMenu
@@ -157,8 +158,21 @@ namespace Client_PC
             this.Exit();
         }
 
+        private void LoadAllCards()
+        {
+            CardTypes = new List<Ship>();
+            GamePacket packet = new GamePacket(OperationType.GET_SHIP_TEMPLATES, CardTypes);
+            Connection.Send(packet);
+            packet = Connection.GetReceivedPacket();
+            if (packet.OperationType == OperationType.GET_SHIP_TEMPLATES)
+            { //TODO make it when server is working with it
+                CardTypes = (List<Ship>) packet.Packet;
+            }
+
+        }
         private void LoadConfig()
         {
+            LoadAllCards();
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
             try
@@ -238,6 +252,10 @@ namespace Client_PC
             shopMenu.SetMoney(amount);
         }
 
+        public void SetSettings()
+        {
+            settingsMenu.FillGridWithCardTypes(this.OwnedShips);
+        }
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload

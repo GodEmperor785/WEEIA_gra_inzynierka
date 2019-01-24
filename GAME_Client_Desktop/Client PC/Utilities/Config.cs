@@ -23,4 +23,21 @@ namespace Client_PC.Utilities
             return conf;
         }
     }
+
+    public class CardConfig
+    {
+        public string Name { get; set; }
+        public string SkinPath { get; set; }
+
+        public CardConfig()
+        {
+
+        }
+
+        public CardConfig(string name, string skinPath)
+        {
+            Name = name;
+            SkinPath = skinPath;
+        }
+    }
 }
