@@ -31,8 +31,8 @@ namespace Client_PC.Scenes
         private Grid grid;
         private Grid gridCards;
         private RelativeLayout layout;
-        private int coupleHeight = 50;
-        private int coupleWidth = 100;
+        private int coupleHeight = 100;
+        private int coupleWidth = 200;
         private Button up;
         private Button down;
         private List<IClickable> ClickableToRemove;
@@ -86,7 +86,7 @@ namespace Client_PC.Scenes
             Clickable.Add(dropElement1);
             Clickable.Add(dropElement2);
 
-            gridCards = new Grid(2,100,100,50);
+            gridCards = new Grid(2,100,coupleWidth,coupleHeight);
             gridCards.DrawBorder = true;
             gridCards.BorderSize = 3;
             gridCards.WitdhAndHeightColumnDependant = false;
@@ -156,11 +156,14 @@ namespace Client_PC.Scenes
             foreach (var name in names)
             {
                 cardCouple couple = new cardCouple();
-                Label lbl = new Label(coupleWidth,coupleHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+                Label lbl = new Label(coupleWidth,coupleHeight,Game1.self.GraphicsDevice,Gui,Gui.smediumFont,true)
                 {
                     Text = name
                 };
-                Button button = new Button(coupleWidth,coupleHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true);
+                Button button = new Button(coupleWidth,coupleHeight,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
+                {
+                    Text = "Select skin"
+                };
                 button.clickEventObject += setTexture;
                 Clickable.Add(button);
                 ClickableToRemove.Add(button);
@@ -174,13 +177,33 @@ namespace Client_PC.Scenes
 
             gridCards.DrawBackground = false;
             gridCards.UpdateP();
+            gridCards.UpdateActive(true);
+            layout.Update();
+
         }
 
-        private void setTexture(object sender)
+        public void setTexture(object sender)
         {
             Button b = sender as Button;
             var cardName = couples.Single(p=> p.button == b).lbl.Text;
-            //TODO make there logic for setting texture for cards with this name
+            //TODO make there logic for setting texture for cards with this namevar fileContent = string.Empty;
+            var filePath = string.Empty;
+
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF)|*.BMP;*.JPG;*.GIF|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    //Get the path of specified file
+                    filePath = openFileDialog.FileName;
+                    //Read the contents of the file into a stream
+                    Game1.self.SetTextureToShip(filePath,cardName);
+                }
+            }
         }
         public void Test()
         {
@@ -190,7 +213,7 @@ namespace Client_PC.Scenes
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.InitialDirectory = "c:\\";
-                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.Filter = "txt files (*.txt)|*.png|All files (*.*)|*.*";
                 openFileDialog.FilterIndex = 2;
                 openFileDialog.RestoreDirectory = true;
 
@@ -218,8 +241,8 @@ namespace Client_PC.Scenes
         public void onSave()
         {
             var element = drop.GetSelected();
-            int width = 800;
-            int height = 600;
+            int width = 1920;
+            int height = 1080;
             Config conf = new Config();
             if (element is Button)
             {
@@ -263,20 +286,24 @@ namespace Client_PC.Scenes
         {
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
-            layout.Origin = new Point(grid.Origin.X, grid.Origin.Y + grid.Width + 10);
+            layout.Origin = new Point(grid.Origin.X+ grid.Width + 10, grid.Origin.Y);
 
             gridCards.Origin = layout.Origin;
+            gridCards.DrawBackground = false;
             layout.Update();
             gridCards.UpdateP();
             up.Origin = new Point(gridCards.Origin.X, gridCards.Origin.Y + gridCards.Height);
             down.Origin = new Point(up.Origin.X, up.Origin.Y + 30);
+            gridCards.UpdateActive(true);
         }
 
-        public override IClickable GetClickable(Point xy)
-        {
-            var z = Clickable.Where(p => p.Active).Where(p => p.GetBoundary().Contains(xy));
-            return Clickable.Where(p => p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
-        }
+        /* public override IClickable GetClickable(Point xy)
+         {
+             var z = Clickable.Where(p => p.Active).Where(p => p.GetBoundary().Contains(xy));
+             return Clickable.Where(p => p.Active).SingleOrDefault(p => p.GetBoundary().Contains(xy));
+         }
+         */
+
         public override void UpdateFields()
         {
             dropClicked = false;

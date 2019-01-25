@@ -157,6 +157,7 @@ namespace Client_PC.Scenes
 
             Game1.self.state = Game1.State.MainMenu;
             Game1.self.UpdateHistory();
+            Game1.self.UpdatePlayer();
             Game1.self.popupToDraw = null;
 
         }
@@ -490,6 +491,7 @@ namespace Client_PC.Scenes
                     Card c = ShipToCard(ships[i]);
                     c.line = line;
                     Clickable.Add(c);
+                    c.Enemy = true;
                     enemyGrid.AddChild(c, i, GetColumn(line, allied));
                 }
                 enemyGrid.UpdateP();

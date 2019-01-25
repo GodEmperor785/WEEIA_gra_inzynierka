@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -189,6 +192,91 @@ namespace Client_PC.Utilities
             //set the color
             texture.SetData(data);
             return texture;
+        }
+        [Serializable]
+        public class RawTexture
+        {
+            public int width;
+            public int height;
+            public colorData[] data;
+        }
+        [Serializable]
+        public class colorData
+        {
+            public float X,W,Y,Z;
+
+            public colorData(Vector4 vector)
+            {
+                X = vector.X;
+                W = vector.W;
+                Y = vector.Y;
+                Z = vector.Z;
+            }
+
+            public Vector4 GetVector4()
+            {
+                return new Vector4(X,Y,Z,W);
+            }
+        }
+        public static byte[] TextureToBytes(Texture2D texture)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (var memStream = new MemoryStream())
+            {
+
+                /*
+                Color[] colors = new Color[texture.Width * texture.Height];
+                
+                texture.GetData<Color>(colors);
+                colorData[] rawData = new colorData[texture.Width * texture.Height];
+                int i = 0;
+                foreach (var color in colors)
+                {
+                    rawData[i] =new colorData(color.ToVector4());
+                    i++;
+                }
+                RawTexture raw = new RawTexture();
+                raw.width = texture.Width;
+                raw.height = texture.Height;
+                raw.data = rawData;*/
+                //string content = File.ReadAllText(Game1.self.SkinsPaths.Single(p=> p.skin == texture).path);
+                formatter.Serialize(memStream, File.ReadAllBytes(Game1.self.SkinsPaths.Single(p => p.skin == texture).path));
+                return memStream.ToArray();
+            }
+        }
+
+        /*public static Texture2D BytesToTexture(byte[] bytes)
+        {
+            using (var memStream = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                memStream.Write(bytes,0,bytes.Length);
+                memStream.Seek(0, SeekOrigin.Begin);
+                RawTexture raw = (RawTexture) formatter.Deserialize(memStream);
+                Color[] colors = new Color[raw.width * raw.height];
+                int i = 0;
+                foreach (var cell in raw.data)
+                {
+                    colors[i] = new Color(cell.GetVector4());
+                    i++;
+                }
+                Texture2D texture = new Texture2D(Game1.self.GraphicsDevice,raw.width,raw.height);
+                texture.SetData<Color>(colors);
+                return texture;
+            }
+        }
+        */
+        public static Texture2D BytesToTexture(byte[] bytes)
+        {
+            using (var memStream = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                memStream.Write(bytes, 0, bytes.Length);
+                memStream.Seek(0, SeekOrigin.Begin);
+               // FileStream fs = new FileStream();
+                Texture2D texture = Texture2D.FromStream(Game1.self.GraphicsDevice,memStream);
+                return texture;
+            }
         }
     }
 }

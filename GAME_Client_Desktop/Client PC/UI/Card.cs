@@ -55,6 +55,11 @@ namespace Client_PC.UI
         public Line line;
         public bool IsOver { get; set; }
         public bool HeightDerivatingFromText { get; set; }
+        public Texture2D Skin { get; set; }
+        private Point skinPosition;
+        public bool Enemy = false;
+        private Vector2 skinScale;
+       // private 
         public Card(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base( width, height, device, gui)
         {
             ship = shipInc;
@@ -135,6 +140,16 @@ namespace Client_PC.UI
         {
             //spriteBatch.Begin();
             spriteBatch.Draw(Texture, Boundary, Color.White);
+            if(!Enemy)
+                Skin = Game1.self.ShipsSkins.SingleOrDefault(p => p.ship == ship.Name).skin;
+
+            if (Skin != null)
+            {
+                skinScale = new Vector2();
+                skinScale.X = (float) ((Width - 2 * borderSize)) / (float) (Skin.Width);
+                skinScale.Y = (float) ((Height - 4 * borderSize)) / (float) (Skin.Height);
+                spriteBatch.Draw(Skin, skinPosition.ToVector2(), scale: skinScale);
+            }
             //spriteBatch.End();
             overlay.Draw(spriteBatch);
         }
@@ -155,6 +170,10 @@ namespace Client_PC.UI
             { 
                 Texture = Util.CreateTexture(Device, Width, Height,RarityColor[ship.Rarity],InsideColor);
             }
+
+            skinPosition.X = Origin.X + borderSize;
+            skinPosition.Y = Origin.Y + borderSize;
+            
             /// blue - has chosen move
             /// green - is clicked
             /// red - is target of current action

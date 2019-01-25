@@ -59,6 +59,9 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
@@ -73,6 +76,7 @@
     <Compile Include="Scenes\RegisterMenu.cs" />
     <Compile Include="Scenes\SettingsMenu.cs" />
     <Compile Include="Scenes\ShopMenu.cs" />
+    <Compile Include="Scenes\StatisticsMenu.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="UI\Card.cs" />
     <Compile Include="UI\CardSlot.cs" />

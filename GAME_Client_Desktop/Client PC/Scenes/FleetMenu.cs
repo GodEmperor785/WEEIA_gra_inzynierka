@@ -236,7 +236,7 @@ namespace Client_PC.Scenes
             {
                 Game1.self.state = Game1.State.MainMenu;
                 Game1.self.UpdateHistory();
-                
+                Game1.self.UpdatePlayer();
             }
         }
         private void upClick()

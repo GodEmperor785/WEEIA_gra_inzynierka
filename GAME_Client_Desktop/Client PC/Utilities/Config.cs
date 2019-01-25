@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace Client_PC.Utilities
 {
@@ -18,12 +19,17 @@ namespace Client_PC.Utilities
         public static Config Default()
         {
             Config conf = new Config();
-            conf.Resolution = Constants.hd;
+            conf.Resolution = Constants.fullhd;
 
             return conf;
         }
     }
 
+    public class Cards
+    {
+        [XmlArray("Scores"), XmlArrayItem(typeof(CardConfig), ElementName = "Card")]
+        public List<CardConfig> listOfCards { get; set; }
+    }
     public class CardConfig
     {
         public string Name { get; set; }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -35,6 +36,18 @@ namespace Client_PC
         {
             LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu, FleetMenu, CardsMenu
         }
+
+        public class ShipAndSkin
+        {
+            public string ship;
+            public Texture2D skin;
+        }
+
+        public class SkinAndPath
+        {
+            public Texture2D skin;
+            public string path;
+        }
         public static Game1 self;
         public State state = State.LoginMenu;
         public GraphicsDeviceManager graphics;
@@ -61,15 +74,17 @@ namespace Client_PC
         public List<Fleet> Decks { get; set; }
         public List<Ship> OwnedShips { get; set; }
         public Effect Darker;
-        public RasterizerState RasterizerState = new RasterizerState() { ScissorTestEnable = true };
         List<Menu> menus = new List<Menu>();
         public BaseModifiers Modifiers;
-        public GAME_connection.TcpConnection Connection;
+        public List<ShipAndSkin> ShipsSkins = new List<ShipAndSkin>();
+        public List<SkinAndPath> SkinsPaths = new List<SkinAndPath>();
+        public List<ShipAndSkin> EnemyShipsSkins = new List<ShipAndSkin>();
+        public TcpConnection Connection;
         public string ServerIp = "212.191.92.88";
         private bool test = true; // false if dont connect with server
         public bool ReadyToPlay;
-
-
+        private Cards config;
+        
 
 
 
@@ -161,7 +176,7 @@ namespace Client_PC
         private void LoadAllCards()
         {
             CardTypes = new List<Ship>();
-            GamePacket packet = new GamePacket(OperationType.GET_SHIP_TEMPLATES, CardTypes);
+            GamePacket packet = new GamePacket(OperationType.GET_SHIP_TEMPLATES, null);
             Connection.Send(packet);
             packet = Connection.GetReceivedPacket();
             if (packet.OperationType == OperationType.GET_SHIP_TEMPLATES)
@@ -170,9 +185,94 @@ namespace Client_PC
             }
 
         }
+
+        public void LoadCardTextures()
+        {
+            
+            LoadAllCards();
+            XmlSerializer serializer = new XmlSerializer(typeof(Cards));
+            try
+            {
+                using (FileStream fs = new FileStream("Config_Cards", FileMode.Open))
+                {
+
+                }
+
+            }
+            catch
+            {
+                TextWriter writer = new StreamWriter("Config_Cards");
+                config = new Cards();
+                config.listOfCards = new List<CardConfig>();
+                CardTypes.ForEach(p =>
+                {
+                    CardConfig c = new CardConfig();
+                    c.Name = p.Name;
+                    c.SkinPath = String.Empty;
+                    config.listOfCards.Add(c);
+                });
+                XmlSerializer xml = new XmlSerializer(typeof(Cards));
+                xml.Serialize(writer, config);
+                writer.Close();
+            }
+            using (Stream reader = new FileStream("Config_Cards", FileMode.Open))
+            {
+                config = (Cards)serializer.Deserialize(reader);
+            }
+            
+            config.listOfCards.ForEach(p =>
+            {
+                CardTypes.Where(a=> a.Name == p.Name).ToList().ForEach(z =>
+                {
+                    try
+                    {
+                        Texture2D skin = File.Exists(p.SkinPath) ? loadTexture2D(p.SkinPath) : null;
+                        ShipsSkins.Add(new ShipAndSkin()
+                        {
+                            ship = z.Name,
+                            skin = skin
+
+                        });
+                        SkinsPaths.Add(new SkinAndPath()
+                        {
+                            skin = skin,
+                            path = p.SkinPath
+                        });
+                    }
+                    catch { }
+                });
+            });
+        }
+
+        public void SetTextureToShip(string path, string shipName)
+        {
+            string newPath = AppDomain.CurrentDomain.BaseDirectory + Content.RootDirectory + "\\Skins\\" + shipName+".png";
+            File.Copy(path, newPath,true);
+            ShipAndSkin s = ShipsSkins.Single(p => p.ship == shipName);
+            s.skin = loadTexture2D(newPath);
+            TextWriter writer = new StreamWriter("Config_Cards");
+            config.listOfCards.Single(p => p.Name == shipName).SkinPath = newPath;
+
+            XmlSerializer xml = new XmlSerializer(typeof(Cards));
+            xml.Serialize(writer, config);
+            writer.Close();
+        }
+        private Texture2D loadTexture2D(string path)
+        {
+            Texture2D text = null;
+            try
+            {
+                using (FileStream fileStream = new FileStream(path, FileMode.Open))
+                {
+                    text = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
+                    fileStream.Dispose();
+                }
+            }
+            catch { }
+            return text;
+        }
         private void LoadConfig()
         {
-            LoadAllCards();
             XmlSerializer serializer =
                 new XmlSerializer(typeof(Config));
             try
@@ -254,7 +354,7 @@ namespace Client_PC
 
         public void SetSettings()
         {
-            settingsMenu.FillGridWithCardTypes(this.OwnedShips);
+            settingsMenu.FillGridWithCardTypes(CardTypes);
         }
 
         /// <summary>

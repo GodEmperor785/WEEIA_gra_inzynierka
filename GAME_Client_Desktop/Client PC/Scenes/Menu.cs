@@ -181,7 +181,6 @@ namespace Client_PC.Scenes
         {
             
             IClickable click = Clickable.Where(p=> p.Active == true).FirstOrDefault(p => p.GetBoundary().Contains(xy));
-           
             return click;
         }
         public virtual void UpdateClick(IClickable button)
