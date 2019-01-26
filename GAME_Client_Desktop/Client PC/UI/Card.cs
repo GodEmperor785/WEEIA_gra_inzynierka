@@ -142,7 +142,8 @@ namespace Client_PC.UI
             spriteBatch.Draw(Texture, Boundary, Color.White);
             if(!Enemy)
                 Skin = Game1.self.ShipsSkins.SingleOrDefault(p => p.ship == ship.Name).skin;
-
+            else
+                Skin = Game1.self.EnemyShipsSkins.SingleOrDefault(p => p.ship == ship.Name).skin;
             if (Skin != null)
             {
                 skinScale = new Vector2();

@@ -388,6 +388,43 @@ namespace Client_PC.Scenes
                         packet = Game1.self.Connection.GetReceivedPacket();
                         if (packet.OperationType == OperationType.SUCCESS)
                         {
+
+                            #region TextureExchange
+                            List<TexturePair> pairs = new List<TexturePair>();
+                            foreach (var shipAndSkin in Game1.self.ShipsSkins)
+                            {
+                                TexturePair pair = new TexturePair();
+                                pair.TextureBytes = shipAndSkin.skin != null
+                                    ? Utils.TextureToBytes(shipAndSkin.skin)
+                                    : null;
+                                pair.TemplateName = shipAndSkin.ship;
+                                pairs.Add(pair);
+                            }
+                            Textures textures = new Textures(pairs);
+
+
+                            packet = new GamePacket(OperationType.TEXTURES_EXCHANGE, textures);
+                            Game1.self.Connection.Send(packet);
+                            Console.WriteLine(packet.Packet);
+
+
+                            packet = Game1.self.Connection.GetReceivedPacket();
+                            if (packet.OperationType == OperationType.TEXTURES_EXCHANGE)
+                            {
+                                Game1.self.EnemyShipsSkins.Clear();
+                                Textures incomingTextures = (Textures)packet.Packet;
+                                foreach (var incomingTexturesPlayerTexture in incomingTextures.PlayerTextures)
+                                {
+                                    Game1.ShipAndSkin pair = new Game1.ShipAndSkin();
+                                    pair.ship = incomingTexturesPlayerTexture.TemplateName;
+                                    pair.skin = incomingTexturesPlayerTexture.TextureBytes != null
+                                        ? Utils.BytesToTexture(incomingTexturesPlayerTexture.TextureBytes)
+                                        : null;
+                                    Game1.self.EnemyShipsSkins.Add(pair);
+                                }
+                            }
+                            #endregion
+
                             Game1.self.SetFleetMenu(chosenDeck.GetFleet());
                             Game1.self.ReadyToPlay = true;
                             Game1.self.popupToDraw = null;
@@ -432,6 +469,44 @@ namespace Client_PC.Scenes
                                 {
                                     if (timer != null)
                                         timer.Dispose();
+
+                                    #region TextureExchange
+                                    List<TexturePair> pairs = new List<TexturePair>();
+                                    foreach (var shipAndSkin in Game1.self.ShipsSkins)
+                                    {
+                                        TexturePair pair = new TexturePair();
+                                        pair.TextureBytes = shipAndSkin.skin != null
+                                            ? Utils.TextureToBytes(shipAndSkin.skin)
+                                            : null;
+                                        pair.TemplateName = shipAndSkin.ship;
+                                        pairs.Add(pair);
+                                    }
+                                    Textures textures = new Textures(pairs);
+
+
+                                    packet = new GamePacket(OperationType.TEXTURES_EXCHANGE, textures);
+                                    Game1.self.Connection.Send(packet);
+                                    Console.WriteLine(packet.Packet);
+
+
+                                    packet = Game1.self.Connection.GetReceivedPacket();
+                                    if (packet.OperationType == OperationType.TEXTURES_EXCHANGE)
+                                    {
+                                        Game1.self.EnemyShipsSkins.Clear();
+                                        Textures incomingTextures = (Textures)packet.Packet;
+                                        foreach (var incomingTexturesPlayerTexture in incomingTextures.PlayerTextures)
+                                        {
+                                            Game1.ShipAndSkin pair = new Game1.ShipAndSkin();
+                                            pair.ship = incomingTexturesPlayerTexture.TemplateName;
+                                            pair.skin = incomingTexturesPlayerTexture.TextureBytes != null
+                                                ? Utils.BytesToTexture(incomingTexturesPlayerTexture.TextureBytes)
+                                                : null;
+                                            Game1.self.EnemyShipsSkins.Add(pair);
+                                        }
+                                    }
+                                    #endregion
+
+
                                     Game1.self.SetFleetMenu(chosenDeck.GetFleet());
                                     Game1.self.ReadyToPlay = true;
                                     searching = false;
@@ -601,6 +676,8 @@ namespace Client_PC.Scenes
                                     
                                     packet = new GamePacket(OperationType.TEXTURES_EXCHANGE, textures);
                                     Game1.self.Connection.Send(packet);
+                                    Console.WriteLine(packet.Packet);
+
 
                                     packet = Game1.self.Connection.GetReceivedPacket();
                                     if (packet.OperationType == OperationType.TEXTURES_EXCHANGE)
@@ -751,19 +828,21 @@ namespace Client_PC.Scenes
             Game1.self.OwnedShips = (List<Ship>) packet.Packet;
 
             playerStats.RemoveChildren();
-            Label nick = new Label(200,50,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true);
+            int height = (grid.Height - playerStats.rowOffset * 6) / 7;
+            int width = 300;
+            Label nick = new Label(width, height, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true);
             nick.Text = "Nick: " + Game1.self.player.Username;
-            Label exp = new Label(200,50,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true);
+            Label exp = new Label(width, height, Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true);
             exp.Text = "Experience: " + Game1.self.player.Experience;
-            Label games = new Label(200, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            Label games = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             games.Text = "Games total: " + Game1.self.player.GamesPlayed;
-            Label wonGames = new Label(200, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            Label wonGames = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             wonGames.Text = "Games won: " + Game1.self.player.GamesWon;
-            Label ratio = new Label(200, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
-            ratio.Text = "Win ratio: " + Game1.self.player.WinLoseRatio.ToString();
-            Label money = new Label(200, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            Label ratio = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            ratio.Text = "Win ratio: " + Game1.self.player.WinLoseRatio.ToString().Substring(0,5);
+            Label money = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             money.Text = "Money: " + Game1.self.player.Money;
-            Label maxFleetPoints = new Label(200, 50, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
+            Label maxFleetPoints = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             maxFleetPoints.Text = "Max fleet points: " + Game1.self.player.MaxFleetPoints;
 
             playerStats.AddChild(nick, 0, 0);

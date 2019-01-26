@@ -218,6 +218,12 @@ namespace Client_PC.Utilities
                 return new Vector4(X,Y,Z,W);
             }
         }
+        [Serializable]
+        public class TextureFile
+        {
+            public byte[] data;
+            public string fileName;
+        }
         public static byte[] TextureToBytes(Texture2D texture)
         {
             BinaryFormatter formatter = new BinaryFormatter();
@@ -240,7 +246,10 @@ namespace Client_PC.Utilities
                 raw.height = texture.Height;
                 raw.data = rawData;*/
                 //string content = File.ReadAllText(Game1.self.SkinsPaths.Single(p=> p.skin == texture).path);
-                formatter.Serialize(memStream, File.ReadAllBytes(Game1.self.SkinsPaths.Single(p => p.skin == texture).path));
+                TextureFile t = new TextureFile();
+                t.data = File.ReadAllBytes(Game1.self.SkinsPaths.Single(p => p.skin == texture).path);
+                t.fileName = Path.GetFileName(Game1.self.SkinsPaths.Single(p => p.skin == texture).path);
+                formatter.Serialize(memStream, t);
                 return memStream.ToArray();
             }
         }
@@ -268,13 +277,22 @@ namespace Client_PC.Utilities
         */
         public static Texture2D BytesToTexture(byte[] bytes)
         {
-            using (var memStream = new MemoryStream())
+            using (var memStream = new MemoryStream())  
             {
                 var formatter = new BinaryFormatter();
                 memStream.Write(bytes, 0, bytes.Length);
                 memStream.Seek(0, SeekOrigin.Begin);
-               // FileStream fs = new FileStream();
-                Texture2D texture = Texture2D.FromStream(Game1.self.GraphicsDevice,memStream);
+                TextureFile t = (TextureFile) formatter.Deserialize(memStream);
+                string newPath = AppDomain.CurrentDomain.BaseDirectory + Game1.self.Content.RootDirectory + "\\TempSkins\\" + t.fileName;
+                FileStream fs = new FileStream(newPath, FileMode.Create);
+                fs.Write(t.data,0,t.data.Length);
+                fs.Close();
+                fs.Dispose();
+                FileStream fileStream = new FileStream(newPath, FileMode.Open);
+                Texture2D texture = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
+                fileStream.Close();
+                fileStream.Dispose();
+                File.Delete(newPath);
                 return texture;
             }
         }
