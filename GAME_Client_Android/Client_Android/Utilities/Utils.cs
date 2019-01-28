@@ -289,7 +289,6 @@ namespace Client_PC.Utilities
 
             //fileStream.Close();
             //fileStream.Dispose();
-            File f = new File(newPath);
             store.DeleteFile(newPath);
             store.Close();
             memStream.Close();
