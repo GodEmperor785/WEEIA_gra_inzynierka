@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -8,9 +10,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace Client_PC.Utilities
 {
@@ -193,108 +195,94 @@ namespace Client_PC.Utilities
             texture.SetData(data);
             return texture;
         }
-        [Serializable]
-        public class RawTexture
-        {
-            public int width;
-            public int height;
-            public colorData[] data;
-        }
-        [Serializable]
-        public class colorData
-        {
-            public float X,W,Y,Z;
-
-            public colorData(Vector4 vector)
-            {
-                X = vector.X;
-                W = vector.W;
-                Y = vector.Y;
-                Z = vector.Z;
-            }
-
-            public Vector4 GetVector4()
-            {
-                return new Vector4(X,Y,Z,W);
-            }
-        }
+        
         [Serializable]
         public class TextureFile
         {
+            public Int32 dataLength;
             public byte[] data;
+            public Int32 nameLength;
             public string fileName;
+
+            public void ToBytes(ref MemoryStream stream)
+            {
+                byte[] datalengthBytes,namelengthBytes,filenameBytes;
+                dataLength = data.Length;
+                datalengthBytes = BitConverter.GetBytes(dataLength);
+                filenameBytes = Encoding.ASCII.GetBytes(fileName);
+                nameLength = filenameBytes.Length;
+                namelengthBytes = BitConverter.GetBytes(nameLength);
+                stream.Write(datalengthBytes,0,datalengthBytes.Length);
+                stream.Write(data,0,data.Length);
+                stream.Write(namelengthBytes,0,namelengthBytes.Length);
+                stream.Write(filenameBytes, 0,
+                    filenameBytes.Length);
+
+
+            }
+
+            public void ToTextureFile(ref MemoryStream stream)
+            {
+                byte[] datalengthBytes = new byte[20];
+                byte[] namelengthBytes, filenameBytes;
+                Int32 i = 2;
+
+                stream.Read(datalengthBytes,0,BitConverter.GetBytes(i).Length);
+                dataLength = BitConverter.ToInt32(datalengthBytes,0);
+                data = new byte[dataLength];
+                stream.Read(data, 0, dataLength);
+                namelengthBytes = new byte[20];
+                stream.Read(namelengthBytes, 0, BitConverter.GetBytes(i).Length);
+                nameLength = BitConverter.ToInt32(namelengthBytes, 0);
+                filenameBytes = new byte[nameLength];
+                stream.Read(filenameBytes,
+                    0, nameLength);
+                fileName = Encoding.ASCII.GetString(filenameBytes);
+            }
         }
         public static byte[] TextureToBytes(Texture2D texture)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (var memStream = new MemoryStream())
-            {
-
-                /*
-                Color[] colors = new Color[texture.Width * texture.Height];
-                
-                texture.GetData<Color>(colors);
-                colorData[] rawData = new colorData[texture.Width * texture.Height];
-                int i = 0;
-                foreach (var color in colors)
-                {
-                    rawData[i] =new colorData(color.ToVector4());
-                    i++;
-                }
-                RawTexture raw = new RawTexture();
-                raw.width = texture.Width;
-                raw.height = texture.Height;
-                raw.data = rawData;*/
-                //string content = File.ReadAllText(Game1.self.SkinsPaths.Single(p=> p.skin == texture).path);
-                TextureFile t = new TextureFile();
-                t.data = File.ReadAllBytes(Game1.self.SkinsPaths.Single(p => p.skin == texture).path);
-                t.fileName = Path.GetFileName(Game1.self.SkinsPaths.Single(p => p.skin == texture).path);
-                formatter.Serialize(memStream, t);
-                return memStream.ToArray();
-            }
+            var memStream = new MemoryStream();
+            TextureFile t = new TextureFile();
+            t.data = File.ReadAllBytes(Game1.self.SkinsPaths.Single(p => p.skin == texture).path);
+            t.fileName = Path.GetFileName(Game1.self.SkinsPaths.Single(p => p.skin == texture).path);
+            t.ToBytes(ref memStream);
+            var z = memStream.ToArray();
+            memStream.Close();
+            memStream.Dispose();
+            return z;
         }
-
-        /*public static Texture2D BytesToTexture(byte[] bytes)
-        {
-            using (var memStream = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                memStream.Write(bytes,0,bytes.Length);
-                memStream.Seek(0, SeekOrigin.Begin);
-                RawTexture raw = (RawTexture) formatter.Deserialize(memStream);
-                Color[] colors = new Color[raw.width * raw.height];
-                int i = 0;
-                foreach (var cell in raw.data)
-                {
-                    colors[i] = new Color(cell.GetVector4());
-                    i++;
-                }
-                Texture2D texture = new Texture2D(Game1.self.GraphicsDevice,raw.width,raw.height);
-                texture.SetData<Color>(colors);
-                return texture;
-            }
-        }
-        */
         public static Texture2D BytesToTexture(byte[] bytes)
         {
-            using (var memStream = new MemoryStream())  
+            var memStream = new MemoryStream();
+            memStream.Write(bytes, 0, bytes.Length);
+            memStream.Seek(0, SeekOrigin.Begin);
+            TextureFile t = new TextureFile();
+            t.ToTextureFile(ref memStream);
+            string newPath = AppDomain.CurrentDomain.BaseDirectory + Game1.self.Content.RootDirectory + "\\TempSkins\\" + t.fileName;
+            FileStream fs = new FileStream(newPath, FileMode.Create);
+            fs.Write(t.data, 0, t.data.Length);
+            fs.Close();
+            fs.Dispose();
+            Image image = Image.FromFile(newPath);
+            image.Save(newPath +".png",ImageFormat.Png);
+            image.Dispose();
+            FileStream fileStream = new FileStream(newPath+".png", FileMode.Open);
+            Texture2D texture = null;
+            try
             {
-                var formatter = new BinaryFormatter();
-                memStream.Write(bytes, 0, bytes.Length);
-                memStream.Seek(0, SeekOrigin.Begin);
-                TextureFile t = (TextureFile) formatter.Deserialize(memStream);
-                string newPath = AppDomain.CurrentDomain.BaseDirectory + Game1.self.Content.RootDirectory + "\\TempSkins\\" + t.fileName;
-                FileStream fs = new FileStream(newPath, FileMode.Create);
-                fs.Write(t.data,0,t.data.Length);
-                fs.Close();
-                fs.Dispose();
-                FileStream fileStream = new FileStream(newPath, FileMode.Open);
-                Texture2D texture = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
-                fileStream.Close();
-                fileStream.Dispose();
-                File.Delete(newPath);
-                return texture;
+                 texture = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
             }
+            catch { } //Todo when file is incorrect even though having proper format (probably size thing)
+            fileStream.Close();
+            fileStream.Dispose();
+            File.Delete(newPath);
+            File.Delete(newPath+".png");
+            memStream.Close();
+            memStream.Dispose();
+            return texture;
         }
+
+
     }
 }

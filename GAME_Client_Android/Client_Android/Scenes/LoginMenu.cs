@@ -242,8 +242,10 @@ namespace Client_PC.Scenes
                 if (!errors)
                 {
                     Game1.self.state = Game1.State.MainMenu;
+                    Game1.self.LoadCardTextures();
                     Game1.self.LoginInitialize();
                     Game1.self.UpdateHistory();
+                    Game1.self.UpdatePlayer();
                 }
                 else
                 {

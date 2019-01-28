@@ -110,8 +110,8 @@ namespace Client_PC.Scenes
             grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f),(int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
             grid.UpdateP();
             playerStats.Origin = new Point(grid.Origin.X + grid.Width + 10, grid.Origin.Y);
+            playerStats.UpdateP();
             grid.ResizeChildren();
-            playerStats.UpdateP();;
             SetClickables(true);
         }
 
@@ -839,7 +839,7 @@ namespace Client_PC.Scenes
             Label wonGames = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             wonGames.Text = "Games won: " + Game1.self.player.GamesWon;
             Label ratio = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
-            ratio.Text = "Win ratio: " + Game1.self.player.WinLoseRatio.ToString().Substring(0,5);
+            ratio.Text = "Win ratio: " + Math.Round(Game1.self.player.WinLoseRatio,3);
             Label money = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);
             money.Text = "Money: " + Game1.self.player.Money;
             Label maxFleetPoints = new Label(width, height, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true);

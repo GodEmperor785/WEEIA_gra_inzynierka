@@ -30,11 +30,11 @@ namespace Client_PC.Scenes
         private List<cardCouple> couples = new List<cardCouple>();
         private Grid grid;
         private Grid gridCards;
-        private RelativeLayout layout;
+        private RelativeLayout layout = new RelativeLayout();
         private int coupleHeight = 100;
         private int coupleWidth = 200;
         private Button up;
-        private Button down;
+        private Button down, back;
         private List<IClickable> ClickableToRemove;
         private Dropdown drop;
         bool dropClicked = false;
@@ -43,50 +43,9 @@ namespace Client_PC.Scenes
         {
             ClickableToRemove = new List<IClickable>();
             Gui = new GUI(Content);
-            grid = new Grid();
-            layout = new RelativeLayout();
-            Label label1 = new Label(new Point(0, 0), 100, 55, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
-            {
-                Text = "Resolution w cholere dlugi az prawie ze lorem ipsum ale kogo by to obchodzilo wazne ze wrapuje text chyba co nie?"
-            };
-             drop = new Dropdown(new Point(0,0),100,30,Game1.self.GraphicsDevice, Gui);
-            Button button = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
-            {
-                Text = "Back",Id = 0
-            };
-            Button dropElement1 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont,true)
-            {
-                Text = Constants.fullhd,
-                Id = 1
-            };
-            drop.Add(dropElement1,"fullHd", drop);
-            Button dropElement2 = new Button(new Point(0, 0), 100, 30, Game1.self.GraphicsDevice, Gui, Gui.mediumFont,true)
-            {
-                Text = Constants.hd,
-                Id = 2
-            };
-            Button buttonSave = new Button(new Point(0, 0), 100, 35, Game1.self.GraphicsDevice, Gui, Gui.bigFont,true)
-            {
-                Text = "Save",
-                Id = 4
-            };
-            Button buttonCheck = new Button(100,35,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true)
-            {
-                Text = "Test"
-            };
-            buttonSave.clickEvent += onSave;
-            Grid grid2 = new Grid();
-            grid2.AddChild(button,0,1);
-            grid2.AddChild(buttonSave, 0, 0);
-            drop.Add(dropElement2, "Hd", drop);
-            button.clickEvent += OnExit;
-            Clickable.Add(drop);
-            Clickable.Add(button);
-            Clickable.Add(buttonSave);
-            Clickable.Add(dropElement1);
-            Clickable.Add(dropElement2);
 
-            gridCards = new Grid(2,100,coupleWidth,coupleHeight);
+
+            gridCards = new Grid(2, 100, coupleWidth, coupleHeight);
             gridCards.DrawBorder = true;
             gridCards.BorderSize = 3;
             gridCards.WitdhAndHeightColumnDependant = false;
@@ -107,33 +66,24 @@ namespace Client_PC.Scenes
             {
                 Text = "down"
             };
+            back = new Button(gridCards.Width, coupleHeight, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
+            {
+                Text = "Back to menu"
+            };
             up.clickEvent += UpClick;
             down.clickEvent += DownClick;
-            
-
+            back.clickEvent += OnExit;
+            Clickable.Add(back);
             layout.AddChild(gridCards);
             layout.AddChild(down);
             layout.AddChild(up);
-
+            layout.AddChild(back);
             Clickable.Add(up);
             Clickable.Add(down);
-
-            buttonCheck.clickEvent += Test;
-            Clickable.Add(buttonCheck);
-
-            button.Active = true;
-            grid2.Active = true;
-            grid2.UpdateActive(true);
-            grid.AddChild(label1,0,0);
-            grid.AddChild(drop, 1, 0);
-            grid.AddChild(grid2,2,0, "gridW");
-
-            grid.AddChild(buttonCheck,3,0);
+            back.Update();
+            up.Update();
+            down.Update();
             gridCards.UpdateP();
-            grid.Active = true;
-            grid.UpdateActive(true);
-            grid.ResizeChildren();
-            drop.ResizeChildren();
             int z = 243123;
             SetClickables(true);
             layout.Update();
@@ -284,16 +234,14 @@ namespace Client_PC.Scenes
 
         public override void UpdateGrid()
         {
-            grid.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - grid.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - grid.Height / 2.0f));
-            grid.UpdateP();
-            layout.Origin = new Point(grid.Origin.X+ grid.Width + 10, grid.Origin.Y);
+            layout.Origin = new Point((int)(Game1.self.GraphicsDevice.Viewport.Bounds.Width / 2.0f - gridCards.Width / 2.0f), (int)(Game1.self.GraphicsDevice.Viewport.Bounds.Height / 2.0f - gridCards.Height / 2.0f));
 
             gridCards.Origin = layout.Origin;
-            gridCards.DrawBackground = false;
-            layout.Update();
             gridCards.UpdateP();
             up.Origin = new Point(gridCards.Origin.X, gridCards.Origin.Y + gridCards.Height);
             down.Origin = new Point(up.Origin.X, up.Origin.Y + 30);
+            back.Origin = new Point(down.Origin.X, down.Origin.Y + down.Height + 10);
+            layout.Update();
             gridCards.UpdateActive(true);
         }
 
@@ -344,7 +292,6 @@ namespace Client_PC.Scenes
         public void Draw(GameTime gameTime)
         {
 
-            grid.Draw(Game1.self.spriteBatch);
             layout.Draw(Game1.self.spriteBatch);
 
         }

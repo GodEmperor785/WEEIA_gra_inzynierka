@@ -303,6 +303,7 @@ namespace Client_PC.Scenes
                             timer.Dispose();
                         isOver = true;
                         popup.SetActive(true);
+                        Game1.self.UpdatePlayer();
                         Game1.self.popupToDraw = popup;
                         SetClickables(false);
                         break;

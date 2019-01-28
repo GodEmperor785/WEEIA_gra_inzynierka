@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.IsolatedStorage;
+using System.Linq;
 using System.Net.Sockets;
 using System.Xml.Serialization;
 using Client_PC.Scenes;
@@ -18,6 +20,17 @@ namespace Client_Android
     /// </summary>
     public class Game1 : Game
     {
+        public List<Ship> CardTypes;
+        public class ShipAndSkin
+        {
+            public string ship;
+            public Texture2D skin;
+        }
+        public class SkinAndPath
+        {
+            public Texture2D skin;
+            public string path;
+        }
         public enum State
         {
             LoginMenu, MainMenu, OptionsMenu, GameWindow, DeckMenu, RegisterMenu, ShopMenu, FleetMenu, CardsMenu
@@ -52,10 +65,14 @@ namespace Client_Android
         List<Menu> menus = new List<Menu>();
         public BaseModifiers Modifiers;
         public GAME_connection.TcpConnection Connection;
+        public List<ShipAndSkin> EnemyShipsSkins = new List<ShipAndSkin>();
+        public List<ShipAndSkin> ShipsSkins = new List<ShipAndSkin>();
+        public List<SkinAndPath> SkinsPaths = new List<SkinAndPath>();
         private bool test = true; // false if dont connect with server
         public bool ReadyToPlay;
         public Activity1 activitySelf;
         public string ServerIp = "212.191.92.88";
+        public Cards config;
         public Game1(Activity1 activity)
         {
             graphics = new GraphicsDeviceManager(this);
@@ -145,7 +162,85 @@ namespace Client_Android
         {
 
         }
+        private void LoadAllCards()
+        {
+            CardTypes = new List<Ship>();
+            GamePacket packet = new GamePacket(OperationType.GET_SHIP_TEMPLATES, null);
+            Connection.Send(packet);
+            packet = Connection.GetReceivedPacket();
+            if (packet.OperationType == OperationType.GET_SHIP_TEMPLATES)
+            { //TODO make it when server is working with it
+                CardTypes = (List<Ship>)packet.Packet;
+            }
 
+        }
+        public void SetSettings()
+        {
+            settingsMenu.FillGridWithCardTypes(CardTypes);
+        }
+        public void LoadCardTextures()
+        {
+            IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication();
+            LoadAllCards();
+            XmlSerializer serializer = new XmlSerializer(typeof(Cards));
+            if (!store.FileExists("Config_Cards"))
+            {
+                var fs = store.CreateFile("Config_Cards");
+                TextWriter writer = new StreamWriter(fs);
+                config = new Cards();
+                config.listOfCards = new List<CardConfig>();
+                CardTypes.ForEach(p =>
+                {
+                    CardConfig c = new CardConfig();
+                    c.Name = p.Name;
+                    c.SkinPath = String.Empty;
+                    config.listOfCards.Add(c);
+                });
+                XmlSerializer xml = new XmlSerializer(typeof(Cards));
+                xml.Serialize(writer, config);
+                writer.Close();
+                fs.Close();
+            }
+
+            var file = store.OpenFile("Config_Cards",FileMode.Open);
+            
+            config = (Cards)serializer.Deserialize(file);
+            file.Close();
+
+            config.listOfCards.ForEach(p =>
+            {
+                CardTypes.Where(a => a.Name == p.Name).ToList().ForEach(z =>
+                {
+                    
+                        Texture2D skin = store.FileExists(p.SkinPath) ? loadTexture2D(p.SkinPath) : null;
+                        ShipsSkins.Add(new ShipAndSkin()
+                        {
+                            ship = z.Name,
+                            skin = skin
+
+                        });
+                        SkinsPaths.Add(new SkinAndPath()
+                        {
+                            skin = skin,
+                            path = p.SkinPath
+                        });
+                    
+                    
+                });
+            });
+            file.Close();
+            store.Close();
+        }
+        public Texture2D loadTexture2D(string path)
+        {
+            var store = IsolatedStorageFile.GetUserStoreForApplication();
+            Texture2D text = null;
+            var file = store.OpenFile(path, FileMode.Open);
+
+            text = Texture2D.FromStream(Game1.self.GraphicsDevice, file);
+            store.Close();
+            return text;
+        }
         private void LoadConfig()
         {
             XmlSerializer serializer =

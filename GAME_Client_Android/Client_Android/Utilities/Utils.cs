@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.IsolatedStorage;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Content;
 using Client_Android;
 using Client_PC.UI;
+using Java.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using File = Java.IO.File;
 
 namespace Client_PC.Utilities
 {
@@ -189,6 +195,105 @@ namespace Client_PC.Utilities
 
             //set the color
             texture.SetData(data);
+            return texture;
+        }
+
+        [Serializable]
+        public class TextureFile
+        {
+            public Int32 dataLength;
+            public byte[] data;
+            public Int32 nameLength;
+            public string fileName;
+
+            public void ToBytes(ref MemoryStream stream)
+            {
+                byte[] datalengthBytes, namelengthBytes, filenameBytes;
+                dataLength = data.Length;
+                datalengthBytes = BitConverter.GetBytes(dataLength);
+                filenameBytes = Encoding.ASCII.GetBytes(fileName);
+                nameLength = filenameBytes.Length;
+                namelengthBytes = BitConverter.GetBytes(nameLength);
+                stream.Write(datalengthBytes, 0, datalengthBytes.Length);
+                stream.Write(data, 0, data.Length);
+                stream.Write(namelengthBytes, 0, namelengthBytes.Length);
+                stream.Write(filenameBytes, 0,
+                    filenameBytes.Length);
+
+
+            }
+
+            public void ToTextureFile(ref MemoryStream stream)
+            {
+                byte[] datalengthBytes = new byte[20];
+                byte[] namelengthBytes, filenameBytes;
+                Int32 i = 2;
+
+                stream.Read(datalengthBytes, 0, BitConverter.GetBytes(i).Length);
+                dataLength = BitConverter.ToInt32(datalengthBytes, 0);
+                data = new byte[dataLength];
+                stream.Read(data, 0, dataLength);
+                namelengthBytes = new byte[20];
+                stream.Read(namelengthBytes, 0, BitConverter.GetBytes(i).Length);
+                nameLength = BitConverter.ToInt32(namelengthBytes, 0);
+                filenameBytes = new byte[nameLength];
+                stream.Read(filenameBytes,
+                    0, nameLength);
+                fileName = Encoding.ASCII.GetString(filenameBytes);
+            }
+        }
+        
+        public static byte[] TextureToBytes(string path)
+        {
+            
+            var memStream = new MemoryStream();
+            TextureFile t = new TextureFile();
+            var store = IsolatedStorageFile.GetUserStoreForApplication();
+            var fs = store.OpenFile(path,FileMode.Open);
+            t.data = new byte[fs.Length];
+            fs.Read(t.data, 0, (int)fs.Length);
+            t.fileName = path;
+            t.ToBytes(ref memStream);
+            var z = memStream.ToArray();
+            memStream.Close();
+            memStream.Dispose();
+            fs.Close();
+            store.Close();
+            
+            return z;
+            
+            return null;
+        }
+        
+        public static Texture2D BytesToTexture(byte[] bytes)
+        {
+            var memStream = new MemoryStream();
+            memStream.Write(bytes, 0, bytes.Length);
+            memStream.Seek(0, SeekOrigin.Begin);
+            TextureFile t = new TextureFile();
+            t.ToTextureFile(ref memStream);
+            string newPath = AppDomain.CurrentDomain.BaseDirectory + Game1.self.Content.RootDirectory + "\\TempSkins\\" + t.fileName;
+            newPath = t.fileName;
+            var store = IsolatedStorageFile.GetUserStoreForApplication();
+            var fs = store.CreateFile(newPath);
+            fs.Write(t.data,0,t.dataLength);
+            fs.Close();
+            var fs2 = store.OpenFile(newPath,FileMode.Open);
+            //FileStream fileStream = new FileStream(newPath, FileMode.Open);
+            Texture2D texture = null;
+            try
+            {
+                texture = Texture2D.FromStream(Game1.self.GraphicsDevice, fs2);
+            }
+            catch { }
+
+            //fileStream.Close();
+            //fileStream.Dispose();
+            File f = new File(newPath);
+            store.DeleteFile(newPath);
+            store.Close();
+            memStream.Close();
+            memStream.Dispose();
             return texture;
         }
     }
