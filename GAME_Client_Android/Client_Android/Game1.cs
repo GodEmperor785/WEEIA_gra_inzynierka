@@ -206,7 +206,7 @@ namespace Client_Android
             
             config = (Cards)serializer.Deserialize(file);
             file.Close();
-
+            ShipsSkins.Clear();
             config.listOfCards.ForEach(p =>
             {
                 CardTypes.Where(a => a.Name == p.Name).ToList().ForEach(z =>

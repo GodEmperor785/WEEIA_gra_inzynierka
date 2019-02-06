@@ -5,10 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
+using Client_PC.Utilities;
 using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using PayPal.Api;
 
 namespace Client_PC.Scenes
 {
@@ -45,6 +47,10 @@ namespace Client_PC.Scenes
             Button exitButton = new Button(200, 100, Game1.self.GraphicsDevice, Gui, Gui.mediumFont, true)
             {
                 text = "Back"
+            };
+            Button creditsButton = new Button(new Point(100, Game1.self.graphics.PreferredBackBufferHeight - 200),300,100,Game1.self.GraphicsDevice,Gui,Gui.mediumFont,true )
+            {
+                Text = "Get 500 credits for 5 pln"
             };
             using (FileStream fileStream = new FileStream("Content/Icons/Credits.png", FileMode.Open))
             {
@@ -83,6 +89,10 @@ namespace Client_PC.Scenes
             CreditsAmount.Text = 123412.ToString();
             CreditsAmount.InsideColor = new Color(160,160,160);
             CreditsAmount.OutsideColor = new Color(120, 120, 120);
+            Clickable.Add(creditsButton);
+            creditsButton.clickEvent += GetCredits;
+            creditsButton.Update();
+            layout.AddChild(creditsButton);
             layout.AddChild(g,"CreditsIcon");
             layout.AddChild(CreditsAmount,"CreditsAmount");
             grid.AddChild(exitButton,0,0);
@@ -91,6 +101,80 @@ namespace Client_PC.Scenes
             grid.UpdateP();
             SetClickables(true);
         }
+
+        public void GetCredits()
+        {
+            #region SettingPayment
+
+            try
+            {
+                var payment = Payment.Create(Game1.self.apiContext, new Payment
+                {
+                    intent = "authorize",
+                    payer = new Payer
+                    {
+                        payment_method = "paypal"
+                    },
+                    transactions = new List<Transaction>
+                    {
+                        new Transaction
+                        {
+                            description = "Transaction description.",
+                            amount = new Amount
+                            {
+                                currency = "PLN",
+                                total = "5.00",
+                                details = new Details
+                                {
+                                    tax = "0.94",
+                                    shipping = "0",
+                                    subtotal = "4.06"
+                                }
+                            },
+                            item_list = new ItemList
+                            {
+                                items = new List<Item>
+                                {
+                                    new Item
+                                    {
+                                        name = "Item Name",
+                                        currency = "PLN",
+                                        price = "4.06",
+                                        quantity = "1",
+                                        sku = "sku"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    redirect_urls = new RedirectUrls
+                    {
+                        return_url = "http://google.com",
+                        cancel_url = "http://google.com"
+                    }
+                });
+
+
+                var url = payment.GetApprovalUrl();
+                System.Diagnostics.Process.Start(url);
+
+
+                var id = payment.id;
+                Game1.self.payments.listOfPayments.Add(new GamePayment()
+                {
+                    Id = id,
+                    Name = Game1.self.player.Username
+                });
+            }
+            catch (PayPal.PayPalException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+
+            #endregion
+        }
+        
         public void onPopupExit()
         {
             popup.SetActive(false);

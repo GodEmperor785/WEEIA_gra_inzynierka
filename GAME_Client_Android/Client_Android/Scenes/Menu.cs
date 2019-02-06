@@ -35,7 +35,9 @@ namespace Client_PC.Scenes
             bool update = false;
             Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
             Game1.self.AbleToClick = Game1.self.DeltaSeconds > Constants.clickDelay;
+
             var touches = TouchPanel.GetState();
+
             foreach (var touch in touches)
             {
                 if (touch.State == TouchLocationState.Pressed)

@@ -321,7 +321,7 @@ namespace Client_PC.Scenes
         }
         public void timerStart(object stateInfo)
         {
-            timeLabel.Text = "You have " + (180 - time) +" seconds left to end turn before giving up";
+            timeLabel.Text = "You have " + (180 - time) +" seconds left to end turn before giving up your turn";
             time++;
             
 

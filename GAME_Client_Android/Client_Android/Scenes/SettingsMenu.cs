@@ -105,6 +105,7 @@ namespace Client_PC.Scenes
         {
             Game1.self.state = Game1.State.MainMenu;
             ClickableToRemove.ForEach(p=> Clickable.Remove(p));
+            Game1.self.LoadCardTextures();
         }
 
 

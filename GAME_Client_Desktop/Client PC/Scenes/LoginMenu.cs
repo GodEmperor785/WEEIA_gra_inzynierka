@@ -180,7 +180,9 @@ namespace Client_PC.Scenes
             Player player = new Player(inputLogin.Text,inputPassword.Text);
             GamePacket packet = new GamePacket(OperationType.LOGIN, player);
             Game1.self.Connection.Send(packet);
+
             GamePacket packetReceived = Game1.self.Connection.GetReceivedPacket();
+
             bool errors = false;
 
             if (packetReceived.OperationType == OperationType.SUCCESS)
@@ -191,7 +193,9 @@ namespace Client_PC.Scenes
                 packetReceived = Game1.self.Connection.GetReceivedPacket();
                 if (packetReceived.OperationType == OperationType.PLAYER_DATA)
                 {
+
                     Game1.self.player = (Player) packetReceived.Packet;
+
                     packetReceived = Game1.self.Connection.GetReceivedPacket();
                     if (packetReceived.OperationType == OperationType.BASE_MODIFIERS)
                     {

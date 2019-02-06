@@ -171,7 +171,6 @@ namespace Client_PC.UI
             { 
                 Texture = Util.CreateTexture(Device, Width, Height,RarityColor[ship.Rarity],InsideColor);
             }
-
             skinPosition.X = Origin.X + borderSize;
             skinPosition.Y = Origin.Y + borderSize;
             

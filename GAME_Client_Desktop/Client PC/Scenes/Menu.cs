@@ -31,14 +31,18 @@ namespace Client_PC.Scenes
             bool update = false;
             Game1.self.DeltaSeconds += gameTime.ElapsedGameTime.Milliseconds;
             Game1.self.AbleToClick = Game1.self.DeltaSeconds > Constants.clickDelay;
+
             var mouseState = Mouse.GetState();
             
             var keyboardState = Keyboard.GetState();
+
             update = Utils.UpdateKeyboard(keyboardState, ref LastPressedKeys);
             if (update)
             {
+
                 int x = mouseState.X;
                 int y = mouseState.Y;
+                
                 Point xy = new Point(x, y);
                 Test(xy);
             }

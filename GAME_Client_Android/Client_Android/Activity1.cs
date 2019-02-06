@@ -62,7 +62,9 @@ namespace Client_Android
             }
 
             g = new Game1(this);
+
             pView = (View) g.Services.GetService(typeof(View));
+
             pView.KeyPress += OnKeyPress;
 
             SetContentView(pView);
@@ -75,16 +77,22 @@ namespace Client_Android
 
 
             var pView = g.Services.GetService<View>();
+
             var inputMethodManager = Application.GetSystemService(Context.InputMethodService) as InputMethodManager;
+
             inputMethodManager.ShowSoftInput(pView, ShowFlags.Forced);
+
             inputMethodManager.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.ImplicitOnly);
+
         }
 
         public void HideKeyboard()
         {
+
             InputMethodManager inputMethodManager =
                 Application.GetSystemService(Context.InputMethodService) as InputMethodManager;
             inputMethodManager.HideSoftInputFromWindow(pView.WindowToken, HideSoftInputFlags.None);
+
         }
 
         private void OnKeyPress(object sender, View.KeyEventArgs e)
@@ -122,10 +130,12 @@ namespace Client_Android
                         else
                         {
                             char input;
+
                             if (lastKeycode == Keycode.ShiftLeft || lastKeycode == Keycode.ShiftRight)
                             {
                                 input = (char) e.Event.GetUnicodeChar(MetaKeyStates.ShiftLeftOn);
                             }
+
                             else if (lastKeycode == Keycode.AltLeft || lastKeycode == Keycode.AltRight)
                             {
                                 input = (char) e.Event.GetUnicodeChar(MetaKeyStates.AltLeftOn);

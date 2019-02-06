@@ -46,4 +46,23 @@ namespace Client_PC.Utilities
             SkinPath = skinPath;
         }
     }
+
+    public class Payments
+    {
+        [XmlArray("Payments"), XmlArrayItem(typeof(GamePayment), ElementName = "GamePayment")]
+        public List<GamePayment> listOfPayments { get; set; }
+    }
+
+    public class GamePayment
+    {
+        public string Name;
+        public string Id;
+        public bool approved;
+
+        public GamePayment()
+        {
+            approved = false;
+        }
+    }
+
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -16,6 +17,7 @@ using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using Button = Client_PC.UI.Button;
 using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
 using GameWindow = Client_PC.Scenes.GameWindow;
@@ -23,6 +25,9 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 using Label = Client_PC.UI.Label;
 using MainMenu = Client_PC.Scenes.MainMenu;
 using Menu = Client_PC.Scenes.Menu;
+
+using PayPal.Api;
+
 
 namespace Client_PC
 {
@@ -84,9 +89,15 @@ namespace Client_PC
         private bool test = true; // false if dont connect with server
         public bool ReadyToPlay;
         private Cards config;
-        
+        private string id;
+        private PayPal.Api.Payment payment;
 
-
+        public Payments payments = new Payments()
+        {
+            listOfPayments = new List<GamePayment>()
+        };
+        public APIContext apiContext;
+        private int approved = 0;
 
         public Game1()
         {
@@ -104,6 +115,9 @@ namespace Client_PC
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+
+            SetUpPayPal();
+            
             self = this;
             LoadConfig();
             Wallpaper = Utils.CreateTexture(GraphicsDevice, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
@@ -120,6 +134,49 @@ namespace Client_PC
             
         }
 
+        public void SetUpPayPal()
+        {
+            var config = ConfigManager.Instance.GetProperties();
+
+            var accessToken = new OAuthTokenCredential(config).GetAccessToken();
+
+            apiContext = new APIContext(accessToken);
+
+        }
+
+        public void Checking()
+        {
+            while (true)
+            {
+                foreach (var gamePayment in payments.listOfPayments)
+                {
+                    var id = gamePayment.Id;
+                    var g = Payment.Get(apiContext, id);
+                    if (g.payer != null)
+                    {
+                        if (g.state == "approved")
+                        {
+                            //gdy transakcja zostala wykonana przez paypala
+                            GamePacket packet = new GamePacket(OperationType.GET_CREDITS,gamePayment.Name);
+                            Connection.Send(packet);
+                        }
+                        else
+                        {
+                            //gdy transakcja zostaje zaakceptowana przez platnika
+                            var paymentExecution = new PaymentExecution();
+                            paymentExecution.payer_id = g.payer.payer_info.payer_id;
+                            payment.Execute(apiContext, paymentExecution);
+                        }
+                        
+                    }
+                    
+                }
+                
+                //PaymentExecution z = new PaymentExecution();
+                //payment.Execute(apiContext,)
+                Thread.Sleep(10000);
+            }
+        }
         public void LoginInitialize()
         {
             mainMenu = new MainMenu();
