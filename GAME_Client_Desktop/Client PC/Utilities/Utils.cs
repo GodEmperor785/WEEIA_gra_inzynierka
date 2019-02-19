@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Client_PC.UI;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -90,8 +91,10 @@ namespace Client_PC.Utilities
                 {
                     Task t = new Task(RefreshWallpaper);
                     t.Start();
-
-
+                    Animation z = new Animation(Animation.Type.hit4);
+                    Vector2 pos = Mouse.GetState().Position.ToVector2();
+                    z.Position = pos;
+                    Game1.self.animations.Add(z);
                 }
 
                 if (keyboardState.GetPressedKeys().Contains(Keys.Delete) && !lastPressedKeys.Contains(Keys.Delete))
@@ -109,8 +112,12 @@ namespace Client_PC.Utilities
 
         public static void RefreshWallpaper()
         {
+            Game1.self.Wallpaper = Game1.self.walls[new Random().Next(6)];
+
+            /*
             Game1.self.Wallpaper = Utils.CreateTexture(Game1.self.GraphicsDevice,
                 Game1.self.graphics.PreferredBackBufferWidth, Game1.self.graphics.PreferredBackBufferHeight);
+                */
         }
         public static Texture2D CreateTexture(GraphicsDevice device, int width, int height)
         {

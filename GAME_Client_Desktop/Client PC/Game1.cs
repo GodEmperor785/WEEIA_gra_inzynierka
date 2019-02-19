@@ -27,6 +27,7 @@ using MainMenu = Client_PC.Scenes.MainMenu;
 using Menu = Client_PC.Scenes.Menu;
 
 using PayPal.Api;
+using TexturePackerLoader;
 
 
 namespace Client_PC
@@ -37,9 +38,18 @@ namespace Client_PC
     public class Game1 : Game
     {
         public List<Ship> CardTypes;
+
         public enum State
         {
-            LoginMenu,MainMenu,OptionsMenu,GameWindow,DeckMenu,RegisterMenu,ShopMenu, FleetMenu, CardsMenu
+            LoginMenu,
+            MainMenu,
+            OptionsMenu,
+            GameWindow,
+            DeckMenu,
+            RegisterMenu,
+            ShopMenu,
+            FleetMenu,
+            CardsMenu
         }
 
         public class ShipAndSkin
@@ -53,6 +63,11 @@ namespace Client_PC
             public Texture2D skin;
             public string path;
         }
+
+        public string[] wallpapers = new string[]{
+            "v1.png","v2.png","v3.png","v4.png","v5.png","v6.png"
+        };
+        public List<Texture2D> walls = new List<Texture2D>();
         public static Game1 self;
         public State state = State.LoginMenu;
         public GraphicsDeviceManager graphics;
@@ -91,7 +106,9 @@ namespace Client_PC
         private Cards config;
         private string id;
         private PayPal.Api.Payment payment;
-
+        public SpriteSheet sheet, hit4sheet;
+        public SpriteRender renderer;
+        public List<Animation> animations = new List<Animation>();
         public Payments payments = new Payments()
         {
             listOfPayments = new List<GamePayment>()
@@ -120,10 +137,14 @@ namespace Client_PC
             
             self = this;
             LoadConfig();
-            Wallpaper = Utils.CreateTexture(GraphicsDevice, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
-
+            LoadWallpapers();
+            Wallpaper = walls[new Random().Next(6)];
+            //Wallpaper = Utils.CreateTexture(GraphicsDevice, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             //  gd = GraphicsDevice;
-
+            var spriteSheetLoader = new SpriteSheetLoader(Content, GraphicsDevice);
+            sheet = spriteSheetLoader.Load("SpriteSheet.png");
+            hit4sheet = spriteSheetLoader.Load("hit4.png");
+            //sheet
             loginMenu = new LoginMenu();
             loginMenu.Initialize(Content);
             registerMenu = new RegisterMenu();
@@ -157,8 +178,8 @@ namespace Client_PC
                         if (g.state == "approved")
                         {
                             //gdy transakcja zostala wykonana przez paypala
-                            GamePacket packet = new GamePacket(OperationType.GET_CREDITS,gamePayment.Name);
-                            Connection.Send(packet);
+                            //GamePacket packet = new GamePacket(OperationType.GET_CREDITS,gamePayment.Name);
+                            //Connection.Send(packet);
                         }
                         else
                         {
@@ -175,6 +196,19 @@ namespace Client_PC
                 //PaymentExecution z = new PaymentExecution();
                 //payment.Execute(apiContext,)
                 Thread.Sleep(10000);
+            }
+        }
+
+        public void LoadWallpapers()
+        {
+            foreach (var wallpaper in wallpapers)
+            {
+                using (FileStream fileStream = new FileStream("Content/"+wallpaper, FileMode.Open))
+                {
+                    Texture2D wall = Texture2D.FromStream(Game1.self.GraphicsDevice, fileStream);
+                    walls.Add(wall);
+                    fileStream.Dispose();
+                }
             }
         }
         public void LoginInitialize()
@@ -388,7 +422,7 @@ namespace Client_PC
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Darker = Content.Load<Effect>("Shaders/GrayScaleShader");
-
+            renderer = new SpriteRender(spriteBatch);
             Form MyGameForm = (Form)Form.FromHandle(Window.Handle);
             MyGameForm.Closing += ClosingFunction;
             // TODO: use this.Content to load your game content here
@@ -467,6 +501,16 @@ namespace Client_PC
                     cardsMenu.Update(gameTime);
                     break;
             }
+
+            var toRemove = new List<Animation>();
+            animations.ForEach(p =>
+            {
+                if (p.Update())
+                {
+                    toRemove.Add(p);
+                }
+            });
+            toRemove.ForEach(p=> animations.Remove(p));
             base.Update(gameTime);
         }
 
@@ -671,6 +715,7 @@ namespace Client_PC
                 popupToDraw.Draw(spriteBatch);
                 Game1.self.spriteBatch.End();
             }
+            animations.ForEach(p=> p.Draw(spriteBatch));
         }
     }
 }

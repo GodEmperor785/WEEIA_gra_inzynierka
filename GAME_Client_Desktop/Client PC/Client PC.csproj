@@ -63,6 +63,7 @@
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Animation\Animation.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -77,6 +78,11 @@
     <Compile Include="Scenes\SettingsMenu.cs" />
     <Compile Include="Scenes\ShopMenu.cs" />
     <Compile Include="Scenes\StatisticsMenu.cs" />
+    <Compile Include="SpriteSheet.cs" />
+    <Compile Include="TexturePackerLoader\SpriteFrame.cs" />
+    <Compile Include="TexturePackerLoader\SpriteRender.cs" />
+    <Compile Include="TexturePackerLoader\SpriteSheet.cs" />
+    <Compile Include="TexturePackerLoader\SpriteSheetLoader.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="UI\Card.cs" />
     <Compile Include="UI\CardSlot.cs" />
@@ -123,6 +129,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\hit4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\hit4.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\SpriteSheet.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\SpriteSheet.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\v1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\v2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\v3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\v4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\v5.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\v6.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Credits\graphics.txt" />
     <Content Include="Icon.ico" />
   </ItemGroup>

@@ -9,6 +9,7 @@ using GAME_connection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
+using TexturePackerLoader;
 
 namespace Client_PC.UI
 {
@@ -113,7 +114,8 @@ namespace Client_PC.UI
             overlay.AddChild(armorText,"armorText");
             Tooltip = createTooltip();
         }
-
+        
+        
         private Tooltip createTooltip()
         {
             int width = 450;

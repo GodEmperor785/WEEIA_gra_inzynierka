@@ -43,7 +43,6 @@ namespace GAME_connection {
 		BOUGHT_SHIPS,
 		BUY,
 		SELL_SHIP,
-        GET_CREDITS,
 
 		//action results
 		SUCCESS,
