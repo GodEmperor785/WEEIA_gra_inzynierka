@@ -64,11 +64,12 @@ namespace Client_PC.Scenes
         private List<Card> EnemyCards;
         private Move move;
         private Button turnButton;
-        private GameState currentGameState;
+        private GameState currentGameState, lastGameState;
         private Label lbl1, timeLabel;
         private Button b1;
         private int time;
         private Timer timer;
+        private List<Ship> defendingShips = new List<Ship>();
         public override void Initialize(ContentManager Content)
         {
             Gui = new GUI(Content);
@@ -205,6 +206,8 @@ namespace Client_PC.Scenes
                         ShipPosition target = getShipPosition(CurrentCard.GetShip());
                         move.AttackList.Add(new Tuple<ShipPosition, ShipPosition>(origin,target));
                         HideSlots();
+                        if(!readyToSend)
+                            defendingShips.Remove(LastCard.GetShip());
                         CurrentCard = null;
                     }
                 }
@@ -293,14 +296,19 @@ namespace Client_PC.Scenes
             CardSlot c = (CardSlot) sender;
             if (CurrentCard != null && LineDifference(CurrentCard.line, c.line) == 1 && CurrentCard.CanMove )
             {
-                CurrentCard.CanMove = false;
-                ShipPosition origin = getShipPosition(CurrentCard.GetShip());
-                move.MoveList.Add(new Tuple<ShipPosition, Line>(origin,c.line));
-                c.Active = false;
-                CurrentCard.Status = Card.status.hasMove;
-                SetSlots(false);
-                if(CurrentCard.Parent == yourGrid)
+                if (CurrentCard.Parent == yourGrid)
+                {
+                    CurrentCard.CanMove = false;
+                    CurrentCard.Status = Card.status.hasMove;
+                    ShipPosition origin = getShipPosition(CurrentCard.GetShip());
+                    move.MoveList.Add(new Tuple<ShipPosition, Line>(origin, c.line));
+                    c.Active = false;
+                    SetSlots(false);
+                    if(!readyToSend)
+                        defendingShips.Remove(CurrentCard.GetShip());
                     LastCard = null;
+                    CurrentCard = null;
+                }
             }
 
             UpdateButtonNull();
@@ -313,6 +321,7 @@ namespace Client_PC.Scenes
         public void Start()
         {
             gameloop = true;
+            Game1.self.animations = new List<Animation>();
             th = new Task(ContactLoop);
             th.Start();
             var autoEvent = new AutoResetEvent(false);
@@ -361,6 +370,7 @@ namespace Client_PC.Scenes
                     if (packet.OperationType == OperationType.GAME_STATE)
                     {
                         GameState state = (GameState)packet.Packet;
+                        lastGameState = currentGameState;
                         currentGameState = state;
                         readyToSet = true;
                         turnButton.Active = true;
@@ -402,15 +412,114 @@ namespace Client_PC.Scenes
         {
             if (readyToSet)
             {
-
+                setAnimations();
                 setState(currentGameState);
                 readyToSet = false;
             }
         }
 
+        public void setAnimations()
+        {
+            if (lastGameState != null)
+            {
+                List<Ship> yourShipsOld = new List<Ship>();
+                List<Ship> enemyShipsOld = new List<Ship>();
+                List<Ship> yourShips = new List<Ship>();
+                List<Ship> enemyShips = new List<Ship>();
+                List<Animation> animations = new List<Animation>();
+
+                lastGameState.YourGameBoard.Board.Values.ToList().ForEach(p=> p.ForEach(ship=> yourShipsOld.Add(ship)));
+                lastGameState.EnemyGameBoard.Board.Values.ToList().ForEach(p=> p.ForEach(ship=> enemyShipsOld.Add(ship)));
+
+                currentGameState.YourGameBoard.Board.Values.ToList().ForEach(p => p.ForEach(ship => yourShips.Add(ship)));
+                currentGameState.EnemyGameBoard.Board.Values.ToList().ForEach(p => p.ForEach(ship => enemyShips.Add(ship)));
+
+                yourShipsOld.ForEach(p =>
+                {
+                    if (!yourShips.Contains(p))
+                    {
+                        Animation t = new Animation(Animation.Type.hit2);
+                        var card = yourGrid.GetChild(p.Id.ToString());
+                        t.Position = new Vector2(card.Origin.X + card.Width / 2, card.Origin.Y + card.Height / 2);
+                        animations.Add(t);
+                    }
+                    else
+                    {
+                        var newShip = yourShips.SingleOrDefault(a => a.Equals(p));
+                        if (newShip != null)
+                        {
+                            if (newShip.Hp < p.Hp && defendingShips.Contains(p))
+                            {
+                                Animation t = new Animation(Animation.Type.shield);
+                                var card = yourGrid.GetChild(p.Id.ToString());
+                                t.Position = new Vector2(card.Origin.X + card.Width / 2, card.Origin.Y + card.Height / 2);
+                                animations.Add(t);
+                            }
+                        }
+                    }
+                    
+                });
+                enemyShipsOld.ForEach(p =>
+                {
+                    if (!enemyShips.Contains(p))
+                    {
+                        Animation t = new Animation(Animation.Type.hit2);
+                        var card = enemyGrid.GetChild(p.Id.ToString());
+                        t.Position = new Vector2(card.Origin.X + card.Width / 2, card.Origin.Y + card.Height / 2);
+                        animations.Add(t);
+                    }
+                    else
+                    {
+                        var newShip = yourShips.SingleOrDefault(a => a.Equals(p));
+                        if (newShip != null)
+                        {
+                            if (newShip.Hp < p.Hp )
+                            {
+                                Animation t = new Animation(Animation.Type.hit4);
+                                var card = enemyGrid.GetChild(p.Id.ToString());
+                                t.Position = new Vector2(card.Origin.X + card.Width / 2, card.Origin.Y + card.Height / 2);
+                                animations.Add(t);
+                            }
+                        }
+                    }
+                });
+                if (animations.Count > 0)
+                {
+                    animations.ForEach(p=> Game1.self.animations.Add(p));
+                }
+            }
+                
+        }
+
+        public void AnimationsFunction(List<Animation> listOfAnimations)
+        {
+            var list = listOfAnimations;
+            while(list.Count > 0)
+                AnimationsDraw(AnimationsUpdate(list));
+        }
+
+        public List<Animation> AnimationsUpdate(List<Animation> list)
+        {
+            var toRemove = new List<Animation>();
+            list.ForEach(p =>
+            {
+                if (p.Update())
+                {
+                    toRemove.Add(p);
+                }
+            });
+            toRemove.ForEach(p => list.Remove(p));
+            return list;
+        }
+
+        public void AnimationsDraw(List<Animation> list)
+        {
+            Thread.Sleep(20);
+            list.ForEach(p=> p.Draw(Game1.self.spriteBatch));
+        }
         public void setState(GameState state)
         {
-            
+            defendingShips = new List<Ship>();
             move = new Move();
             var shortAlly = state.YourGameBoard.Board[Line.SHORT].ToList();
             var medAlly = state.YourGameBoard.Board[Line.MEDIUM].ToList();
@@ -437,6 +546,10 @@ namespace Client_PC.Scenes
             CardsToRow(shortAlly, Line.SHORT, true);
             CardsToRow(medAlly, Line.MEDIUM, true);
             CardsToRow(longAlly, Line.LONG, true);
+
+            shortAlly.ForEach(p=> defendingShips.Add(p));
+            medAlly.ForEach(p => defendingShips.Add(p));
+            longAlly.ForEach(p => defendingShips.Add(p));
 
             CardsToRow(shortEnemy, Line.SHORT, false);
             CardsToRow(medEnemy, Line.MEDIUM, false);
@@ -468,14 +581,14 @@ namespace Client_PC.Scenes
                     Clickable.Add(c);
                     c.CanMove = true;
                     c.line = line;
-                    yourGrid.AddChild(c,i, GetColumn(line, allied));
+                    yourGrid.AddChild(c,i, GetColumn(line, allied),c.GetShip().Id.ToString());
                 }
 
                 while(i < 5)
                 {
                     
                     CardSlot c = new CardSlot(cardWidth,cardHeight,Game1.self.GraphicsDevice,Gui);
-                    yourGrid.AddChild(c,i,GetColumn(line, allied));
+                    yourGrid.AddChild(c,i,GetColumn(line, allied),"slot");
                     c.line = line;
                     c.clickEvent += CardSlotClick;
                     Clickable.Add(c);
@@ -492,7 +605,7 @@ namespace Client_PC.Scenes
                     c.line = line;
                     Clickable.Add(c);
                     c.Enemy = true;
-                    enemyGrid.AddChild(c, i, GetColumn(line, allied));
+                    enemyGrid.AddChild(c, i, GetColumn(line, allied), c.GetShip().Id.ToString());
                 }
                 enemyGrid.UpdateP();
             }

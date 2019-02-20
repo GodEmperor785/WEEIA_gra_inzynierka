@@ -22,8 +22,8 @@ namespace Client_PC.Scenes
         private double CardGridHeightMulti = 0.15;
         private double CardGridWidthMulti = 0.75;
         private double RightGridHeightMulti = 0.6;
-        private int cardWidth = 100;
-        private int cardHeight = 150;
+        private int cardWidth = 120;
+        private int cardHeight = 180;
         private InputBox DeckInputBox;
         private List<Card> ShipsInTop;
         private List<Card> ShipsInBot;

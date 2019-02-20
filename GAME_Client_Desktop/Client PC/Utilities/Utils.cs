@@ -91,10 +91,6 @@ namespace Client_PC.Utilities
                 {
                     Task t = new Task(RefreshWallpaper);
                     t.Start();
-                    Animation z = new Animation(Animation.Type.hit4);
-                    Vector2 pos = Mouse.GetState().Position.ToVector2();
-                    z.Position = pos;
-                    Game1.self.animations.Add(z);
                 }
 
                 if (keyboardState.GetPressedKeys().Contains(Keys.Delete) && !lastPressedKeys.Contains(Keys.Delete))
