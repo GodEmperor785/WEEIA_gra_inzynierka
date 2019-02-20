@@ -57,12 +57,24 @@ namespace Client_PC.UI
         public bool IsOver { get; set; }
         public bool HeightDerivatingFromText { get; set; }
         public Texture2D Skin { get; set; }
+        private double percentage = 1;
+        public double Percentage
+        {
+            get { return percentage; }
+            private set
+            {
+                if (percentage < 0.6)
+                    percentage = 0.6; ;
+            }
+        }
+
         private Point skinPosition;
         public bool Enemy = false;
         private Vector2 skinScale;
        // private 
         public Card(int width, int height, GraphicsDevice device, GUI gui, SpriteFont font, bool wrapable, Ship shipInc) : base( width, height, device, gui)
         {
+            Percentage = 1;
             ship = shipInc;
             Font = font;
             ActiveChangeable = true;
@@ -141,7 +153,7 @@ namespace Client_PC.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Begin();
-            spriteBatch.Draw(Texture, Boundary, Color.White);
+            spriteBatch.Draw(Texture, Boundary, Color.White * (float)Percentage);
             if(!Enemy)
                 Skin = Game1.self.ShipsSkins.SingleOrDefault(p => p.ship == ship.Name).skin;
             else
@@ -151,7 +163,7 @@ namespace Client_PC.UI
                 skinScale = new Vector2();
                 skinScale.X = (float) ((Width - 2 * borderSize)) / (float) (Skin.Width);
                 skinScale.Y = (float) ((Height - 4 * borderSize)) / (float) (Skin.Height);
-                spriteBatch.Draw(Skin, skinPosition.ToVector2(), scale: skinScale);
+                spriteBatch.Draw(Skin, skinPosition.ToVector2(), scale: skinScale,color: Color.White * (float)Percentage);
             }
             //spriteBatch.End();
             overlay.Draw(spriteBatch);
@@ -173,6 +185,14 @@ namespace Client_PC.UI
             { 
                 Texture = Util.CreateTexture(Device, Width, Height,RarityColor[ship.Rarity],InsideColor);
             }
+
+            percentage = 1;
+            if (hp < Game1.self.CardTypes.Single(p => p.Name == ship.Name).Hp)
+            {
+                var maxhp = (float) Game1.self.CardTypes.Single(p => p.Name == ship.Name).Hp;
+                percentage = hp / maxhp;
+                int asd = 123123;
+            }
             skinPosition.X = Origin.X + borderSize;
             skinPosition.Y = Origin.Y + borderSize;
             
@@ -180,7 +200,7 @@ namespace Client_PC.UI
             /// green - is clicked
             /// red - is target of current action
             /// yellow - is target
-
+            
             Color z = new Color(100,100,100);
             if (Status != LastStatus)
             {
@@ -213,7 +233,7 @@ namespace Client_PC.UI
                     Texture = Util.CreateTexture(Device, Width, Height);
                 }
             }
-
+            
             LastStatus = Status;
 
         }
