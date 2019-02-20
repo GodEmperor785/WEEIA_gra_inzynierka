@@ -321,6 +321,7 @@ namespace Client_PC.Scenes
         public void Start()
         {
             gameloop = true;
+            lastGameState = null;
             Game1.self.animations = new List<Animation>();
             th = new Task(ContactLoop);
             th.Start();
@@ -470,7 +471,7 @@ namespace Client_PC.Scenes
                     }
                     else
                     {
-                        var newShip = yourShips.SingleOrDefault(a => a.Equals(p));
+                        var newShip = enemyShips.SingleOrDefault(a => a.Equals(p));
                         if (newShip != null)
                         {
                             if (newShip.Hp < p.Hp )
