@@ -827,6 +827,15 @@ namespace Client_PC.Scenes
             packet = Game1.self.Connection.GetReceivedPacket();
             Game1.self.OwnedShips = (List<Ship>) packet.Packet;
 
+            packet = new GamePacket(OperationType.VIEW_FLEETS, null);
+            Game1.self.Connection.Send(packet);
+            packet = Game1.self.Connection.GetReceivedPacket();
+            if (packet.OperationType == OperationType.VIEW_FLEETS)
+            {
+                Game1.self.Decks = (List<Fleet>)packet.Packet;
+            }
+
+
             playerStats.RemoveChildren();
             int height = (grid.Height - playerStats.rowOffset * 6) / 7;
             int width = 300;
